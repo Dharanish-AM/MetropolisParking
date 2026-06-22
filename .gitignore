@@ -9,6 +9,10 @@ project/target/
 .ammonite/
 out/
 .bsp/
+project/metals.sbt
+project/project/metals.sbt
+*.sbt.errors
+
 
 # IntelliJ IDEA
 .idea/
