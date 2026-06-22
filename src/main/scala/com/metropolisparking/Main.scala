@@ -5,7 +5,8 @@ import org.apache.pekko.http.scaladsl.Http
 import com.metropolisparking.config.AppConfig
 import com.metropolisparking.routes.HealthRoute
 import org.slf4j.LoggerFactory
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success}
 
 object Main {
@@ -32,7 +33,8 @@ object Main {
     bindingFuture.onComplete {
       case Success(binding) =>
         val address = binding.localAddress
-        logger.info(s"Server online at http://${address.getHostString}:${address.getPort}/")
+        val displayHost = if (config.http.host == "0.0.0.0" || config.http.host == "0:0:0:0:0:0:0:0") "localhost" else address.getHostString
+        logger.info(s"Server online at http://$displayHost:${address.getPort}/")
       case Failure(ex) =>
         logger.error(s"Failed to bind HTTP endpoint to ${config.http.host}:${config.http.port}. Shutting down...", ex)
         system.terminate()
@@ -48,5 +50,8 @@ object Main {
           logger.info("HTTP server unbound. Actor system terminated. Goodbye.")
         }
     }
+
+    // Keep JVM alive until ActorSystem terminates
+    Await.result(system.whenTerminated, Duration.Inf)
   }
 }
