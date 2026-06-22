@@ -1,0 +1,37 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository source code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Java 17 (Temurin distribution)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'sbt' # Enables automatic caching of sbt plugins, libraries and compilations
+
+      # Step 3: Compile main and test sources, enforcing compile correctness
+      - name: Compile Project
+        run: sbt compile Test/compile
+
+      # Step 4: Execute ScalaTest suite to verify health routes and endpoints
+      - name: Run Tests
+        run: sbt test

@@ -1,0 +1,30 @@
+# SBT target directories
+target/
+project/project/
+project/target/
+
+# Scala IDE/Metals
+.bloop/
+.metals/
+.ammonite/
+out/
+.bsp/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# VS Code
+.vscode/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Docker
+.docker/
+
+# Log files
+*.log
