@@ -78,10 +78,10 @@ MetropolisParking/
 ## 3. Technology Choices and Rationale
 
 * **Scala 2.13.18 & SBT**: A robust, functional-first JVM language offering type-safety, concurrency features, and compile-time correctness checks.
-* **Apache Pekko HTTP (v1.1.0)**: The Apache 2.0 open-source fork of Akka HTTP. Chosen for its high performance, lightweight footprint, and non-blocking, asynchronous streaming architecture.
+* **Akka HTTP (v10.2.10)**: Chosen for its high performance, lightweight footprint, and non-blocking, asynchronous HTTP architecture on the JVM.
 * **PureConfig (v0.17.8)**: Simplifies configuration loading by parsing HOCON configurations directly into type-safe Scala case classes at application boot.
 * **Logback & SLF4J**: Enterprise logging standard. Fully integrated to write structured log messages to stdout for standard container logging.
-* **ScalaTest & Pekko HTTP Testkit**: Used for validating HTTP routes. The current test suite covers the health endpoint.
+* **ScalaTest & Akka HTTP Testkit**: Used for validating HTTP routes. The current test suite covers the health endpoint.
 
 ---
 
@@ -129,7 +129,7 @@ The GitHub Actions workflow in `.github/workflows/ci.yml` triggers on all push a
 ## 7. Scalability and Maintainability Considerations
 
 ### Scalability
-* **Reactive Model**: Apache Pekko HTTP is built on Pekko Streams, which handles request/response paths asynchronously with backpressure. This allows the backend to handle high traffic volume on minimal memory footprints.
+* **Reactive Model**: Akka HTTP is built on Akka Streams, which handles request/response paths asynchronously with backpressure. This allows the backend to handle high traffic volume on minimal memory footprints.
 * **Non-blocking Execution**: The application utilizes standard `Future`-based computations, ensuring the main HTTP threads never block on backend operations.
 
 ### Maintainability

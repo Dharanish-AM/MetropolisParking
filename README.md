@@ -74,10 +74,10 @@ MetropolisParking/
 
 * **Language**: Scala `2.13.18`
 * **Build System**: SBT `1.10.7`
-* **HTTP Framework**: Apache Pekko HTTP `1.1.0` (Apache 2.0 open-source alternative to Akka HTTP)
+* **HTTP Framework**: Akka HTTP `10.2.10`
 * **Configuration Loader**: PureConfig `0.17.8` (wraps Lightbend Config)
-* **Logging Library**: Logback `1.5.16` + SLF4J `2.0.16`
-* **Testing Library**: ScalaTest `3.2.19` + Pekko HTTP Testkit `1.1.0`
+* **Logging Library**: Logback `1.5.16`
+* **Testing Library**: ScalaTest `3.2.19` + Akka HTTP Testkit `10.2.10`
 * **Containers**: Docker Engine & Docker Compose
 
 ---

@@ -1,7 +1,7 @@
 package com.metropolisparking
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.http.scaladsl.Http
+import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
 import com.metropolisparking.config.AppConfig
 import com.metropolisparking.routes.HealthRoute
 import org.slf4j.LoggerFactory
@@ -18,7 +18,7 @@ object Main {
     
     logger.info(s"Starting Metropolis Parking backend in environment: ${config.app.environment}")
     
-    // 2. Bootstrap Pekko ActorSystem & ExecutionContext
+    // 2. Bootstrap Akka ActorSystem & ExecutionContext
     implicit val system: ActorSystem = ActorSystem("metropolis-parking-system")
     implicit val ec: ExecutionContext = system.dispatcher
     

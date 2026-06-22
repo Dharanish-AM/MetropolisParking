@@ -4,29 +4,28 @@ version := "0.1.0-SNAPSHOT"
 
 scalaVersion := "2.13.18"
 
-val PekkoVersion = "1.1.2"
-val PekkoHttpVersion = "1.1.0"
+val AkkaVersion = "2.6.20"
+val AkkaHttpVersion = "10.2.10"
 val PureConfigVersion = "0.17.8"
 val LogbackVersion = "1.5.16"
 val ScalaTestVersion = "3.2.19"
 
 libraryDependencies ++= Seq(
-  // Apache Pekko (HTTP & Streaming Engine)
-  "org.apache.pekko" %% "pekko-http"            % PekkoHttpVersion,
-  "org.apache.pekko" %% "pekko-http-spray-json" % PekkoHttpVersion,
-  "org.apache.pekko" %% "pekko-actor-typed"     % PekkoVersion,
-  "org.apache.pekko" %% "pekko-stream"          % PekkoVersion,
-  
-  // Configuration management using PureConfig
+  // Minimal Akka setup for HTTP routing
+  "com.typesafe.akka" %% "akka-actor"           % AkkaVersion,
+  "com.typesafe.akka" %% "akka-http"            % AkkaHttpVersion,
+  "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
+  "com.typesafe.akka" %% "akka-stream"          % AkkaVersion,
+
+  // Configuration management
   "com.github.pureconfig" %% "pureconfig"       % PureConfigVersion,
-  
-  // Logging: Logback with SLF4J
+
+  // Logging
   "ch.qos.logback" % "logback-classic"          % LogbackVersion,
-  "org.slf4j"      % "slf4j-api"                % "2.0.16",
-  
-  // Testing toolkit
-  "org.apache.pekko" %% "pekko-http-testkit"        % PekkoHttpVersion % Test,
-  "org.apache.pekko" %% "pekko-actor-testkit-typed" % PekkoVersion     % Test,
+
+  // Testing
+  "com.typesafe.akka" %% "akka-testkit"         % AkkaVersion % Test,
+  "com.typesafe.akka" %% "akka-http-testkit"    % AkkaHttpVersion % Test,
   "org.scalatest"    %% "scalatest"                 % ScalaTestVersion % Test
 )
 
