@@ -26,7 +26,11 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'sbt' # Enables automatic caching of sbt plugins, libraries and compilations
+          cache: 'sbt'
+
+      # Step 2.5: Install and configure SBT on the runner
+      - name: Set up SBT
+        uses: sbt/setup-sbt@v1
 
       # Step 3: Compile main and test sources, enforcing compile correctness
       - name: Compile Project
