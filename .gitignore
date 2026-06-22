@@ -2,6 +2,8 @@
 target/
 project/project/
 project/target/
+.sbt-boot/
+.ivy2/
 
 # Scala IDE/Metals
 .bloop/

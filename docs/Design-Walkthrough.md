@@ -1,12 +1,12 @@
 # Metropolis Parking - Architecture & Design Walkthrough
 
-This document outlines the architecture, technology stack, and engineering practices implemented for Deliver 1 of the **Metropolis Parking** backend service.
+This document outlines the architecture, technology stack, and engineering practices for Deliver 1 of the **Metropolis Parking** backend service scaffold.
 
 ---
 
 ## 1. Architecture Overview
 
-Metropolis Parking is built using a **Clean Layered Architecture** pattern, enforcing a strict separation of concerns. This ensures high testability, maintenance isolation, and flexibility to swap out underlying implementations (e.g., changing from in-memory maps to database engines) without modifying other layers.
+Metropolis Parking is organized around a **Clean Layered Architecture** pattern. In the current codebase, this architecture is only partially implemented: the route layer is active, while the service and repository layers exist as interfaces for future work.
 
 ```mermaid
 graph TD
@@ -25,9 +25,9 @@ graph TD
 ```
 
 ### Layer Responsibilities
-* **HTTP/Routes Layer**: Parses JSON, handles routing parameters, binds HTTP endpoints, and marshals Scala structures to HTTP responses. It delegates all actual operations to the Services Layer.
-* **Services (Business Logic) Layer**: Implements business rules and coordinates operations across repositories. Decoupled from HTTP framework concepts.
-* **Repositories (Data Access) Layer**: Encapsulates data persistence. Decoupled from both HTTP routing and core business logic.
+* **HTTP/Routes Layer**: Parses JSON, handles routing parameters, binds HTTP endpoints, and marshals Scala structures to HTTP responses. This is the only implemented runtime layer today through `GET /health`.
+* **Services (Business Logic) Layer**: Defined as traits today. Intended to implement business rules and coordinate operations across repositories.
+* **Repositories (Data Access) Layer**: Defined as traits today. Intended to encapsulate data persistence.
 * **Models Layer**: Houses raw data transfer objects (DTOs) and domain entities. It has zero external dependencies.
 
 ---
@@ -42,7 +42,7 @@ MetropolisParking/
 ├── docs/Design-Walkthrough.md       # High-level architecture document (this file)
 ├── project/
 │   ├── build.properties             # Locks the SBT compiler runner version (1.10.7)
-│   └── plugins.sbt                  # Registers SBT plugins (sbt-assembly, sbt-native-packager)
+│   └── plugins.sbt                  # Registers the sbt-assembly plugin
 ├── src/
 │   ├── main/
 │   │   ├── resources/
@@ -64,6 +64,8 @@ MetropolisParking/
 │   │       └── services/
 │   │           └── ParkingService.scala# Business logic layer interface skeleton
 │   └── test/scala/com/metropolisparking/
+│       ├── config/
+│       │   └── AppConfigSpec.scala  # Configuration loading tests
 │       └── routes/
 │           └── HealthRouteSpec.scala # Integration/Unit testing suite for HealthRoute
 ├── build.sbt                        # SBT project dependency configuration
@@ -79,7 +81,7 @@ MetropolisParking/
 * **Apache Pekko HTTP (v1.1.0)**: The Apache 2.0 open-source fork of Akka HTTP. Chosen for its high performance, lightweight footprint, and non-blocking, asynchronous streaming architecture.
 * **PureConfig (v0.17.8)**: Simplifies configuration loading by parsing HOCON configurations directly into type-safe Scala case classes at application boot.
 * **Logback & SLF4J**: Enterprise logging standard. Fully integrated to write structured log messages to stdout for standard container logging.
-* **ScalaTest & Pekko HTTP Testkit**: Used for validating HTTP routes via standard mock-driven integration tests, guaranteeing that route changes do not break contracts.
+* **ScalaTest & Pekko HTTP Testkit**: Used for validating HTTP routes. The current test suite covers the health endpoint.
 
 ---
 
@@ -92,8 +94,10 @@ Configuration loading leverages **Typesafe Config** (the engine behind PureConfi
    * Running in `local` environment loads `application-local.conf`.
    * Running in `dev` environment loads `application-dev.conf`.
    * Running in `test` environment loads `application-test.conf`.
+   * Running in `production` environment loads `application-production.conf`.
 3. **Inheritance**: Each environment file starts with `include "application"`. This prevents configuration duplication, as environment files inherit all values from `application.conf` and only define necessary overrides.
 4. **Environment Variables**: Important runtime parameters (like host and port binding) are mapped to environment variables (e.g., `HTTP_HOST`, `HTTP_PORT`) with safe default fallbacks.
+5. **Validation**: Unsupported `APP_ENV` values fail during startup with a clear error rather than falling through to a missing config file.
 
 ---
 
@@ -118,6 +122,7 @@ The GitHub Actions workflow in `.github/workflows/ci.yml` triggers on all push a
 * **JDK Setup**: Configures Java 17 using the Temurin distribution.
 * **Caching**: Automatically caches `.sbt` and `.ivy2` files. This decreases pipeline runs from minutes to seconds by avoiding downloading compiler/library tools on every execution.
 * **Verification**: Executes `sbt compile Test/compile` followed by `sbt test`. The build fails if there are compile warnings/errors (enforced by `-Xfatal-warnings` compiler flag) or if any tests fail.
+* **Current Test Scope**: The existing automated test coverage is limited to the health route.
 
 ---
 
@@ -128,7 +133,7 @@ The GitHub Actions workflow in `.github/workflows/ci.yml` triggers on all push a
 * **Non-blocking Execution**: The application utilizes standard `Future`-based computations, ensuring the main HTTP threads never block on backend operations.
 
 ### Maintainability
-* **Decoupled Interfaces**: Repository and Service layers are defined as Scala traits. Business services communicate only with `ParkingRepository` traits, not concrete DB classes, allowing developers to change data stores (e.g., SQL vs NoSQL) with zero changes to business logic.
+* **Decoupled Interfaces**: Repository and Service layers are defined as Scala traits. This keeps future implementations swappable, though no concrete business or persistence implementation has been wired yet.
 * **Type-Safety**: Configurations and request objects map to strongly typed Scala data structures at boundaries, preventing bad states from propagating deep into the call stack.
 
 ---

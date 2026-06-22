@@ -1,43 +1,31 @@
 # Metropolis Parking Backend Service
 
-Welcome to **Metropolis Parking**, a production-ready Scala backend foundation built following global enterprise standards. This service provides the core skeleton, configuration mechanics, routing infrastructure, and deployment setups for the parking management platform.
-
----
-
-## Table of Contents
-1. [Project Overview](#project-overview)
-2. [Architecture Overview](#architecture-overview)
-3. [Project Structure](#project-structure)
-4. [Technology Stack](#technology-stack)
-5. [Prerequisites](#prerequisites)
-6. [Local Setup Instructions](#local-setup-instructions)
-7. [Docker Setup Instructions](#docker-setup-instructions)
-8. [Health Endpoint Usage](#health-endpoint-usage)
-9. [Environment Variables](#environment-variables)
-10. [Git Repository Branching Strategy](#git-repository-branching-strategy)
-11. [CI Pipeline Overview](#ci-pipeline-overview)
+Welcome to **Metropolis Parking**, a Scala backend scaffold for a parking management service. The current codebase provides the application bootstrap, configuration loading, a health-check endpoint, and the initial project structure for future parking features.
 
 ---
 
 ## Project Overview
 
-Metropolis Parking is an API-first microservice designed to support scalable parking management. Deliver 1 delivers the **production-ready architecture framework**, featuring:
+Metropolis Parking is an API-first backend project intended to grow into a parking management service. The current deliverable provides the initial service skeleton, featuring:
 * Environment-based configuration management via PureConfig.
 * Structured logging via Logback/SLF4J.
-* Strict layered design (Controllers -> Services -> Repositories -> Models).
+* Initial layered package structure (Routes -> Services -> Repositories -> Models).
 * Containerization using Docker and Docker Compose.
 * CI pipeline integration using GitHub Actions.
+* A single implemented HTTP endpoint: `GET /health`.
 
 ---
 
 ## Architecture Overview
 
-This project employs a **Clean Layered Architecture** with unidirectional data flow:
-1. **HTTP Routes**: `com.metropolisparking.routes` - Defines endpoint mapping, HTTP status returns, and JSON Marshalling using Spray JSON.
-2. **Business Services**: `com.metropolisparking.services` - Hosts the core logic (defined as traits to isolate execution details).
-3. **Data Repositories**: `com.metropolisparking.repositories` - Abstracted storage interfaces to manage database queries.
+This project is organized around a **layered architecture** with unidirectional data flow as the intended design:
+1. **HTTP Routes**: `com.metropolisparking.routes` - Defines endpoint mapping, HTTP status returns, and JSON marshalling using Spray JSON.
+2. **Business Services**: `com.metropolisparking.services` - Currently traits only; intended to host business logic.
+3. **Data Repositories**: `com.metropolisparking.repositories` - Currently traits only; intended to abstract persistence.
 4. **Data Models**: `com.metropolisparking.models` - Core representation objects with zero external code dependencies.
-5. **Bootstrapper/Wiring**: `com.metropolisparking.Main` - Bootstraps the application, loads configuration, injects mock/concrete layers, and binds the HTTP engine.
+5. **Bootstrapper/Wiring**: `com.metropolisparking.Main` - Loads configuration and binds the HTTP server.
+
+At present, only the route layer is active at runtime through the health endpoint. The service and repository layers are scaffolding for later features.
 
 ---
 
@@ -49,7 +37,7 @@ MetropolisParking/
 ├── docs/Design-Walkthrough.md       # Software architecture design documents
 ├── project/
 │   ├── build.properties             # Locks SBT version to 1.10.7
-│   └── plugins.sbt                  # Registers assembly and native-packager plugins
+│   └── plugins.sbt                  # Registers the assembly plugin
 ├── src/
 │   ├── main/
 │   │   ├── resources/
@@ -71,8 +59,10 @@ MetropolisParking/
 │   │       └── services/
 │   │           └── ParkingService.scala# Business logic service traits
 │   └── test/scala/com/metropolisparking/
+│       ├── config/
+│       │   └── AppConfigSpec.scala  # Configuration loading tests
 │       └── routes/
-│           └── HealthRouteSpec.scala # Route integration tests via ScalaTest
+│           └── HealthRouteSpec.scala # Route integration tests
 ├── build.sbt                        # Main project configuration & dependencies
 ├── Dockerfile                       # Multi-stage Docker packaging recipe
 └── docker-compose.yml               # Container deployment Orchestrator
@@ -110,13 +100,13 @@ Ensure you have the following installed on your system:
    ```
 
 2. **Run tests locally**:
-   Ensure all compilation and route assertions pass:
+   This currently runs the compile path and the existing route test for `/health`:
    ```bash
    sbt test
    ```
 
 3. **Start the application locally**:
-   By default, this runs using the `local` configuration profile (port `8080`):
+   By default, this runs using the `local` configuration profile on port `8080`:
    ```bash
    sbt run
    ```
@@ -134,7 +124,7 @@ Ensure you have the following installed on your system:
 ## Docker Setup Instructions
 
 1. **Build and start the application container**:
-   This runs the multi-stage build, compiles your application inside the builder image, generates the executable jar, and runs it on a lightweight JRE runtime:
+   This runs the multi-stage build, compiles the application inside the builder image, generates the executable jar, and runs it on a lightweight JRE runtime:
    ```bash
    docker compose up -d --build
    ```
@@ -186,32 +176,14 @@ The application configures itself at startup using the following environment var
 
 | Variable Name | Purpose | Default Value | Config File |
 |---|---|---|---|
-| `APP_ENV` | Selection profile: `local`, `dev`, `test`, `production` | `production` | Loaded by `AppConfig.scala` |
+| `APP_ENV` | Selects the config profile: `local`, `dev`, `test`, or `production` | `local` | Loaded by `AppConfig.scala` |
 | `HTTP_HOST` | Network interface to bind the HTTP server to | `0.0.0.0` | `application.conf` |
 | `HTTP_PORT` | Port number to expose the HTTP server on | `8080` | `application.conf` |
 
----
-
-## Git Repository Branching Strategy
-
-Metropolis Parking uses the Gitflow-based branching strategy:
-
-### Branch Structure
-1. **`main`**: Represents the current production-ready release state. Direct pushes are disabled. Code enters only via approved PRs from `develop`.
-2. **`develop`**: The main integration branch for development. Feature branches are merged here.
-3. **`feature/*`**: Used for developing new features, fixes, or tasks (e.g., `feature/health-endpoint`, `feature/database-migration`).
-
-### Branching Naming Examples
-* New Feature: `feature/spot-allocation`
-* Defect Fix: `bugfix/ticket-calculation-rounding`
-* Configuration Refactor: `chore/logback-updates`
-
-### Pull Request & Release Workflow
-* Develop features in local `feature/*` branches.
-* Push branches and open a Pull Request (PR) against `develop`.
-* Opening a PR triggers the **GitHub Actions CI workflow** to ensure the code compiles and all tests pass.
-* Once tests pass and code is reviewed by peers, merge the PR into `develop`.
-* When preparing a milestone submission (e.g. Deliver 1), merge `develop` into `main` via a Release Pull Request and tag the release version (e.g. `v0.1.0`).
+Notes:
+* `AppConfig.scala` loads `application-${APP_ENV}.conf`.
+* The repository currently contains `application-local.conf`, `application-dev.conf`, `application-test.conf`, and `application-production.conf`.
+* Invalid `APP_ENV` values fail fast during startup with a clear error message.
 
 ---
 
@@ -226,4 +198,5 @@ The Continuous Integration (CI) pipeline is powered by GitHub Actions (`.github/
   2. Sets up JDK.
   3. Compiles code (`sbt compile Test/compile`).
   4. Runs tests (`sbt test`).
+* **Current coverage**: The automated test suite currently includes the `/health` route test.
 * **Enforcements**: The pipeline fails if compile errors are detected or if any ScalaTest asserts fail.

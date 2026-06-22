@@ -7,10 +7,6 @@ import org.scalatest.wordspec.AnyWordSpec
 import spray.json._
 
 class HealthRouteSpec extends AnyWordSpec with Matchers with ScalatestRouteTest {
-
-  // Force APP_ENV to test environment configuration
-  System.setProperty("APP_ENV", "test")
-
   val healthRoute = new HealthRoute().route
 
   "The HealthRoute" should {
