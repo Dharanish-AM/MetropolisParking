@@ -45,6 +45,7 @@ MetropolisParking/
 │   │   │   ├── application-local.conf # Local execution overrides
 │   │   │   ├── application-dev.conf # Dev staging overrides
 │   │   │   ├── application-test.conf# Testing environment overrides
+│   │   │   ├── application-production.conf # Production environment overrides
 │   │   │   └── logback.xml          # Logging pattern configuration
 │   │   └── scala/com/metropolisparking/
 │   │       ├── Main.scala           # App Entry Point & graceful shutdown hook
