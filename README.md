@@ -10,6 +10,8 @@ Metropolis Parking is an API-first backend project intended to grow into a parki
 * Environment-based configuration management via PureConfig.
 * Structured logging via Logback/SLF4J.
 * Initial layered package structure (Routes -> Services -> Repositories -> Models).
+* Database migration integration via Flyway.
+* Data access layer implementation using jOOQ, backed by HikariCP connection pool.
 * Containerization using Docker and Docker Compose.
 * CI pipeline integration using GitHub Actions.
 * A single implemented HTTP endpoint: `GET /health`.
@@ -21,11 +23,11 @@ Metropolis Parking is an API-first backend project intended to grow into a parki
 This project is organized around a **layered architecture** with unidirectional data flow as the intended design:
 1. **HTTP Routes**: `com.metropolisparking.routes` - Defines endpoint mapping, HTTP status returns, and JSON marshalling using Spray JSON.
 2. **Business Services**: `com.metropolisparking.services` - Currently traits only; intended to host business logic.
-3. **Data Repositories**: `com.metropolisparking.repositories` - Currently traits only; intended to abstract persistence.
+3. **Data Repositories**: `com.metropolisparking.repositories` - Interfaces and concrete implementation (`JooqParkingRepository`) using jOOQ.
 4. **Data Models**: `com.metropolisparking.models` - Core representation objects with zero external code dependencies.
-5. **Bootstrapper/Wiring**: `com.metropolisparking.Main` - Loads configuration and binds the HTTP server.
+5. **Bootstrapper/Wiring**: `com.metropolisparking.Main` - Loads configuration, runs database migrations, initializes connection pool, instantiates repositories, and binds the HTTP server.
 
-At present, only the route layer is active at runtime through the health endpoint. The service and repository layers are scaffolding for later features.
+At present, only the route layer is active at runtime through the health endpoint. The service layer is scaffolding for later features, whereas the repository layer has a concrete jOOQ implementation that is initialized on startup.
 
 ---
 
@@ -46,6 +48,9 @@ MetropolisParking/
 │   │   │   ├── application-dev.conf # Dev staging overrides
 │   │   │   ├── application-test.conf# Testing environment overrides
 │   │   │   ├── application-production.conf # Production environment overrides
+│   │   │   ├── db/
+│   │   │   │   └── migration/
+│   │   │   │       └── V1__create_parking_tables.sql # Flyway migration script
 │   │   │   └── logback.xml          # Logging pattern configuration
 │   │   └── scala/com/metropolisparking/
 │   │       ├── Main.scala           # App Entry Point & graceful shutdown hook
@@ -54,7 +59,8 @@ MetropolisParking/
 │   │       ├── models/
 │   │       │   └── ParkingModels.scala # Case classes for domain models
 │   │       ├── repositories/
-│   │       │   └── ParkingRepository.scala # Repository abstraction layer
+│   │       │   ├── ParkingRepository.scala # Repository abstraction layer
+│   │       │   └── JooqParkingRepository.scala # Concrete jOOQ repository implementation
 │   │       ├── routes/
 │   │       │   └── HealthRoute.scala   # HTTP API health routes
 │   │       └── services/
@@ -62,11 +68,13 @@ MetropolisParking/
 │   └── test/scala/com/metropolisparking/
 │       ├── config/
 │       │   └── AppConfigSpec.scala  # Configuration loading tests
+│       ├── repositories/
+│       │   └── JooqParkingRepositorySpec.scala # Repository integration tests
 │       └── routes/
 │           └── HealthRouteSpec.scala # Route integration tests
 ├── build.sbt                        # Main project configuration & dependencies
 ├── Dockerfile                       # Multi-stage Docker packaging recipe
-└── docker-compose.yml               # Container deployment Orchestrator
+├── docker-compose.yml               # Container deployment Orchestrator
 ```
 
 ---
@@ -79,6 +87,8 @@ MetropolisParking/
 * **Configuration Loader**: PureConfig `0.17.8` (wraps Lightbend Config)
 * **Logging Library**: Logback `1.5.16`
 * **Testing Library**: ScalaTest `3.2.19` + Akka HTTP Testkit `10.2.10`
+* **Database & Migration**: jOOQ `3.19.10`, Flyway `10.10.0`, HikariCP `5.1.0`
+* **Database Drivers**: PostgreSQL `42.7.4`, H2 `2.2.224` (in-memory for tests)
 * **Containers**: Docker Engine & Docker Compose
 
 ---
@@ -199,5 +209,5 @@ The Continuous Integration (CI) pipeline is powered by GitHub Actions (`.github/
   2. Sets up JDK.
   3. Compiles code (`sbt compile Test/compile`).
   4. Runs tests (`sbt test`).
-* **Current coverage**: The automated test suite currently includes the `/health` route test.
+* **Current coverage**: The automated test suite includes the `/health` route test, configuration loading tests, and repository database integration tests.
 * **Enforcements**: The pipeline fails if compile errors are detected or if any ScalaTest asserts fail.
