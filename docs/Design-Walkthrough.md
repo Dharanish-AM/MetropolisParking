@@ -50,6 +50,7 @@ MetropolisParking/
 │   │   │   ├── application-local.conf # Dev settings for local running
 │   │   │   ├── application-dev.conf # Staging dev env settings
 │   │   │   ├── application-test.conf# Testing setup (binds to a distinct port)
+│   │   │   ├── application-production.conf # Production overrides
 │   │   │   ├── db/
 │   │   │   │   └── migration/
 │   │   │   │       └── V1__create_parking_tables.sql # Flyway migration script

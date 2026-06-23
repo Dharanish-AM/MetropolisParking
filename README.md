@@ -47,6 +47,7 @@ MetropolisParking/
 │   │   │   ├── application-local.conf # Local execution overrides
 │   │   │   ├── application-dev.conf # Dev staging overrides
 │   │   │   ├── application-test.conf# Testing environment overrides
+│   │   │   ├── application-production.conf # Production environment overrides
 │   │   │   ├── db/
 │   │   │   │   └── migration/
 │   │   │   │       └── V1__create_parking_tables.sql # Flyway migration script
