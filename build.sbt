@@ -62,3 +62,7 @@ assembly / assemblyMergeStrategy := {
   case "reference.conf" => MergeStrategy.concat
   case _ => MergeStrategy.first
 }
+
+// Disable parallel execution of tests to avoid race conditions on global System properties
+Test / parallelExecution := false
+

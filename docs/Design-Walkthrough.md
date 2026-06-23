@@ -6,14 +6,14 @@ This document outlines the architecture, technology stack, and engineering pract
 
 ## 1. Architecture Overview
 
-Metropolis Parking is organized around a **Clean Layered Architecture** pattern. In the current codebase, this architecture is only partially implemented: the route layer is active, while the service and repository layers exist as interfaces for future work.
+Metropolis Parking is organized around a **Clean Layered Architecture** pattern. In the current codebase, this architecture is partially implemented: the route layer is active via the health check endpoint, the repository layer has a concrete implementation using jOOQ that is initialized on startup, and the service layer exists as interfaces for future work.
 
 ```mermaid
 graph TD
     Client[REST API Client] -->|HTTP Request| Routes[Routes Layer]
     Routes -->|Method Call| Services[Services Layer]
     Services -->|Data Request| Repositories[Repositories Layer]
-    Repositories -->|Queries| DB[(Future Database)]
+    Repositories -->|Queries| DB[(Postgres/H2 Database)]
     
     subgraph Core Domain
         Models[Models Layer]
@@ -25,9 +25,9 @@ graph TD
 ```
 
 ### Layer Responsibilities
-* **HTTP/Routes Layer**: Parses JSON, handles routing parameters, binds HTTP endpoints, and marshals Scala structures to HTTP responses. This is the only implemented runtime layer today through `GET /health`.
+* **HTTP/Routes Layer**: Parses JSON, handles routing parameters, binds HTTP endpoints, and marshals Scala structures to HTTP responses. This is the only runtime-exposed layer today through `GET /health`.
 * **Services (Business Logic) Layer**: Defined as traits today. Intended to implement business rules and coordinate operations across repositories.
-* **Repositories (Data Access) Layer**: Defined as traits today. Intended to encapsulate data persistence.
+* **Repositories (Data Access) Layer**: Interfaces and concrete class `JooqParkingRepository` using jOOQ, managing table queries and records. Fully integrated into startup initialization and tested via in-memory database tests.
 * **Models Layer**: Houses raw data transfer objects (DTOs) and domain entities. It has zero external dependencies.
 
 ---
@@ -50,6 +50,9 @@ MetropolisParking/
 │   │   │   ├── application-local.conf # Dev settings for local running
 │   │   │   ├── application-dev.conf # Staging dev env settings
 │   │   │   ├── application-test.conf# Testing setup (binds to a distinct port)
+│   │   │   ├── db/
+│   │   │   │   └── migration/
+│   │   │   │       └── V1__create_parking_tables.sql # Flyway migration script
 │   │   │   └── logback.xml          # Logback config for console logging
 │   │   └── scala/com/metropolisparking/
 │   │       ├── Main.scala           # App bootstrapping & shutdown lifecycle manager
@@ -58,7 +61,8 @@ MetropolisParking/
 │   │       ├── models/
 │   │       │   └── ParkingModels.scala # Case classes representing domain models
 │   │       ├── repositories/
-│   │       │   └── ParkingRepository.scala # Persistence layer interface skeleton
+│   │       │   ├── ParkingRepository.scala # Persistence layer interface skeleton
+│   │       │   └── JooqParkingRepository.scala # Concrete jOOQ repository implementation
 │   │       ├── routes/
 │   │       │   └── HealthRoute.scala   # HTTP controller mapping health routes
 │   │       └── services/
@@ -66,6 +70,8 @@ MetropolisParking/
 │   └── test/scala/com/metropolisparking/
 │       ├── config/
 │       │   └── AppConfigSpec.scala  # Configuration loading tests
+│       ├── repositories/
+│       │   └── JooqParkingRepositorySpec.scala # Repository integration tests
 │       └── routes/
 │           └── HealthRouteSpec.scala # Integration/Unit testing suite for HealthRoute
 ├── build.sbt                        # SBT project dependency configuration
@@ -82,6 +88,10 @@ MetropolisParking/
 * **PureConfig (v0.17.8)**: Simplifies configuration loading by parsing HOCON configurations directly into type-safe Scala case classes at application boot.
 * **Logback & SLF4J**: Enterprise logging standard. Fully integrated to write structured log messages to stdout for standard container logging.
 * **ScalaTest & Akka HTTP Testkit**: Used for validating HTTP routes. The current test suite covers the health endpoint.
+* **jOOQ (v3.19.10)**: Provides typesafe SQL query building and execution on the JVM, allowing direct mapping between database schemas and Scala models.
+* **Flyway (v10.10.0)**: Used for database migration versioning, ensuring schema creation and evolution scripts run predictably across environments.
+* **HikariCP (v5.1.0)**: A high-performance JDBC connection pool utilized to manage database connection lifecycles efficiently.
+* **PostgreSQL & H2 Database**: PostgreSQL serves as the production/dev storage engine, while H2 is utilized in-memory for fast, isolated repository integration tests.
 
 ---
 
@@ -122,7 +132,7 @@ The GitHub Actions workflow in `.github/workflows/ci.yml` triggers on all push a
 * **JDK Setup**: Configures Java 17 using the Temurin distribution.
 * **Caching**: Automatically caches `.sbt` and `.ivy2` files. This decreases pipeline runs from minutes to seconds by avoiding downloading compiler/library tools on every execution.
 * **Verification**: Executes `sbt compile Test/compile` followed by `sbt test`. The build fails if there are compile warnings/errors (enforced by `-Xfatal-warnings` compiler flag) or if any tests fail.
-* **Current Test Scope**: The existing automated test coverage is limited to the health route.
+* **Current Test Scope**: The existing automated test suite covers the `/health` route, configuration loading logic, and repository database integration tests.
 
 ---
 
@@ -133,12 +143,12 @@ The GitHub Actions workflow in `.github/workflows/ci.yml` triggers on all push a
 * **Non-blocking Execution**: The application utilizes standard `Future`-based computations, ensuring the main HTTP threads never block on backend operations.
 
 ### Maintainability
-* **Decoupled Interfaces**: Repository and Service layers are defined as Scala traits. This keeps future implementations swappable, though no concrete business or persistence implementation has been wired yet.
+* **Decoupled Interfaces**: Repository and Service layers are defined as Scala traits. This keeps implementations swappable. A concrete persistence implementation (`JooqParkingRepository`) has been written and wired on startup, though the service layer remains unwired.
 * **Type-Safety**: Configurations and request objects map to strongly typed Scala data structures at boundaries, preventing bad states from propagating deep into the call stack.
 
 ---
 
 ## 8. Future Enhancements
-* **Database Integration**: Introduce a concrete repository implementation using slick or doobie, coupled with Flyway database migrations.
+* **Service Wiring & Endpoints**: Implement concrete business service layers and expose parking/ticketing endpoints on the routes layer.
 * **Security (OAuth2 / JWT)**: Guard routes layer using authentication and authorization directives.
 * **Monitoring & Observability**: Integrate Prometheus metrics and OpenTelemetry trace metrics to monitor service health.
