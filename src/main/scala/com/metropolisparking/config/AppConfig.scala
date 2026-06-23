@@ -6,7 +6,14 @@ import pureconfig.generic.auto._
 
 case class HttpConfig(host: String, port: Int)
 case class AppSettings(environment: String)
-case class AppConfig(app: AppSettings, http: HttpConfig)
+case class DatabaseConfig(
+  driver: String,
+  url: String,
+  user: Option[String],
+  password: Option[String],
+  numThreads: Int
+)
+case class AppConfig(app: AppSettings, http: HttpConfig, db: DatabaseConfig)
 
 object AppConfig {
   private val SupportedEnvironments = Set("local", "dev", "test", "production")

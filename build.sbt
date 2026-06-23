@@ -26,7 +26,15 @@ libraryDependencies ++= Seq(
   // Testing
   "com.typesafe.akka" %% "akka-testkit"         % AkkaVersion % Test,
   "com.typesafe.akka" %% "akka-http-testkit"    % AkkaHttpVersion % Test,
-  "org.scalatest"    %% "scalatest"                 % ScalaTestVersion % Test
+  "org.scalatest"    %% "scalatest"                 % ScalaTestVersion % Test,
+
+  // Database Setup
+  "org.jooq"            % "jooq"                        % "3.19.10",
+  "org.postgresql"      % "postgresql"                  % "42.7.4",
+  "com.h2database"      % "h2"                          % "2.2.224",
+  "org.flywaydb"        % "flyway-core"                 % "10.10.0",
+  "org.flywaydb"        % "flyway-database-postgresql"  % "10.10.0",
+  "com.zaxxer"          % "HikariCP"                    % "5.1.0"
 )
 
 // Main class configuration
@@ -38,7 +46,8 @@ scalacOptions ++= Seq(
   "-feature",
   "-unchecked",
   "-Xfatal-warnings",
-  "-encoding", "utf8"
+  "-encoding", "utf8",
+  "-Wconf:msg=scala/bug#7014:s"
 )
 
 // Assembly packaging options for sbt-assembly
