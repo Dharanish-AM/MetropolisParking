@@ -10,16 +10,30 @@ Metropolis Parking is organized around a **Clean Layered Architecture** pattern.
 
 ```mermaid
 graph TD
-    Client[REST API Client] -->|HTTP Request| Routes[Routes Layer]
-    Routes -->|Method Call| Services[Services Layer]
-    Services -->|Data Request| Repositories[Repositories Layer]
-    Repositories -->|Queries| DB[(Postgres/H2 Database)]
+    Client[REST API Client]
     
-    subgraph Core Domain
-        Models[Models Layer]
+    Client -->|HTTP Request| Routes[Routes Layer]
+    
+    Routes -->|Request DTO| Services[Services Layer]
+    
+    Services -->|Domain Models| Repositories[Repositories Layer]
+    
+    Repositories -->|jOOQ Queries| DB[(PostgreSQL / H2)]
+    
+    Services -->|Response DTO| Routes
+    Routes -->|HTTP Response| Client
+
+    subgraph Domain
+        Models[Domain Models<br/>ParkingSpot<br/>ParkingTicket]
     end
-    
-    Routes -.-> Models
+
+    subgraph API
+        DTOs[Request/Response DTOs]
+    end
+
+    Routes -.-> DTOs
+    Services -.-> DTOs
+
     Services -.-> Models
     Repositories -.-> Models
 ```
