@@ -10,7 +10,7 @@ import org.flywaydb.core.Flyway
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
 import org.slf4j.LoggerFactory
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success}
 
@@ -60,7 +60,15 @@ object Main {
     implicit val ec: ExecutionContext = system.dispatcher
     
     // 8. Initialize routes (only HealthRoute for Deliver 1)
-    val healthRoute = new HealthRoute().route
+    val checkDb = () => Future {
+      dslContext.execute("SELECT 1")
+      true
+    }(dbExecutionContext).recover {
+      case ex: Throwable =>
+        logger.error("Database health check failed", ex)
+        false
+    }
+    val healthRoute = new HealthRoute(checkDb).route
     
     // 9. Bind HTTP server to target host and port
     val bindingFuture = Http()
