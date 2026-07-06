@@ -39,3 +39,7 @@ jobs:
       # Step 4: Execute ScalaTest suite to verify health routes and endpoints
       - name: Run Tests
         run: sbt test
+
+      # Step 5: Build the assembly jar to catch packaging regressions before release
+      - name: Build Assembly JAR
+        run: sbt assembly

@@ -30,7 +30,9 @@ FROM eclipse-temurin:17-jre
 WORKDIR /app
 
 # Create a non-privileged system user for running the service securely
-RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates && \
+    rm -rf /var/lib/apt/lists/* && \
+    groupadd -r appgroup && useradd -r -g appgroup appuser
 USER appuser
 
 # Copy the packaged JAR file from the builder stage
@@ -43,6 +45,10 @@ ENV HTTP_PORT=8080
 
 # Expose port 8080
 EXPOSE 8080
+
+# Fail fast if the HTTP health endpoint stops responding.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD curl --fail http://127.0.0.1:8080/health || exit 1
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
