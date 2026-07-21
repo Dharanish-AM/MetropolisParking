@@ -3,6 +3,7 @@ import type { FC, FormEvent } from "react";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { client } from "../api/client";
+import { theme } from "../styles/theme";
 import { 
   Activity, 
   DollarSign, 
@@ -181,7 +182,7 @@ export const Dashboard: FC = () => {
         )}
 
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 border border-neutral-border rounded-2xl shadow-xs space-y-4">
+          <div className={`${theme.components.card} space-y-4`}>
             <div className="flex justify-between items-center text-neutral-secondary">
               <span className="text-sm font-semibold">Occupancy Rate</span>
               <Activity className="w-5 h-5 stroke-[1.5]" />
@@ -206,7 +207,7 @@ export const Dashboard: FC = () => {
             )}
           </div>
 
-          <div className="bg-white p-6 border border-neutral-border rounded-2xl shadow-xs space-y-4">
+          <div className={`${theme.components.card} space-y-4`}>
             <div className="flex justify-between items-center text-neutral-secondary">
               <span className="text-sm font-semibold">Total Revenue</span>
               <DollarSign className="w-5 h-5 stroke-[1.5]" />
@@ -229,7 +230,7 @@ export const Dashboard: FC = () => {
             )}
           </div>
 
-          <div className="bg-white p-6 border border-neutral-border rounded-2xl shadow-xs space-y-4">
+          <div className={`${theme.components.card} space-y-4`}>
             <div className="flex justify-between items-center text-neutral-secondary">
               <span className="text-sm font-semibold">Active Lots</span>
               <TrendingUp className="w-5 h-5 stroke-[1.5]" />
@@ -290,7 +291,7 @@ export const Dashboard: FC = () => {
                           <td className="px-6 py-4">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
                               session.status === "ACTIVE" 
-                                ? "bg-status-available/10 text-status-available" 
+                                ? theme.colors.status.AVAILABLE.badge 
                                 : "bg-neutral-border text-neutral-secondary"
                             }`}>
                               {session.status}
@@ -309,7 +310,7 @@ export const Dashboard: FC = () => {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-white border border-neutral-border rounded-2xl shadow-xs p-6 space-y-6">
+            <div className={`${theme.components.card} space-y-6`}>
               <div>
                 <h3 className="text-lg font-bold text-neutral-primary mb-1">Check In Vehicle</h3>
                 <p className="text-xs text-neutral-secondary">Register a vehicle entry and assign a slot.</p>
@@ -324,7 +325,7 @@ export const Dashboard: FC = () => {
                     value={entryPlate}
                     onChange={(e) => setEntryPlate(e.target.value.toUpperCase())}
                     placeholder="e.g. MH12AB1234"
-                    className="block w-full px-3 py-2.5 bg-white border border-neutral-border rounded-xl text-neutral-primary text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-mono"
+                    className={theme.components.inputMono}
                     required
                   />
                 </div>
@@ -335,7 +336,7 @@ export const Dashboard: FC = () => {
                   <select
                     value={entrySpaceId}
                     onChange={(e) => setEntrySpaceId(e.target.value)}
-                    className="block w-full px-3 py-2.5 bg-white border border-neutral-border rounded-xl text-neutral-primary text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all"
+                    className={theme.components.input}
                     required
                   >
                     <option value="">Select a space</option>
@@ -349,7 +350,7 @@ export const Dashboard: FC = () => {
                 <button
                   type="submit"
                   disabled={checkInMutation.status === "pending"}
-                  className="w-full flex items-center justify-center gap-1.5 py-2.5 border border-transparent rounded-xl text-sm font-semibold text-white bg-brand-primary hover:bg-brand-primary/95 transition-all duration-150 active:scale-[0.98] disabled:opacity-50 cursor-pointer shadow-sm"
+                  className={theme.components.buttonPrimary}
                 >
                   <Plus className="w-4 h-4 stroke-[2]" />
                   Check In Entry
@@ -357,7 +358,7 @@ export const Dashboard: FC = () => {
               </form>
             </div>
 
-            <div className="bg-white border border-neutral-border rounded-2xl shadow-xs p-6 space-y-6">
+            <div className={`${theme.components.card} space-y-6`}>
               <div>
                 <h3 className="text-lg font-bold text-neutral-primary mb-1">Check Out Vehicle</h3>
                 <p className="text-xs text-neutral-secondary">Register exit and calculate outstanding fees.</p>
@@ -370,7 +371,7 @@ export const Dashboard: FC = () => {
                   <select
                     value={exitPlate}
                     onChange={(e) => setExitPlate(e.target.value)}
-                    className="block w-full px-3 py-2.5 bg-white border border-neutral-border rounded-xl text-neutral-primary text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-mono"
+                    className={theme.components.inputMono}
                     required
                   >
                     <option value="">Select parked vehicle</option>
@@ -387,7 +388,7 @@ export const Dashboard: FC = () => {
                 <button
                   type="submit"
                   disabled={checkOutMutation.status === "pending"}
-                  className="w-full flex items-center justify-center gap-1.5 py-2.5 border border-neutral-border bg-white text-neutral-primary hover:bg-neutral-border/30 rounded-xl text-sm font-semibold transition-all duration-150 active:scale-[0.98] disabled:opacity-50 cursor-pointer shadow-xs"
+                  className={theme.components.buttonSecondary}
                 >
                   <Key className="w-4 h-4 stroke-[1.5]" />
                   Process Checkout

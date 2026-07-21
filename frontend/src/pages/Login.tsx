@@ -4,6 +4,7 @@ import { useAuth } from "../features/auth/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { client } from "../api/client";
 import { Mail, KeyRound, ArrowRight } from "lucide-react";
+import { theme } from "../styles/theme";
 
 export const Login: FC = () => {
   const { login } = useAuth();
@@ -63,7 +64,7 @@ export const Login: FC = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 pr-4 py-3 bg-white border border-neutral-border rounded-xl text-neutral-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all duration-150 text-sm"
+                  className={`${theme.components.input} pl-10`}
                   placeholder="name@company.com"
                   required
                 />
@@ -82,7 +83,7 @@ export const Login: FC = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-4 py-3 bg-white border border-neutral-border rounded-xl text-neutral-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all duration-150 text-sm"
+                  className={`${theme.components.input} pl-10`}
                   placeholder="••••••••"
                   required
                 />
@@ -93,7 +94,7 @@ export const Login: FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl text-sm font-semibold text-white bg-brand-primary hover:bg-brand-primary/95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary transition-all duration-150 active:scale-[0.98] disabled:opacity-50 cursor-pointer shadow-sm"
+                className={theme.components.buttonPrimary}
               >
                 {loading ? "Signing in..." : "Continue"}
                 {!loading && <ArrowRight className="w-4 h-4 stroke-[2]" />}
