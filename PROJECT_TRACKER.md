@@ -82,13 +82,13 @@
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| 5.1 | App shell, router, Redux store wiring (§32) | ⬜ | |
-| 5.2 | Axios client + interceptors (auth token, 401 handling) (§36) | ⬜ | |
-| 5.3 | React Query setup + base hooks pattern | ⬜ | |
-| 5.4 | Tailwind config + design tokens/status colors (§38) | ⬜ | |
+| 5.1 | App shell, router, Redux store wiring (§32) | ✅ Verified | Bootstrapped Vite TS template and wired React Router DOM App layout |
+| 5.2 | Axios client + interceptors (auth token, 401 handling) (§36) | ✅ Verified | Created Axios instance client with Authorization request header injector and 401 logouts |
+| 5.3 | React Query setup + base hooks pattern | ✅ Verified | Setup TanStack QueryClientProvider context wrapper |
+| 5.4 | Tailwind config + design tokens/status colors (§38) | ✅ Verified | Handled status colors (AVAILABLE, OCCUPIED, RESERVED, OUT_OF_SERVICE) natively using Tailwind v4 theme variables in index.css |
 | 5.5 | UI primitive library (Button, Input, Modal, Table, etc.) | ⬜ | |
-| 5.6 | `ProtectedRoute` + role-based route gating (§33, §37) | ⬜ | |
-| 5.7 | Auth flow: login page, session hydration via `/me` | ⬜ | |
+| 5.6 | `ProtectedRoute` + role-based route gating (§33, §37) | ✅ Verified | Restricts route mounting depending on authentication token and authorized role list |
+| 5.7 | Auth flow: login page, session hydration via `/me` | ✅ Verified | Created Login page form communicating with auth context, local storage and /me profile validation |
 
 ### Phase 6 — Frontend Feature Modules
 
