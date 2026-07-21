@@ -1,3 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-status-available: #22c55e;
+  --color-status-occupied: #ef4444;
+  --color-status-reserved: #f59e0b;
+  --color-status-out-of-service: #6b7280;
+}

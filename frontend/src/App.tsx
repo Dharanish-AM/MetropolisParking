@@ -1,16 +1,30 @@
-import { useState } from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./features/auth/context/AuthContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { Login } from "./pages/Login";
+import { Dashboard } from "./pages/Dashboard";
+import { Unauthorized } from "./pages/Unauthorized";
 
 function App() {
-  const [status] = useState('Bootstrapped')
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-900 text-white">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-emerald-400">Metropolis Parking</h1>
-        <p className="mt-4 text-gray-400">System status: <span className="text-emerald-500 font-semibold">{status}</span></p>
-      </div>
-    </div>
-  )
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
