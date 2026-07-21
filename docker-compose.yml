@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  postgres:
+  db:
     image: postgres:16-alpine
-    container_name: metropolis-postgres
+    container_name: metropolis-db
     environment:
       POSTGRES_DB: metropolis_parking
       POSTGRES_USER: postgres
@@ -18,43 +18,21 @@ services:
       timeout: 5s
       retries: 5
 
-  flyway:
-    image: flyway/flyway:9.22.3-alpine
-    container_name: metropolis-flyway
-    command: -url=jdbc:postgresql://postgres:5432/metropolis_parking -user=postgres -password=password -connectRetries=60 migrate
-    volumes:
-      - ./backend/src/main/resources/db/migration:/flyway/sql
-    depends_on:
-      postgres:
-        condition: service_healthy
-
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: metropolis-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/metropolis_parking
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+      JWT_SECRET: super-secret-key-change-in-production
     ports:
       - "8080:8080"
-    environment:
-      - APP_ENV=production
-      - DB_URL=jdbc:postgresql://postgres:5432/metropolis_parking
-      - DB_USERNAME=postgres
-      - DB_PASSWORD=password
-    depends_on:
-      postgres:
-        condition: service_healthy
-      flyway:
-        condition: service_completed_successfully
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: metropolis-frontend
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
 
 volumes:
   postgres_data:
