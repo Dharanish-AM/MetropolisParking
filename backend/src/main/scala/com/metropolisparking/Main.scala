@@ -84,7 +84,7 @@ object Main {
     val finalRoute = handleExceptions(GlobalErrorHandler.exceptionHandler) {
       handleRejections(GlobalErrorHandler.rejectionHandler) {
         LoggingMiddleware.correlationIdDirective {
-          combinedRoutes
+          com.metropolisparking.middleware.CorsMiddleware.corsHandler(combinedRoutes)
         }
       }
     }
