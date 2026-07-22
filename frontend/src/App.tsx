@@ -5,6 +5,10 @@ import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
 import { ParkingLots } from "./pages/ParkingLots";
 import { Unauthorized } from "./pages/Unauthorized";
+import { Vehicles } from "./pages/Vehicles";
+import { Sessions } from "./pages/Sessions";
+import { Payments } from "./pages/Payments";
+import { Profile } from "./pages/Profile";
 
 function App() {
   return (
@@ -24,8 +28,40 @@ function App() {
           <Route
             path="/parking-lots"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["ADMIN", "OPERATOR"]}>
                 <ParkingLots />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/vehicles"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN", "OPERATOR", "CUSTOMER"]}>
+                <Vehicles />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/sessions"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN", "OPERATOR"]}>
+                <Sessions />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payments"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN", "OPERATOR"]}>
+                <Payments />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />
@@ -35,5 +71,6 @@ function App() {
     </AuthProvider>
   );
 }
+
 
 export default App;

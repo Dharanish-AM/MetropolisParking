@@ -97,11 +97,11 @@
 | 6.1 | Dashboard page + charts (occupancy, revenue, peak hours) | ✅ Verified | Refactored Dashboard using Card, Input, Select, Table, Badge, Button, and Skeleton primitives |
 | 6.2 | Parking Lots list + detail + form (CRUD) | ✅ Verified | Refactored layout page, added lot/level creation modals and forms |
 | 6.3 | Parking Spaces management + status grid | ✅ Verified | Implemented custom space status updating, creation forms, and deletion |
-| 6.4 | Vehicle registry + lookup + history view | ⬜ | |
-| 6.5 | Sessions list + detail + start/end flows | ⬜ | |
-| 6.6 | Payments list + detail | ⬜ | |
-| 6.7 | User profile page | ⬜ | |
-| 6.8 | Forms: React Hook Form + Zod schemas mirroring backend validation (§39) | 🟡 In Progress | Integrated into Dashboard check-in/out, LotForm, and SpaceForm |
+| 6.4 | Vehicle registry + lookup + history view | ✅ Verified | Implemented vehicle list, search plate, and registration form |
+| 6.5 | Sessions list + detail + start/end flows | ✅ Verified | Implemented active/completed filter tabs, check-in and checkout flows |
+| 6.6 | Payments list + detail | ✅ Verified | Implemented payment ledger listing invoice amounts and settle modals |
+| 6.7 | User profile page | ✅ Verified | Implemented profile metadata card displaying details and counts |
+| 6.8 | Forms: React Hook Form + Zod schemas mirroring backend validation (§39) | ✅ Verified | Fully integrated validation schemas for all features |
 
 ### Phase 7 — Frontend Quality & Ops
 
