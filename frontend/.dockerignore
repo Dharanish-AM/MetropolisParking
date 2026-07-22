@@ -1,0 +1,9 @@
+node_modules
+dist
+.husky
+*.md
+.prettierrc
+.prettierignore
+.oxlintrc.json
+playwright.config.ts
+e2e/

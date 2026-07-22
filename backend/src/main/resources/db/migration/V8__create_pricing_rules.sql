@@ -1,0 +1,9 @@
+CREATE TABLE pricing_rules (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    rule_type VARCHAR(50) NOT NULL,
+    rate DECIMAL(10, 2) NOT NULL,
+    vehicle_type VARCHAR(50),
+    lot_id UUID REFERENCES parking_lots(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);

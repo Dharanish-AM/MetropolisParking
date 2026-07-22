@@ -1,213 +1,206 @@
-# Metropolis Parking Backend Service
+# MetropolisParking
 
-Welcome to **Metropolis Parking**, a Scala backend scaffold for a parking management service. The current codebase provides the application bootstrap, configuration loading, a health-check endpoint, and the initial project structure for future parking features.
-
----
-
-## Project Overview
-
-Metropolis Parking is an API-first backend project intended to grow into a parking management service. The current deliverable provides the initial service skeleton, featuring:
-* Environment-based configuration management via PureConfig.
-* Structured logging via Logback/SLF4J.
-* Initial layered package structure (Routes -> Services -> Repositories -> Models).
-* Database migration integration via Flyway.
-* Data access layer implementation using jOOQ, backed by HikariCP connection pool.
-* Containerization using Docker and Docker Compose.
-* CI pipeline integration using GitHub Actions.
-* A single implemented HTTP endpoint: `GET /health`.
+A full-stack smart parking management system built with **Scala + Akka HTTP** on the backend and **React 18 + Vite + TypeScript** on the frontend.
 
 ---
 
-## Architecture Overview
+## Table of Contents
 
-This project is organized around a **layered architecture** with unidirectional data flow as the intended design:
-1. **HTTP Routes**: `com.metropolisparking.routes` - Defines endpoint mapping, HTTP status returns, and JSON marshalling using Spray JSON.
-2. **Business Services**: `com.metropolisparking.services` - Currently traits only; intended to host business logic.
-3. **Data Repositories**: `com.metropolisparking.repositories` - Interfaces and concrete implementation (`JooqParkingRepository`) using jOOQ.
-4. **Data Models**: `com.metropolisparking.models` - Core representation objects with zero external code dependencies.
-5. **Bootstrapper/Wiring**: `com.metropolisparking.Main` - Loads configuration, runs database migrations, initializes connection pool, instantiates repositories, and binds the HTTP server.
-
-At present, only the route layer is active at runtime through the health endpoint. The service layer is scaffolding for later features, whereas the repository layer has a concrete jOOQ implementation that is initialized on startup.
+- [Architecture](#architecture)
+- [Prerequisites](#prerequisites)
+- [Quick Start (Docker)](#quick-start-docker)
+- [Local Development](#local-development)
+- [Running Tests](#running-tests)
+- [Environment Variables](#environment-variables)
+- [API Overview](#api-overview)
 
 ---
 
-## Project Structure
+## Architecture
 
-```text
-MetropolisParking/
-├── .github/workflows/ci.yml         # GitHub Actions pipeline
-├── docs/Design-Walkthrough.md       # Software architecture design documents
-├── project/
-│   ├── build.properties             # Locks SBT version to 1.10.7
-│   └── plugins.sbt                  # Registers the assembly plugin
-├── src/
-│   ├── main/
-│   │   ├── resources/
-│   │   │   ├── application.conf     # Base configuration settings
-│   │   │   ├── application-local.conf # Local execution overrides
-│   │   │   ├── application-dev.conf # Dev staging overrides
-│   │   │   ├── application-test.conf# Testing environment overrides
-│   │   │   ├── application-production.conf # Production environment overrides
-│   │   │   ├── db/
-│   │   │   │   └── migration/
-│   │   │   │       └── V1__create_parking_tables.sql # Flyway migration script
-│   │   │   └── logback.xml          # Logging pattern configuration
-│   │   └── scala/com/metropolisparking/
-│   │       ├── Main.scala           # App Entry Point & graceful shutdown hook
-│   │       ├── config/
-│   │       │   └── AppConfig.scala  # Config representation using PureConfig
-│   │       ├── models/
-│   │       │   └── ParkingModels.scala # Case classes for domain models
-│   │       ├── repositories/
-│   │       │   ├── ParkingRepository.scala # Repository abstraction layer
-│   │       │   └── JooqParkingRepository.scala # Concrete jOOQ repository implementation
-│   │       ├── routes/
-│   │       │   └── HealthRoute.scala   # HTTP API health routes
-│   │       └── services/
-│   │           └── ParkingService.scala# Business logic service traits
-│   └── test/scala/com/metropolisparking/
-│       ├── config/
-│       │   └── AppConfigSpec.scala  # Configuration loading tests
-│       ├── repositories/
-│       │   └── JooqParkingRepositorySpec.scala # Repository integration tests
-│       └── routes/
-│           └── HealthRouteSpec.scala # Route integration tests
-├── build.sbt                        # Main project configuration & dependencies
-├── Dockerfile                       # Multi-stage Docker packaging recipe
-├── docker-compose.yml               # Container deployment Orchestrator
+```
+metropolis-parking/
+├── backend/          # Scala 2.13 + Akka HTTP + jOOQ + Flyway
+├── frontend/         # React 18 + Vite + TypeScript + Tailwind CSS v4
+├── docker-compose.yml
+└── .github/workflows/ci.yml
 ```
 
----
+**Stack:**
 
-## Technology Stack
-
-* **Language**: Scala `2.13.18`
-* **Build System**: SBT `1.10.7`
-* **HTTP Framework**: Akka HTTP `10.2.10`
-* **Configuration Loader**: PureConfig `0.17.8` (wraps Lightbend Config)
-* **Logging Library**: Logback `1.5.16`
-* **Testing Library**: ScalaTest `3.2.19` + Akka HTTP Testkit `10.2.10`
-* **Database & Migration**: jOOQ `3.19.10`, Flyway `10.10.0`, HikariCP `5.1.0`
-* **Database Drivers**: PostgreSQL `42.7.4`, H2 `2.2.224` (in-memory for tests)
-* **Containers**: Docker Engine & Docker Compose
+| Layer | Technology |
+|---|---|
+| Backend | Scala 2.13, Akka HTTP, jOOQ, HikariCP, Flyway, JWT, BCrypt |
+| Frontend | React 18, Vite, TypeScript, Tailwind CSS v4, TanStack Query, Axios, Zod |
+| Database | PostgreSQL 16 |
+| Container | Docker + Nginx (frontend reverse proxy) |
+| CI | GitHub Actions |
 
 ---
 
 ## Prerequisites
 
-Ensure you have the following installed on your system:
-* **Java Development Kit (JDK)**: Java 17 (e.g., Eclipse Temurin)
-* **SBT**: Scala Build Tool (installed locally)
-* **Docker & Docker Compose**: For containerized runs
+| Tool | Version |
+|---|---|
+| Docker & Docker Compose | 24+ |
+| Java (for local backend dev) | 17 |
+| sbt (for local backend dev) | 1.9+ |
+| Node.js (for local frontend dev) | 20+ |
 
 ---
 
-## Local Setup Instructions
+## Quick Start (Docker)
 
-1. **Clone the repository**:
-   ```bash
-   git clone <repo-url>
-   cd MetropolisParking
-   ```
+> Spins up the database, backend, and frontend in one command.
 
-2. **Run tests locally**:
-   This currently runs the compile path and the existing route test for `/health`:
-   ```bash
-   sbt test
-   ```
+**1. Clone the repository:**
 
-3. **Start the application locally**:
-   By default, this runs using the `local` configuration profile on port `8080`:
-   ```bash
-   sbt run
-   ```
-   To run under a different configuration profile, pass the `APP_ENV` environment variable:
-   ```bash
-   # Linux/macOS
-   APP_ENV=dev sbt run
-
-   # Windows (PowerShell)
-   $env:APP_ENV="dev"; sbt run
-   ```
-
----
-
-## Docker Setup Instructions
-
-1. **Build and start the application container**:
-   This runs the multi-stage build, compiles the application inside the builder image, generates the executable jar, and runs it on a lightweight JRE runtime:
-   ```bash
-   docker compose up -d --build
-   ```
-
-2. **Check container status**:
-   Ensure the container is online:
-   ```bash
-   docker ps
-   ```
-
-3. **View container logs**:
-   ```bash
-   docker logs metropolis-parking-service
-   ```
-
-4. **Stop the container**:
-   ```bash
-   docker compose down
-   ```
-
----
-
-## Health Endpoint Usage
-
-The service exposes a standard health endpoint to verify application operational state.
-
-### GET /health
-
-**Request**:
 ```bash
-curl -i http://localhost:8080/health
+git clone https://github.com/Dharanish-AM/MetropolisParking.git
+cd MetropolisParking
 ```
 
-**Response**:
-* **HTTP Status**: `200 OK`
-* **Content-Type**: `application/json`
-* **Response Body**:
-  ```json
-  {
-    "status": "UP"
-  }
-  ```
+**2. Build and start all services:**
+
+```bash
+docker compose up --build
+```
+
+**3. Access the application:**
+
+| Service | URL |
+|---|---|
+| Frontend (UI) | http://localhost |
+| Backend API | http://localhost:8080 |
+| Health Check | http://localhost:8080/health |
+
+**Default admin credentials:**
+
+| Field | Value |
+|---|---|
+| Email | admin@metropolisparking.com |
+| Password | admin123 |
+
+---
+
+## Local Development
+
+### Backend
+
+```bash
+# Start the database container only
+docker compose up -d db
+
+# Run the Akka HTTP backend (auto-runs Flyway migrations on startup)
+cd backend
+sbt run
+```
+
+Backend binds to `http://localhost:8080`.
+
+### Frontend
+
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start the Vite dev server
+npm run dev
+```
+
+Frontend binds to `http://localhost:5174`.
+
+> The Axios client in `src/api/client.ts` points to `http://localhost:8080` by default.
+
+---
+
+## Running Tests
+
+### Frontend E2E Tests (Playwright)
+
+> Requires the full stack to be running (backend on `8080`, frontend dev server on `5174`).
+
+```bash
+cd frontend
+
+# Install Playwright browsers (first time only)
+npx playwright install chromium
+
+# Run all E2E tests headlessly
+npm run test:e2e
+
+# Open the interactive Playwright UI
+npm run test:e2e:ui
+```
+
+E2E test specs are located in `frontend/e2e/`:
+- `auth.spec.ts` — Login, redirect, and error flows
+- `session.spec.ts` — Session management UI flows
+- `payment.spec.ts` — Payment ledger and settle modal flows
+
+### Backend Tests
+
+```bash
+# Start the database container
+docker compose up -d db
+
+cd backend
+
+# Run unit tests
+sbt test
+
+# Run integration tests
+sbt "testOnly *Integration*"
+```
+
+### Full E2E Shell Script
+
+```bash
+# From repo root, requires backend on :8080
+./scripts/e2e-test.sh
+```
 
 ---
 
 ## Environment Variables
 
-The application configures itself at startup using the following environment variables:
+### Backend (`backend/.env.example`)
 
-| Variable Name | Purpose | Default Value | Config File |
-|---|---|---|---|
-| `APP_ENV` | Selects the config profile: `local`, `dev`, `test`, or `production` | `local` | Loaded by `AppConfig.scala` |
-| `HTTP_HOST` | Network interface to bind the HTTP server to | `0.0.0.0` | `application.conf` |
-| `HTTP_PORT` | Port number to expose the HTTP server on | `8080` | `application.conf` |
+| Variable | Description | Default |
+|---|---|---|
+| `DB_URL` | JDBC connection URL | `jdbc:postgresql://localhost:5432/metropolis_parking` |
+| `DB_USERNAME` | Database username | `postgres` |
+| `DB_PASSWORD` | Database password | `password` |
+| `JWT_SECRET` | JWT signing secret | `change-in-production` |
 
-Notes:
-* `AppConfig.scala` loads `application-${APP_ENV}.conf`.
-* The repository currently contains `application-local.conf`, `application-dev.conf`, `application-test.conf`, and `application-production.conf`.
-* Invalid `APP_ENV` values fail fast during startup with a clear error message.
+### Frontend
+
+The Axios base URL is configured in `src/api/client.ts`. Override via a `.env.local` file:
+
+```
+VITE_API_BASE_URL=http://localhost:8080
+```
 
 ---
 
-## CI Pipeline Overview
+## API Overview
 
-The Continuous Integration (CI) pipeline is powered by GitHub Actions (`.github/workflows/ci.yml`):
-* **Triggers**: Executes on push and PR triggers targeting `main` and `develop` branches.
-* **Architecture**: Runs on `ubuntu-latest` and sets up `temurin` JDK 17.
-* **Caching**: Caches `sbt` and `ivy2` folders, keeping execution cycles short.
-* **Action Steps**:
-  1. Clones repo.
-  2. Sets up JDK.
-  3. Compiles code (`sbt compile Test/compile`).
-  4. Runs tests (`sbt test`).
-* **Current coverage**: The automated test suite includes the `/health` route test, configuration loading tests, and repository database integration tests.
-* **Enforcements**: The pipeline fails if compile errors are detected or if any ScalaTest asserts fail.
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/auth/login` | Authenticate user, returns JWT |
+| GET | `/me` | Get current user profile |
+| GET | `/parking-lots` | List all parking lots |
+| POST | `/parking-lots` | Create a parking lot |
+| GET | `/parking-lots/:id/levels` | List levels in a lot |
+| GET | `/parking-spaces` | List parking spaces |
+| PATCH | `/parking-spaces/:id/status` | Update space status |
+| GET | `/vehicles` | List/search vehicles |
+| POST | `/vehicles` | Register a vehicle |
+| POST | `/sessions/start` | Start a parking session |
+| POST | `/sessions/:plate/end` | End a parking session |
+| GET | `/payments` | List all payments |
+| POST | `/payments/:id/process` | Process a payment |
+| GET | `/dashboard` | Aggregated dashboard stats |
+| GET | `/health` | Backend health check |

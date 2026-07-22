@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+@import 'tailwindcss';
+
+@theme {
+  --font-sans:
+    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+
+  --color-brand-primary: #5a3afb;
+  --color-brand-purple: #5a3afb;
+  --color-brand-dark: #09090b;
+  --color-neutral-primary: #09090b;
+  --color-neutral-secondary: #5e697a;
+  --color-neutral-border: #e4e4e7;
+  --color-neutral-bg: #ffffff;
+  --color-neutral-secondary-bg: #f8f9fc;
+  --color-brand-lavender: #f5f3ff;
+  --color-brand-disabled: #c2c2ff;
+
+  --color-status-available: #10b981;
+  --color-status-occupied: #ef4444;
+  --color-status-reserved: #f59e0b;
+  --color-status-out-of-service: #71717a;
+}
+
+body {
+  background-color: var(--color-neutral-bg);
+  color: var(--color-neutral-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.97);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-up {
+  animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
