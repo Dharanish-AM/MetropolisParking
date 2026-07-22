@@ -1,4 +1,4 @@
-import { client } from "../client";
+import { client } from '../client';
 
 export interface Session {
   id: string;
@@ -10,30 +10,32 @@ export interface Session {
   fee?: number | null;
   plateNumber?: string;
   spaceNumber?: string;
-  status: "ACTIVE" | "COMPLETED" | string;
+  status: 'ACTIVE' | 'COMPLETED' | string;
 }
 
-export const startSession = async (payload: { plateNumber: string; spaceId: string }): Promise<Session> => {
-  const res = await client.post("/sessions/start", payload);
+export const startSession = async (payload: {
+  plateNumber: string;
+  spaceId: string;
+}): Promise<Session> => {
+  const res = await client.post('/sessions/start', payload);
   return res.data;
 };
 
 export const endSession = async (payload: { plateNumber: string }): Promise<Session> => {
-  const res = await client.post("/sessions/end", payload);
+  const res = await client.post('/sessions/end', payload);
   return res.data;
 };
 
 export const getSessions = async (active?: boolean): Promise<Session[]> => {
-  const res = await client.get("/sessions", {
+  const res = await client.get('/sessions', {
     params: active !== undefined ? { active } : undefined,
   });
   return res.data;
 };
 
 export const getSessionsHistory = async (plateNumber: string): Promise<Session[]> => {
-  const res = await client.get("/sessions/history", {
+  const res = await client.get('/sessions/history', {
     params: { plateNumber },
   });
   return res.data;
 };
-

@@ -1,4 +1,4 @@
-import { client } from "../client";
+import { client } from '../client';
 
 export interface Vehicle {
   id: string;
@@ -8,7 +8,7 @@ export interface Vehicle {
 }
 
 export const getVehicles = async (plateNumber?: string): Promise<Vehicle[]> => {
-  const res = await client.get("/vehicles", {
+  const res = await client.get('/vehicles', {
     params: plateNumber ? { plateNumber } : undefined,
   });
   return res.data;
@@ -19,6 +19,6 @@ export const createVehicle = async (payload: {
   type: string;
   ownerId?: string | null;
 }): Promise<Vehicle> => {
-  const res = await client.post("/vehicles", payload);
+  const res = await client.post('/vehicles', payload);
   return res.data;
 };

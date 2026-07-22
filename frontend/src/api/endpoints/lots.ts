@@ -1,12 +1,12 @@
-import { client } from "../client";
+import { client } from '../client';
 
 export const getLots = async () => {
-  const res = await client.get("/parking-lots");
+  const res = await client.get('/parking-lots');
   return res.data;
 };
 
 export const createLot = async (payload: { name: string; location: string }) => {
-  const res = await client.post("/parking-lots", payload);
+  const res = await client.post('/parking-lots', payload);
   return res.data;
 };
 

@@ -1,25 +1,42 @@
-import type { FC } from "react";
-import { useAuth } from "../features/auth/hooks/useAuth";
-import { Link, useLocation } from "react-router-dom";
-import { LogOut, LayoutDashboard, ParkingSquare, Menu, Car, Clock, CreditCard, User } from "lucide-react";
-import { MetropolisLogo } from "./MetropolisLogo";
+import type { FC } from 'react';
+import { useAuth } from '../features/auth/hooks/useAuth';
+import { Link, useLocation } from 'react-router-dom';
+import {
+  LogOut,
+  LayoutDashboard,
+  ParkingSquare,
+  Menu,
+  Car,
+  Clock,
+  CreditCard,
+  User,
+} from 'lucide-react';
+import { MetropolisLogo } from './MetropolisLogo';
 
 export const Navbar: FC = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
 
   const navItems = [
-    { label: "Dashboard", path: "/", icon: LayoutDashboard, roles: ["ADMIN", "OPERATOR", "CUSTOMER"] },
-    { label: "Parking Lots", path: "/parking-lots", icon: ParkingSquare, roles: ["ADMIN", "OPERATOR"] },
-    { label: "Sessions", path: "/sessions", icon: Clock, roles: ["ADMIN", "OPERATOR"] },
-    { label: "Payments", path: "/payments", icon: CreditCard, roles: ["ADMIN", "OPERATOR"] },
-    { label: "Vehicles", path: "/vehicles", icon: Car, roles: ["ADMIN", "OPERATOR", "CUSTOMER"] },
-    { label: "Profile", path: "/profile", icon: User, roles: ["ADMIN", "OPERATOR", "CUSTOMER"] },
+    {
+      label: 'Dashboard',
+      path: '/',
+      icon: LayoutDashboard,
+      roles: ['ADMIN', 'OPERATOR', 'CUSTOMER'],
+    },
+    {
+      label: 'Parking Lots',
+      path: '/parking-lots',
+      icon: ParkingSquare,
+      roles: ['ADMIN', 'OPERATOR'],
+    },
+    { label: 'Sessions', path: '/sessions', icon: Clock, roles: ['ADMIN', 'OPERATOR'] },
+    { label: 'Payments', path: '/payments', icon: CreditCard, roles: ['ADMIN', 'OPERATOR'] },
+    { label: 'Vehicles', path: '/vehicles', icon: Car, roles: ['ADMIN', 'OPERATOR', 'CUSTOMER'] },
+    { label: 'Profile', path: '/profile', icon: User, roles: ['ADMIN', 'OPERATOR', 'CUSTOMER'] },
   ];
 
-  const filteredNavItems = user
-    ? navItems.filter((item) => item.roles.includes(user.role))
-    : [];
+  const filteredNavItems = user ? navItems.filter(item => item.roles.includes(user.role)) : [];
 
   return (
     <header className="border-b border-neutral-border bg-white sticky top-0 z-10">
@@ -31,7 +48,7 @@ export const Navbar: FC = () => {
 
           {user && (
             <nav className="hidden md:flex items-center gap-1">
-              {filteredNavItems.map((item) => {
+              {filteredNavItems.map(item => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
                 return (
@@ -40,8 +57,8 @@ export const Navbar: FC = () => {
                     to={item.path}
                     className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-150 ${
                       isActive
-                        ? "bg-brand-primary/10 text-brand-primary font-bold"
-                        : "text-neutral-secondary hover:text-brand-primary hover:bg-brand-primary/5"
+                        ? 'bg-brand-primary/10 text-brand-primary font-bold'
+                        : 'text-neutral-secondary hover:text-brand-primary hover:bg-brand-primary/5'
                     }`}
                   >
                     <Icon className="w-4 h-4 stroke-[1.75]" />
@@ -58,7 +75,9 @@ export const Navbar: FC = () => {
             <>
               <div className="flex flex-col items-end">
                 <span className="text-sm font-bold text-neutral-primary">{user.name}</span>
-                <span className="text-[10px] text-neutral-secondary uppercase font-bold tracking-wider">{user.role}</span>
+                <span className="text-[10px] text-neutral-secondary uppercase font-bold tracking-wider">
+                  {user.role}
+                </span>
               </div>
               <button
                 onClick={logout}

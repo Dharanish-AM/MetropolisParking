@@ -1,15 +1,15 @@
-import { client } from "../client";
+import { client } from '../client';
 
 export interface Payment {
   id: string;
   sessionId: string;
   amount: number;
   method: string;
-  status: "PENDING" | "SUCCESS" | "FAILED" | "REFUNDED" | string;
+  status: 'PENDING' | 'SUCCESS' | 'FAILED' | 'REFUNDED' | string;
 }
 
 export const getPayments = async (): Promise<Payment[]> => {
-  const res = await client.get("/payments");
+  const res = await client.get('/payments');
   return res.data;
 };
 

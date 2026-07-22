@@ -1,16 +1,16 @@
-import type { FC } from "react";
-import { Navbar } from "../components/Navbar";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/ui/Card";
-import { Badge } from "../components/ui/Badge";
-import { useAuth } from "../features/auth/hooks/useAuth";
-import { useVehicles } from "../features/vehicles/hooks";
-import { Mail, ShieldAlert, Car, Building } from "lucide-react";
+import type { FC } from 'react';
+import { Navbar } from '../components/Navbar';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
+import { useAuth } from '../features/auth/hooks/useAuth';
+import { useVehicles } from '../features/vehicles/hooks';
+import { Mail, ShieldAlert, Car, Building } from 'lucide-react';
 
 export const Profile: FC = () => {
   const { user } = useAuth();
   const { data: vehicles } = useVehicles();
 
-  const myVehicles = (vehicles || []).filter((v) => v.ownerId === user?.id);
+  const myVehicles = (vehicles || []).filter(v => v.ownerId === user?.id);
 
   return (
     <div className="min-h-screen bg-neutral-bg text-neutral-primary flex flex-col font-sans">
@@ -44,7 +44,9 @@ export const Profile: FC = () => {
               <div className="flex items-center gap-3 text-sm">
                 <Mail className="w-5 h-5 text-neutral-secondary stroke-[1.5]" />
                 <div>
-                  <p className="text-neutral-secondary text-xs font-bold uppercase tracking-wider">Email Address</p>
+                  <p className="text-neutral-secondary text-xs font-bold uppercase tracking-wider">
+                    Email Address
+                  </p>
                   <p className="font-semibold text-neutral-primary">{user?.email}</p>
                 </div>
               </div>
@@ -52,11 +54,14 @@ export const Profile: FC = () => {
               <div className="flex items-center gap-3 text-sm">
                 <ShieldAlert className="w-5 h-5 text-neutral-secondary stroke-[1.5]" />
                 <div>
-                  <p className="text-neutral-secondary text-xs font-bold uppercase tracking-wider">Role Access Type</p>
+                  <p className="text-neutral-secondary text-xs font-bold uppercase tracking-wider">
+                    Role Access Type
+                  </p>
                   <p className="font-semibold text-neutral-primary">
-                    {user?.role === "ADMIN" && "System Administrator (Full Read/Write Access)"}
-                    {user?.role === "OPERATOR" && "Parking Attendant / Operator (Operational Access)"}
-                    {user?.role === "CUSTOMER" && "Standard Parking Customer (Basic Access)"}
+                    {user?.role === 'ADMIN' && 'System Administrator (Full Read/Write Access)'}
+                    {user?.role === 'OPERATOR' &&
+                      'Parking Attendant / Operator (Operational Access)'}
+                    {user?.role === 'CUSTOMER' && 'Standard Parking Customer (Basic Access)'}
                   </p>
                 </div>
               </div>
@@ -72,13 +77,13 @@ export const Profile: FC = () => {
                 <CardDescription>Metrics tied to your registration profile.</CardDescription>
               </CardHeader>
               <CardContent className="p-0 space-y-4">
-                {user?.role === "CUSTOMER" ? (
+                {user?.role === 'CUSTOMER' ? (
                   <div className="space-y-2">
                     <div className="text-4xl font-extrabold text-brand-primary">
                       {myVehicles.length}
                     </div>
                     <p className="text-xs text-neutral-secondary font-semibold">
-                      Registered vehicle{myVehicles.length === 1 ? "" : "s"} under your account.
+                      Registered vehicle{myVehicles.length === 1 ? '' : 's'} under your account.
                     </p>
                   </div>
                 ) : (
@@ -87,7 +92,8 @@ export const Profile: FC = () => {
                       <Building className="w-4 h-4 text-brand-primary" /> Management Access
                     </div>
                     <p className="text-xs text-neutral-secondary font-semibold leading-relaxed">
-                      You are authorized as an employee. Navigate through the headers above to edit parking configurations, monitor levels, and process ticketing logs.
+                      You are authorized as an employee. Navigate through the headers above to edit
+                      parking configurations, monitor levels, and process ticketing logs.
                     </p>
                   </div>
                 )}

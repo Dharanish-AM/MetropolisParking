@@ -1,8 +1,8 @@
-import { forwardRef } from "react";
-import type { HTMLAttributes } from "react";
+import { forwardRef } from 'react';
+import type { HTMLAttributes } from 'react';
 
 export const Skeleton = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className = "", ...props }, ref) => {
+  ({ className = '', ...props }, ref) => {
     return (
       <div
         ref={ref}
@@ -13,4 +13,4 @@ export const Skeleton = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement
   }
 );
 
-Skeleton.displayName = "Skeleton";
+Skeleton.displayName = 'Skeleton';
