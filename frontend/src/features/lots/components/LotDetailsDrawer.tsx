@@ -69,9 +69,9 @@ export const LotDetailsDrawer: FC<LotDetailsDrawerProps> = ({ lot, onBack }) => 
             </p>
           </div>
 
-          <div className="divide-y divide-neutral-border">
+          <div className="space-y-3.5 pt-2">
             {rates.map((item) => (
-              <div key={item.duration} className="flex justify-between items-center py-3.5 text-sm font-semibold">
+              <div key={item.duration} className="flex justify-between items-center text-sm font-semibold">
                 <span className="text-neutral-primary">{item.duration}</span>
                 <span className="text-neutral-primary font-bold">{item.rate}</span>
               </div>

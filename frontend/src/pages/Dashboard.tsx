@@ -179,9 +179,9 @@ export const Dashboard: FC = () => {
                 <p className="text-xs text-neutral-secondary font-semibold">
                   {stats?.occupancy?.occupiedSpaces ?? 0} of {stats?.occupancy?.totalSpaces ?? 0} spaces filled
                 </p>
-                <div className="w-full bg-neutral-border h-2 rounded-full overflow-hidden">
+                <div className="w-full bg-brand-primary/10 h-2 rounded-full overflow-hidden">
                   <div 
-                    className="bg-brand-purple h-full rounded-full transition-all duration-500" 
+                    className="bg-brand-primary h-full rounded-full transition-all duration-500" 
                     style={{ width: `${stats?.occupancy?.occupancyRate ?? 0}%` }}
                   />
                 </div>

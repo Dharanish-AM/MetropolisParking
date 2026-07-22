@@ -13,10 +13,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const baseStyles = "inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer";
     
     const variants = {
-      primary: "bg-brand-primary text-white hover:bg-brand-primary/95 shadow-sm border border-transparent focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary",
-      secondary: "bg-neutral-border/20 text-neutral-primary border border-neutral-border hover:bg-neutral-border/40 shadow-xs focus:ring-2 focus:ring-offset-2 focus:ring-neutral-border",
-      outline: "bg-transparent text-neutral-primary border border-neutral-border hover:bg-neutral-border/10 focus:ring-2 focus:ring-offset-2 focus:ring-neutral-border",
-      ghost: "bg-transparent text-neutral-secondary hover:text-neutral-primary hover:bg-neutral-border/20 focus:ring-2 focus:ring-neutral-border",
+      primary: "bg-brand-primary text-white hover:bg-brand-primary/95 shadow-sm border border-transparent focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary disabled:bg-brand-disabled",
+      secondary: "bg-brand-lavender text-brand-primary border border-transparent hover:bg-brand-primary/10 shadow-xs focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary",
+      outline: "bg-transparent text-neutral-primary border border-neutral-border hover:bg-neutral-border/10 focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary",
+      ghost: "bg-transparent text-neutral-secondary hover:text-neutral-primary hover:bg-brand-border/20 focus:ring-2 focus:ring-brand-primary",
       danger: "bg-status-occupied text-white hover:bg-status-occupied/95 shadow-sm border border-transparent focus:ring-2 focus:ring-offset-2 focus:ring-status-occupied"
     };
 

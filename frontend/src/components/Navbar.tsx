@@ -32,8 +32,8 @@ export const Navbar: FC = () => {
                     to={item.path}
                     className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-150 ${
                       isActive
-                        ? "bg-neutral-border/50 text-neutral-primary font-bold"
-                        : "text-neutral-secondary hover:text-neutral-primary hover:bg-neutral-border/25"
+                        ? "bg-brand-primary/10 text-brand-primary font-bold"
+                        : "text-neutral-secondary hover:text-brand-primary hover:bg-brand-primary/5"
                     }`}
                   >
                     <Icon className="w-4 h-4 stroke-[1.75]" />
@@ -63,7 +63,7 @@ export const Navbar: FC = () => {
             <>
               <Link
                 to="/login"
-                className="px-4 py-2 bg-neutral-border/50 hover:bg-neutral-border/80 text-neutral-primary rounded-xl text-sm font-bold transition-all duration-150"
+                className="px-4 py-2 bg-brand-lavender hover:bg-brand-primary/10 text-brand-primary rounded-xl text-sm font-bold transition-all duration-150"
               >
                 Log in / Sign up
               </Link>

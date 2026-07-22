@@ -35,10 +35,10 @@ export const Login: FC = () => {
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <MetropolisLogo size="lg" className="justify-center mb-6" />
         <h2 className="text-3xl font-extrabold text-neutral-primary tracking-tight">
-          Welcome back.
+          Welcome to Metropolis
         </h2>
         <p className="mt-2 text-sm text-neutral-secondary">
-          Access the Metropolis parking network control center.
+          Enter your credentials to access the Metropolis parking network.
         </p>
       </div>
 
