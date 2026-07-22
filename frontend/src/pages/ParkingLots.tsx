@@ -14,6 +14,7 @@ import { LotForm } from '../features/lots/components/LotForm';
 import type { LotFormValues } from '../features/lots/components/LotForm';
 import { SpaceForm } from '../features/spaces/components/SpaceForm';
 import type { SpaceFormValues } from '../features/spaces/components/SpaceForm';
+import { useAuth } from '../features/auth/hooks/useAuth';
 import {
   useLots,
   useCreateLot,
@@ -68,6 +69,8 @@ const levelSchema = z.object({
 type LevelFormValues = z.infer<typeof levelSchema>;
 
 export const ParkingLots: FC = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
   const [selectedLotId, setSelectedLotId] = useState<string>('');
   const [selectedLevelId, setSelectedLevelId] = useState<string>('ALL');
   const [selectedSpace, setSelectedSpace] = useState<ParkingSpace | null>(null);
@@ -221,36 +224,38 @@ export const ParkingLots: FC = () => {
                     <Plus className="w-4 h-4" /> Add Space
                   </Button>
                 )}
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => {
-                    if (
-                      confirm(
-                        'Are you sure you want to delete this parking lot and all associated levels/spaces?'
-                      )
-                    ) {
-                      deleteLotMutation.mutate(activeLotId, {
-                        onSuccess: () => {
-                          setNotification({
-                            message: 'Parking lot deleted successfully',
-                            type: 'success',
-                          });
-                          setSelectedLotId('');
-                        },
-                        onError: (err: any) => {
-                          setNotification({
-                            message: err.response?.data?.message || 'Failed to delete lot',
-                            type: 'error',
-                          });
-                        },
-                      });
-                    }
-                  }}
-                  isLoading={deleteLotMutation.status === 'pending'}
-                >
-                  <Trash2 className="w-4 h-4" /> Delete Lot
-                </Button>
+                {isAdmin && (
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => {
+                      if (
+                        confirm(
+                          'Are you sure you want to delete this parking lot and all associated levels/spaces?'
+                        )
+                      ) {
+                        deleteLotMutation.mutate(activeLotId, {
+                          onSuccess: () => {
+                            setNotification({
+                              message: 'Parking lot deleted successfully',
+                              type: 'success',
+                            });
+                            setSelectedLotId('');
+                          },
+                          onError: (err: any) => {
+                            setNotification({
+                              message: err.response?.data?.message || 'Failed to delete lot',
+                              type: 'error',
+                            });
+                          },
+                        });
+                      }
+                    }}
+                    isLoading={deleteLotMutation.status === 'pending'}
+                  >
+                    <Trash2 className="w-4 h-4" /> Delete Lot
+                  </Button>
+                )}
               </>
             )}
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-border text-xs font-semibold bg-white text-neutral-secondary">
@@ -519,31 +524,33 @@ export const ParkingLots: FC = () => {
               </div>
 
               <div className="pt-4 border-t border-neutral-border flex justify-between gap-3">
-                <Button
-                  variant="danger"
-                  onClick={() => {
-                    if (confirm('Are you sure you want to delete this parking space?')) {
-                      deleteSpaceMutation.mutate(selectedSpace.id, {
-                        onSuccess: () => {
-                          setNotification({
-                            message: 'Space deleted successfully',
-                            type: 'success',
-                          });
-                          setSelectedSpace(null);
-                        },
-                        onError: (err: any) => {
-                          setNotification({
-                            message: err.response?.data?.message || 'Failed to delete space',
-                            type: 'error',
-                          });
-                        },
-                      });
-                    }
-                  }}
-                  isLoading={deleteSpaceMutation.status === 'pending'}
-                >
-                  Delete Space
-                </Button>
+                {isAdmin && (
+                  <Button
+                    variant="danger"
+                    onClick={() => {
+                      if (confirm('Are you sure you want to delete this parking space?')) {
+                        deleteSpaceMutation.mutate(selectedSpace.id, {
+                          onSuccess: () => {
+                            setNotification({
+                              message: 'Space deleted successfully',
+                              type: 'success',
+                            });
+                            setSelectedSpace(null);
+                          },
+                          onError: (err: any) => {
+                            setNotification({
+                              message: err.response?.data?.message || 'Failed to delete space',
+                              type: 'error',
+                            });
+                          },
+                        });
+                      }
+                    }}
+                    isLoading={deleteSpaceMutation.status === 'pending'}
+                  >
+                    Delete Space
+                  </Button>
+                )}
                 <Button variant="secondary" onClick={() => setSelectedSpace(null)}>
                   Close Window
                 </Button>
