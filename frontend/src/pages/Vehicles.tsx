@@ -1,37 +1,45 @@
-import { useState } from "react";
-import type { FC } from "react";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Navbar } from "../components/Navbar";
-import { Card, CardHeader } from "../components/ui/Card";
-import { Button } from "../components/ui/Button";
-import { Input } from "../components/ui/Input";
-import { Select } from "../components/ui/Select";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../components/ui/Table";
-import { Badge } from "../components/ui/Badge";
-import { Modal } from "../components/ui/Modal";
-import { Skeleton } from "../components/ui/Skeleton";
-import { useAuth } from "../features/auth/hooks/useAuth";
-import { useVehicles, useCreateVehicle } from "../features/vehicles/hooks";
-import { Car, Plus, Search, Info } from "lucide-react";
+import { useState } from 'react';
+import type { FC } from 'react';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Navbar } from '../components/Navbar';
+import { Card, CardHeader } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Select } from '../components/ui/Select';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '../components/ui/Table';
+import { Badge } from '../components/ui/Badge';
+import { Modal } from '../components/ui/Modal';
+import { Skeleton } from '../components/ui/Skeleton';
+import { useAuth } from '../features/auth/hooks/useAuth';
+import { useVehicles, useCreateVehicle } from '../features/vehicles/hooks';
+import { Car, Plus, Search, Info } from 'lucide-react';
 
 const vehicleSchema = z.object({
   plateNumber: z
     .string()
-    .min(1, "Plate number is required")
-    .transform((val) => val.toUpperCase().replace(/\s/g, ""))
-    .refine((val) => /^[A-Z0-9-]{4,15}$/.test(val), {
-      message: "Plate number must be alphanumeric (optionally with hyphens) and 4 to 15 characters long.",
+    .min(1, 'Plate number is required')
+    .transform(val => val.toUpperCase().replace(/\s/g, ''))
+    .refine(val => /^[A-Z0-9-]{4,15}$/.test(val), {
+      message:
+        'Plate number must be alphanumeric (optionally with hyphens) and 4 to 15 characters long.',
     }),
-  type: z.enum(["CAR", "BIKE", "SUV", "TRUCK", "EV"]),
+  type: z.enum(['CAR', 'BIKE', 'SUV', 'TRUCK', 'EV']),
 });
 
 type VehicleFormValues = z.infer<typeof vehicleSchema>;
 
 export const Vehicles: FC = () => {
   const { user } = useAuth();
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,8 +54,8 @@ export const Vehicles: FC = () => {
   } = useForm<VehicleFormValues>({
     resolver: zodResolver(vehicleSchema),
     defaultValues: {
-      plateNumber: "",
-      type: "CAR",
+      plateNumber: '',
+      type: 'CAR',
     },
   });
 
@@ -66,14 +74,17 @@ export const Vehicles: FC = () => {
           refetch();
         },
         onError: (err: any) => {
-          setError(err.response?.data?.message || "Failed to register vehicle. License plate might be registered already.");
+          setError(
+            err.response?.data?.message ||
+              'Failed to register vehicle. License plate might be registered already.'
+          );
         },
       }
     );
   };
-  const filteredVehicles = (vehicles || []).filter((vehicle) => {
+  const filteredVehicles = (vehicles || []).filter(vehicle => {
     const matchesSearch = vehicle.plateNumber.toLowerCase().includes(searchTerm.toLowerCase());
-    if (user?.role === "CUSTOMER") {
+    if (user?.role === 'CUSTOMER') {
       return matchesSearch && vehicle.ownerId === user.id;
     }
     return matchesSearch;
@@ -88,9 +99,9 @@ export const Vehicles: FC = () => {
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight">Vehicle Registry</h1>
             <p className="text-neutral-secondary text-sm font-medium mt-1">
-              {user?.role === "CUSTOMER" 
-                ? "Manage and register your personal vehicles." 
-                : "View and manage all registered vehicles in the system."}
+              {user?.role === 'CUSTOMER'
+                ? 'Manage and register your personal vehicles.'
+                : 'View and manage all registered vehicles in the system.'}
             </p>
           </div>
           <Button onClick={() => setIsRegisterOpen(true)} variant="primary" className="gap-2">
@@ -107,12 +118,12 @@ export const Vehicles: FC = () => {
                 type="text"
                 placeholder="Search plate number..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 className="w-full pl-9 pr-4 py-2 border border-neutral-border rounded-xl text-neutral-primary text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all font-sans"
               />
             </div>
             <Badge variant="neutral">
-              {filteredVehicles.length} {filteredVehicles.length === 1 ? "Vehicle" : "Vehicles"}
+              {filteredVehicles.length} {filteredVehicles.length === 1 ? 'Vehicle' : 'Vehicles'}
             </Badge>
           </CardHeader>
           <Table>
@@ -120,7 +131,7 @@ export const Vehicles: FC = () => {
               <TableRow>
                 <TableHead>Vehicle Plate</TableHead>
                 <TableHead>Type</TableHead>
-                {user?.role !== "CUSTOMER" && <TableHead>Owner ID</TableHead>}
+                {user?.role !== 'CUSTOMER' && <TableHead>Owner ID</TableHead>}
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -128,15 +139,28 @@ export const Vehicles: FC = () => {
               {isLoading ? (
                 Array.from({ length: 3 }).map((_, idx) => (
                   <TableRow key={idx}>
-                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-                    {user?.role !== "CUSTOMER" && <TableCell><Skeleton className="h-5 w-32" /></TableCell>}
-                    <TableCell className="text-right"><Skeleton className="h-8 w-16 ml-auto" /></TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-24" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-16" />
+                    </TableCell>
+                    {user?.role !== 'CUSTOMER' && (
+                      <TableCell>
+                        <Skeleton className="h-5 w-32" />
+                      </TableCell>
+                    )}
+                    <TableCell className="text-right">
+                      <Skeleton className="h-8 w-16 ml-auto" />
+                    </TableCell>
                   </TableRow>
                 ))
               ) : filteredVehicles.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={user?.role === "CUSTOMER" ? 3 : 4} className="text-center text-neutral-secondary font-medium py-12">
+                  <TableCell
+                    colSpan={user?.role === 'CUSTOMER' ? 3 : 4}
+                    className="text-center text-neutral-secondary font-medium py-12"
+                  >
                     <div className="flex flex-col items-center gap-2">
                       <Car className="w-8 h-8 text-neutral-secondary stroke-[1.5]" />
                       <span>No vehicles found matching the search criteria.</span>
@@ -144,7 +168,7 @@ export const Vehicles: FC = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredVehicles.map((vehicle) => (
+                filteredVehicles.map(vehicle => (
                   <TableRow key={vehicle.id}>
                     <TableCell className="font-mono font-bold tracking-tight text-neutral-primary">
                       {vehicle.plateNumber}
@@ -152,9 +176,9 @@ export const Vehicles: FC = () => {
                     <TableCell>
                       <Badge variant="neutral">{vehicle.type}</Badge>
                     </TableCell>
-                    {user?.role !== "CUSTOMER" && (
+                    {user?.role !== 'CUSTOMER' && (
                       <TableCell className="font-mono text-xs text-neutral-secondary">
-                        {vehicle.ownerId || "Guest User / Anonymous"}
+                        {vehicle.ownerId || 'Guest User / Anonymous'}
                       </TableCell>
                     )}
                     <TableCell className="text-right">
@@ -170,7 +194,14 @@ export const Vehicles: FC = () => {
           </Table>
         </Card>
 
-        <Modal isOpen={isRegisterOpen} onClose={() => { setIsRegisterOpen(false); setError(null); }} title="Register New Vehicle">
+        <Modal
+          isOpen={isRegisterOpen}
+          onClose={() => {
+            setIsRegisterOpen(false);
+            setError(null);
+          }}
+          title="Register New Vehicle"
+        >
           {error && (
             <div className="mb-4 p-3.5 bg-red-50 border border-red-100 text-red-800 text-sm font-semibold rounded-xl">
               {error}
@@ -182,13 +213,9 @@ export const Vehicles: FC = () => {
               placeholder="e.g. MH12AB1234"
               mono
               error={errors.plateNumber?.message}
-              {...register("plateNumber")}
+              {...register('plateNumber')}
             />
-            <Select
-              label="Vehicle Type"
-              error={errors.type?.message}
-              {...register("type")}
-            >
+            <Select label="Vehicle Type" error={errors.type?.message} {...register('type')}>
               <option value="CAR">Car</option>
               <option value="BIKE">Bike</option>
               <option value="SUV">SUV</option>
@@ -196,10 +223,22 @@ export const Vehicles: FC = () => {
               <option value="EV">EV</option>
             </Select>
             <div className="flex gap-3 justify-end pt-2">
-              <Button type="button" variant="secondary" onClick={() => { setIsRegisterOpen(false); setError(null); }} className="w-auto px-5">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setIsRegisterOpen(false);
+                  setError(null);
+                }}
+                className="w-auto px-5"
+              >
                 Cancel
               </Button>
-              <Button type="submit" isLoading={createVehicleMutation.status === "pending"} className="w-auto px-5">
+              <Button
+                type="submit"
+                isLoading={createVehicleMutation.status === 'pending'}
+                className="w-auto px-5"
+              >
                 Register
               </Button>
             </div>

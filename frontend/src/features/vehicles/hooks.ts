@@ -1,9 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getVehicles, createVehicle } from "../../api/endpoints/vehicles";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getVehicles, createVehicle } from '../../api/endpoints/vehicles';
 
 export const useVehicles = (plateNumber?: string) => {
   return useQuery({
-    queryKey: ["vehicles", plateNumber],
+    queryKey: ['vehicles', plateNumber],
     queryFn: () => getVehicles(plateNumber),
   });
 };
@@ -13,7 +13,7 @@ export const useCreateVehicle = () => {
   return useMutation({
     mutationFn: createVehicle,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+      queryClient.invalidateQueries({ queryKey: ['vehicles'] });
     },
   });
 };

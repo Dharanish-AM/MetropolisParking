@@ -1,27 +1,45 @@
-import { useState } from "react";
-import type { FC } from "react";
-import { Navbar } from "../components/Navbar";
-import { Card } from "../components/ui/Card";
-import { Button } from "../components/ui/Button";
-import { Select } from "../components/ui/Select";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../components/ui/Table";
-import { Badge } from "../components/ui/Badge";
-import { Modal } from "../components/ui/Modal";
-import { Skeleton } from "../components/ui/Skeleton";
-import { usePayments, useProcessPayment } from "../features/payments/hooks";
-import { DollarSign, CheckCircle2, AlertCircle, CreditCard, Landmark, Wallet, CircleDollarSign } from "lucide-react";
+import { useState } from 'react';
+import type { FC } from 'react';
+import { Navbar } from '../components/Navbar';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Select } from '../components/ui/Select';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '../components/ui/Table';
+import { Badge } from '../components/ui/Badge';
+import { Modal } from '../components/ui/Modal';
+import { Skeleton } from '../components/ui/Skeleton';
+import { usePayments, useProcessPayment } from '../features/payments/hooks';
+import {
+  DollarSign,
+  CheckCircle2,
+  AlertCircle,
+  CreditCard,
+  Landmark,
+  Wallet,
+  CircleDollarSign,
+} from 'lucide-react';
 
 export const Payments: FC = () => {
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState("CARD");
-  const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState('CARD');
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: 'success' | 'error';
+  } | null>(null);
 
   const { data: payments, isLoading, refetch } = usePayments();
   const processPaymentMutation = useProcessPayment();
 
   const handleSettleClick = (paymentId: string) => {
     setSelectedPaymentId(paymentId);
-    setPaymentMethod("CARD"); // Reset to default method
+    setPaymentMethod('CARD'); // Reset to default method
   };
 
   const handleProcessSubmit = (e: React.FormEvent) => {
@@ -33,13 +51,13 @@ export const Payments: FC = () => {
       {
         onSuccess: () => {
           setSelectedPaymentId(null);
-          setNotification({ message: "Payment processed successfully.", type: "success" });
+          setNotification({ message: 'Payment processed successfully.', type: 'success' });
           refetch();
         },
         onError: (err: any) => {
           setNotification({
-            message: err.response?.data?.message || "Failed to process payment.",
-            type: "error",
+            message: err.response?.data?.message || 'Failed to process payment.',
+            type: 'error',
           });
         },
       }
@@ -48,11 +66,11 @@ export const Payments: FC = () => {
 
   const getMethodIcon = (method: string) => {
     switch (method.toUpperCase()) {
-      case "CARD":
+      case 'CARD':
         return <CreditCard className="w-3.5 h-3.5 mr-1 inline" />;
-      case "UPI":
+      case 'UPI':
         return <Landmark className="w-3.5 h-3.5 mr-1 inline" />;
-      case "WALLET":
+      case 'WALLET':
         return <Wallet className="w-3.5 h-3.5 mr-1 inline" />;
       default:
         return <CircleDollarSign className="w-3.5 h-3.5 mr-1 inline" />;
@@ -61,14 +79,14 @@ export const Payments: FC = () => {
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status.toUpperCase()) {
-      case "SUCCESS":
-        return "AVAILABLE";
-      case "PENDING":
-        return "RESERVED";
-      case "FAILED":
-        return "OCCUPIED";
+      case 'SUCCESS':
+        return 'AVAILABLE';
+      case 'PENDING':
+        return 'RESERVED';
+      case 'FAILED':
+        return 'OCCUPIED';
       default:
-        return "neutral";
+        return 'neutral';
     }
   };
 
@@ -87,12 +105,12 @@ export const Payments: FC = () => {
         {notification && (
           <div
             className={`p-4 rounded-xl border flex items-center gap-3 animate-fade-in ${
-              notification.type === "success"
-                ? "bg-green-50 border-green-100 text-green-800"
-                : "bg-red-50 border-red-100 text-red-800"
+              notification.type === 'success'
+                ? 'bg-green-50 border-green-100 text-green-800'
+                : 'bg-red-50 border-red-100 text-red-800'
             }`}
           >
-            {notification.type === "success" ? (
+            {notification.type === 'success' ? (
               <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
             ) : (
               <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
@@ -123,17 +141,32 @@ export const Payments: FC = () => {
               {isLoading ? (
                 Array.from({ length: 3 }).map((_, idx) => (
                   <TableRow key={idx}>
-                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-32" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-32" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-16" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-16" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-20" />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Skeleton className="h-8 w-20 ml-auto" />
+                    </TableCell>
                   </TableRow>
                 ))
               ) : !payments || payments.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-neutral-secondary font-medium py-12">
+                  <TableCell
+                    colSpan={6}
+                    className="text-center text-neutral-secondary font-medium py-12"
+                  >
                     <div className="flex flex-col items-center gap-2">
                       <DollarSign className="w-8 h-8 text-neutral-secondary stroke-[1.5]" />
                       <span>No payment transactions logged in the system.</span>
@@ -141,7 +174,7 @@ export const Payments: FC = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                payments.map((payment) => (
+                payments.map(payment => (
                   <TableRow key={payment.id}>
                     <TableCell className="font-mono text-xs text-neutral-secondary select-all">
                       {payment.id}
@@ -159,7 +192,7 @@ export const Payments: FC = () => {
                           {payment.method}
                         </span>
                       ) : (
-                        "—"
+                        '—'
                       )}
                     </TableCell>
                     <TableCell>
@@ -168,7 +201,7 @@ export const Payments: FC = () => {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      {payment.status.toUpperCase() === "PENDING" ? (
+                      {payment.status.toUpperCase() === 'PENDING' ? (
                         <Button
                           variant="primary"
                           onClick={() => handleSettleClick(payment.id)}
@@ -177,7 +210,9 @@ export const Payments: FC = () => {
                           Settle Invoice
                         </Button>
                       ) : (
-                        <span className="text-xs text-neutral-secondary font-semibold pr-3">Setted</span>
+                        <span className="text-xs text-neutral-secondary font-semibold pr-3">
+                          Setted
+                        </span>
                       )}
                     </TableCell>
                   </TableRow>
@@ -196,7 +231,7 @@ export const Payments: FC = () => {
             <Select
               label="Select Settlement Method"
               value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
+              onChange={e => setPaymentMethod(e.target.value)}
             >
               <option value="CARD">Credit / Debit Card</option>
               <option value="CASH">Cash</option>
@@ -215,7 +250,7 @@ export const Payments: FC = () => {
               </Button>
               <Button
                 type="submit"
-                isLoading={processPaymentMutation.status === "pending"}
+                isLoading={processPaymentMutation.status === 'pending'}
                 className="w-auto px-5"
               >
                 Confirm Payment

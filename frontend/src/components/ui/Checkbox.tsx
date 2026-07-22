@@ -1,13 +1,13 @@
-import { forwardRef } from "react";
-import type { InputHTMLAttributes } from "react";
+import { forwardRef } from 'react';
+import type { InputHTMLAttributes } from 'react';
 
-export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
+export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   label?: string;
   error?: string;
 }
 
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
-  ({ className = "", label, error, id, ...props }, ref) => {
+  ({ className = '', label, error, id, ...props }, ref) => {
     return (
       <div className="space-y-1">
         <div className="flex items-center gap-2.5">
@@ -19,17 +19,18 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             {...props}
           />
           {label && (
-            <label htmlFor={id} className="text-sm font-medium text-neutral-primary cursor-pointer select-none">
+            <label
+              htmlFor={id}
+              className="text-sm font-medium text-neutral-primary cursor-pointer select-none"
+            >
               {label}
             </label>
           )}
         </div>
-        {error && (
-          <p className="text-xs font-medium text-status-occupied">{error}</p>
-        )}
+        {error && <p className="text-xs font-medium text-status-occupied">{error}</p>}
       </div>
     );
   }
 );
 
-Checkbox.displayName = "Checkbox";
+Checkbox.displayName = 'Checkbox';

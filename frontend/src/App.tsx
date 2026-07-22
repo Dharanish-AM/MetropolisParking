@@ -1,14 +1,14 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./features/auth/context/AuthContext";
-import { ProtectedRoute } from "./components/ProtectedRoute";
-import { Login } from "./pages/Login";
-import { Dashboard } from "./pages/Dashboard";
-import { ParkingLots } from "./pages/ParkingLots";
-import { Unauthorized } from "./pages/Unauthorized";
-import { Vehicles } from "./pages/Vehicles";
-import { Sessions } from "./pages/Sessions";
-import { Payments } from "./pages/Payments";
-import { Profile } from "./pages/Profile";
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './features/auth/context/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { Login } from './pages/Login';
+import { Dashboard } from './pages/Dashboard';
+import { ParkingLots } from './pages/ParkingLots';
+import { Unauthorized } from './pages/Unauthorized';
+import { Vehicles } from './pages/Vehicles';
+import { Sessions } from './pages/Sessions';
+import { Payments } from './pages/Payments';
+import { Profile } from './pages/Profile';
 
 function App() {
   return (
@@ -28,7 +28,7 @@ function App() {
           <Route
             path="/parking-lots"
             element={
-              <ProtectedRoute allowedRoles={["ADMIN", "OPERATOR"]}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR']}>
                 <ParkingLots />
               </ProtectedRoute>
             }
@@ -36,7 +36,7 @@ function App() {
           <Route
             path="/vehicles"
             element={
-              <ProtectedRoute allowedRoles={["ADMIN", "OPERATOR", "CUSTOMER"]}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR', 'CUSTOMER']}>
                 <Vehicles />
               </ProtectedRoute>
             }
@@ -44,7 +44,7 @@ function App() {
           <Route
             path="/sessions"
             element={
-              <ProtectedRoute allowedRoles={["ADMIN", "OPERATOR"]}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR']}>
                 <Sessions />
               </ProtectedRoute>
             }
@@ -52,7 +52,7 @@ function App() {
           <Route
             path="/payments"
             element={
-              <ProtectedRoute allowedRoles={["ADMIN", "OPERATOR"]}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR']}>
                 <Payments />
               </ProtectedRoute>
             }
@@ -71,6 +71,5 @@ function App() {
     </AuthProvider>
   );
 }
-
 
 export default App;
