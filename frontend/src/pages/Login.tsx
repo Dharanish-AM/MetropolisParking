@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { client } from "../api/client";
 import { Mail, KeyRound, ArrowRight } from "lucide-react";
 import { theme } from "../styles/theme";
+import { MetropolisLogo } from "../components/MetropolisLogo";
 
 export const Login: FC = () => {
   const { login } = useAuth();
@@ -32,9 +33,7 @@ export const Login: FC = () => {
   return (
     <div className="min-h-screen bg-neutral-bg flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-brand-primary/10 text-brand-primary mb-6">
-          <KeyRound className="w-6 h-6" />
-        </div>
+        <MetropolisLogo size="lg" className="justify-center mb-6" />
         <h2 className="text-3xl font-extrabold text-neutral-primary tracking-tight">
           Welcome back.
         </h2>

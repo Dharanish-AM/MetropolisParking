@@ -86,7 +86,7 @@
 | 5.2 | Axios client + interceptors (auth token, 401 handling) (§36) | ✅ Verified | Created Axios instance client with Authorization request header injector and 401 logouts |
 | 5.3 | React Query setup + base hooks pattern | ✅ Verified | Setup TanStack QueryClientProvider context wrapper |
 | 5.4 | Tailwind config + design tokens/status colors (§38) | ✅ Verified | Handled status colors (AVAILABLE, OCCUPIED, RESERVED, OUT_OF_SERVICE) natively using Tailwind v4 theme variables in index.css |
-| 5.5 | UI primitive library (Button, Input, Modal, Table, etc.) | ⬜ | |
+| 5.5 | UI primitive library (Button, Input, Modal, Table, etc.) | ✅ Verified | Implemented standard stateless Tailwind-styled UI primitives under components/ui |
 | 5.6 | `ProtectedRoute` + role-based route gating (§33, §37) | ✅ Verified | Restricts route mounting depending on authentication token and authorized role list |
 | 5.7 | Auth flow: login page, session hydration via `/me` | ✅ Verified | Created Login page form communicating with auth context, local storage and /me profile validation |
 
@@ -94,14 +94,14 @@
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| 6.1 | Dashboard page + charts (occupancy, revenue, peak hours) | ⬜ | |
-| 6.2 | Parking Lots list + detail + form (CRUD) | ⬜ | |
-| 6.3 | Parking Spaces management + status grid | ⬜ | |
+| 6.1 | Dashboard page + charts (occupancy, revenue, peak hours) | ✅ Verified | Refactored Dashboard using Card, Input, Select, Table, Badge, Button, and Skeleton primitives |
+| 6.2 | Parking Lots list + detail + form (CRUD) | ✅ Verified | Refactored layout page, added lot/level creation modals and forms |
+| 6.3 | Parking Spaces management + status grid | ✅ Verified | Implemented custom space status updating, creation forms, and deletion |
 | 6.4 | Vehicle registry + lookup + history view | ⬜ | |
 | 6.5 | Sessions list + detail + start/end flows | ⬜ | |
 | 6.6 | Payments list + detail | ⬜ | |
 | 6.7 | User profile page | ⬜ | |
-| 6.8 | Forms: React Hook Form + Zod schemas mirroring backend validation (§39) | ⬜ | |
+| 6.8 | Forms: React Hook Form + Zod schemas mirroring backend validation (§39) | 🟡 In Progress | Integrated into Dashboard check-in/out, LotForm, and SpaceForm |
 
 ### Phase 7 — Frontend Quality & Ops
 

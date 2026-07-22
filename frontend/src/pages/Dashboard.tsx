@@ -1,9 +1,20 @@
 import { useState } from "react";
-import type { FC, FormEvent } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { client } from "../api/client";
-import { theme } from "../styles/theme";
+import type { FC } from "react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Navbar } from "../components/Navbar";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
+import { Select } from "../components/ui/Select";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../components/ui/Table";
+import { Badge } from "../components/ui/Badge";
+import { Skeleton } from "../components/ui/Skeleton";
+import { useDashboardStats } from "../features/dashboard/hooks";
+import { useLots } from "../features/lots/hooks";
+import { useSpaces } from "../features/spaces/hooks";
+import { useStartSession, useEndSession } from "../features/sessions/hooks";
 import { 
   Activity, 
   DollarSign, 
@@ -25,25 +36,13 @@ interface RecentSession {
   status: string;
 }
 
-interface DashboardStats {
-  financial: {
-    totalRevenue: number;
-    revenueByMethod: Record<string, number>;
-  };
-  occupancy: {
-    totalSpaces: number;
-    occupiedSpaces: number;
-    availableSpaces: number;
-    occupancyRate: number;
-  };
-  recentSessions: RecentSession[];
-}
-
 interface ParkingSpace {
   id: string;
   spaceNumber: string;
   type: string;
   status: string;
+  lotId: string;
+  levelId: string;
 }
 
 interface ParkingLot {
@@ -52,91 +51,97 @@ interface ParkingLot {
   location: string;
 }
 
+const checkInSchema = z.object({
+  plateNumber: z
+    .string()
+    .min(1, "Plate number is required")
+    .transform((val) => val.toUpperCase().replace(/\s/g, ""))
+    .refine((val) => /^[A-Z0-9-]{4,15}$/.test(val), {
+      message: "Plate number must be alphanumeric (optionally with hyphens) and 4 to 15 characters long.",
+    }),
+  spaceId: z.string().min(1, "Please select a space"),
+});
+
+type CheckInFormValues = z.infer<typeof checkInSchema>;
+
+const checkOutSchema = z.object({
+  plateNumber: z.string().min(1, "Please select a vehicle to check out"),
+});
+
+type CheckOutFormValues = z.infer<typeof checkOutSchema>;
+
 export const Dashboard: FC = () => {
-  const queryClient = useQueryClient();
-  
-  const [entryPlate, setEntryPlate] = useState("");
-  const [entrySpaceId, setEntrySpaceId] = useState("");
-  const [exitPlate, setExitPlate] = useState("");
-  
   const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-  const { data: stats, isLoading } = useQuery<DashboardStats>({
-    queryKey: ["dashboard-stats"],
-    queryFn: async () => {
-      const res = await client.get("/dashboard");
-      return res.data;
+  const {
+    register: registerCheckIn,
+    handleSubmit: handleCheckInSubmit,
+    reset: resetCheckIn,
+    formState: { errors: checkInErrors },
+  } = useForm<CheckInFormValues>({
+    resolver: zodResolver(checkInSchema),
+    defaultValues: {
+      plateNumber: "",
+      spaceId: "",
     },
-    refetchInterval: 5000,
   });
 
-  const { data: lots } = useQuery<ParkingLot[]>({
-    queryKey: ["parking-lots"],
-    queryFn: async () => {
-      const res = await client.get("/parking-lots");
-      return res.data;
-    }
+  const {
+    register: registerCheckOut,
+    handleSubmit: handleCheckOutSubmit,
+    reset: resetCheckOut,
+    formState: { errors: checkOutErrors },
+  } = useForm<CheckOutFormValues>({
+    resolver: zodResolver(checkOutSchema),
+    defaultValues: {
+      plateNumber: "",
+    },
   });
 
-  const { data: spaces } = useQuery<ParkingSpace[]>({
-    queryKey: ["spaces"],
-    queryFn: async () => {
-      const res = await client.get("/spaces");
-      return res.data;
-    }
-  });
+  const { data: stats, isLoading } = useDashboardStats();
+  const { data: lots } = useLots();
+  const { data: spaces } = useSpaces();
 
-  const checkInMutation = useMutation({
-    mutationFn: async (payload: { plateNumber: string; spaceId: string }) => {
-      return client.post("/sessions/start", payload);
-    },
-    onSuccess: () => {
-      setNotification({ message: "Vehicle checked in successfully", type: "success" });
-      setEntryPlate("");
-      setEntrySpaceId("");
-      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
-      queryClient.invalidateQueries({ queryKey: ["spaces"] });
-    },
-    onError: (err: any) => {
-      setNotification({ message: err.response?.data?.message || "Failed to check in", type: "error" });
-    }
-  });
+  const checkInMutation = useStartSession();
+  const checkOutMutation = useEndSession();
 
-  const checkOutMutation = useMutation({
-    mutationFn: async (payload: { plateNumber: string }) => {
-      return client.post("/sessions/end", payload);
-    },
-    onSuccess: (res) => {
-      const feeMsg = res.data.fee ? ` (Fee: $${res.data.fee})` : "";
-      setNotification({ message: `Vehicle checked out successfully${feeMsg}`, type: "success" });
-      setExitPlate("");
-      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
-      queryClient.invalidateQueries({ queryKey: ["spaces"] });
-    },
-    onError: (err: any) => {
-      setNotification({ message: err.response?.data?.message || "Failed to check out", type: "error" });
-    }
-  });
-
-  const handleCheckIn = (e: FormEvent) => {
-    e.preventDefault();
-    if (!entryPlate || !entrySpaceId) return;
-    checkInMutation.mutate({ plateNumber: entryPlate, spaceId: entrySpaceId });
+  const onCheckInSubmit = (data: CheckInFormValues) => {
+    checkInMutation.mutate({
+      plateNumber: data.plateNumber,
+      spaceId: data.spaceId,
+    }, {
+      onSuccess: () => {
+        setNotification({ message: "Vehicle checked in successfully", type: "success" });
+        resetCheckIn();
+      },
+      onError: (err: any) => {
+        setNotification({ message: err.response?.data?.message || "Failed to check in", type: "error" });
+      }
+    });
   };
 
-  const handleCheckOut = (e: FormEvent) => {
-    e.preventDefault();
-    if (!exitPlate) return;
-    checkOutMutation.mutate({ plateNumber: exitPlate });
+  const onCheckOutSubmit = (data: CheckOutFormValues) => {
+    checkOutMutation.mutate({
+      plateNumber: data.plateNumber,
+    }, {
+      onSuccess: (res: any) => {
+        const feeMsg = res.fee ? ` (Fee: $${res.fee})` : "";
+        setNotification({ message: `Vehicle checked out successfully${feeMsg}`, type: "success" });
+        resetCheckOut();
+      },
+      onError: (err: any) => {
+        setNotification({ message: err.response?.data?.message || "Failed to check out", type: "error" });
+      }
+    });
   };
 
-  const activeSpaces = spaces?.filter(s => s.status === "OCCUPIED") || [];
+  const activeSpaces = (spaces as ParkingSpace[])?.filter(s => s.status === "OCCUPIED") || [];
 
   return (
-    <div className="min-h-screen bg-neutral-bg text-neutral-primary flex flex-col">
+    <div className="min-h-screen bg-neutral-bg text-neutral-primary flex flex-col font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in">
         {notification && (
           <div className={`p-4 rounded-xl border flex items-center gap-3 animate-fade-in ${
             notification.type === "success" 
@@ -159,65 +164,68 @@ export const Dashboard: FC = () => {
         )}
 
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className={`${theme.components.card} space-y-4`}>
+          <Card className="space-y-4">
             <div className="flex justify-between items-center text-neutral-secondary">
-              <span className="text-sm font-semibold">Occupancy Rate</span>
+              <span className="text-sm font-bold uppercase tracking-wider">Occupancy Rate</span>
               <Activity className="w-5 h-5 stroke-[1.5]" />
             </div>
             {isLoading ? (
-              <div className="h-9 w-24 bg-neutral-border animate-pulse rounded-lg" />
+              <Skeleton className="h-9 w-24" />
             ) : (
               <div className="space-y-2">
                 <div className="text-4xl font-extrabold tracking-tight">
-                  {stats?.occupancy.occupancyRate.toFixed(1)}%
+                  {((stats?.occupancy?.occupancyRate) ?? 0).toFixed(1)}%
                 </div>
-                <p className="text-sm text-neutral-secondary">
-                  {stats?.occupancy.occupiedSpaces} of {stats?.occupancy.totalSpaces} spaces filled
+                <p className="text-xs text-neutral-secondary font-semibold">
+                  {stats?.occupancy?.occupiedSpaces ?? 0} of {stats?.occupancy?.totalSpaces ?? 0} spaces filled
                 </p>
                 <div className="w-full bg-neutral-border h-2 rounded-full overflow-hidden">
                   <div 
-                    className="bg-brand-primary h-full rounded-full transition-all duration-500" 
-                    style={{ width: `${stats?.occupancy.occupancyRate}%` }}
+                    className="bg-brand-purple h-full rounded-full transition-all duration-500" 
+                    style={{ width: `${stats?.occupancy?.occupancyRate ?? 0}%` }}
                   />
                 </div>
               </div>
             )}
-          </div>
+          </Card>
 
-          <div className={`${theme.components.card} space-y-4`}>
+          <Card className="space-y-4">
             <div className="flex justify-between items-center text-neutral-secondary">
-              <span className="text-sm font-semibold">Total Revenue</span>
+              <span className="text-sm font-bold uppercase tracking-wider">Total Revenue</span>
               <DollarSign className="w-5 h-5 stroke-[1.5]" />
             </div>
             {isLoading ? (
-              <div className="h-9 w-24 bg-neutral-border animate-pulse rounded-lg" />
+              <Skeleton className="h-9 w-24" />
             ) : (
               <div className="space-y-1">
                 <div className="text-4xl font-extrabold tracking-tight">
-                  ${stats?.financial.totalRevenue.toFixed(2)}
+                  ${(stats?.financial?.totalRevenue ?? 0).toFixed(2)}
                 </div>
-                <div className="flex flex-wrap gap-2 pt-1">
-                  {Object.entries(stats?.financial.revenueByMethod || {}).map(([method, amt]) => (
-                    <span key={method} className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-neutral-border/50 text-neutral-secondary">
-                      {method}: ${amt.toFixed(0)}
-                    </span>
-                  ))}
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {Object.entries(stats?.financial?.revenueByMethod || {}).map(([method, amt]) => {
+                    const parsedAmt = typeof amt === "number" ? amt : parseFloat(amt as string);
+                    return (
+                      <Badge key={method} variant="neutral">
+                        {method}: ${isNaN(parsedAmt) ? 0 : parsedAmt.toFixed(0)}
+                      </Badge>
+                    );
+                  })}
                 </div>
               </div>
             )}
-          </div>
+          </Card>
 
-          <div className={`${theme.components.card} space-y-4`}>
+          <Card className="space-y-4">
             <div className="flex justify-between items-center text-neutral-secondary">
-              <span className="text-sm font-semibold">Active Lots</span>
+              <span className="text-sm font-bold uppercase tracking-wider">Active Lots</span>
               <TrendingUp className="w-5 h-5 stroke-[1.5]" />
             </div>
             <div className="space-y-2">
               <div className="text-4xl font-extrabold tracking-tight">
-                {lots?.length || 0}
+                {(lots as ParkingLot[])?.length || 0}
               </div>
               <div className="flex flex-col gap-1">
-                {lots?.slice(0, 2).map((lot) => (
+                {(lots as ParkingLot[])?.slice(0, 2).map((lot) => (
                   <div key={lot.id} className="flex items-center gap-1.5 text-xs text-neutral-secondary">
                     <MapPin className="w-3.5 h-3.5 shrink-0" />
                     <span className="font-semibold">{lot.name}</span>
@@ -225,153 +233,138 @@ export const Dashboard: FC = () => {
                 ))}
               </div>
             </div>
-          </div>
+          </Card>
         </section>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white border border-neutral-border rounded-2xl shadow-xs overflow-hidden">
-              <div className="px-6 py-5 border-b border-neutral-border flex justify-between items-center">
-                <h3 className="text-lg font-bold text-neutral-primary">Recent Parking Activity</h3>
-                <span className="text-xs font-semibold text-neutral-secondary uppercase tracking-wider">Live Polling</span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-neutral-border">
-                  <thead className="bg-neutral-border/20 text-neutral-secondary text-left text-xs font-semibold uppercase tracking-wider">
-                    <tr>
-                      <th className="px-6 py-3">Vehicle</th>
-                      <th className="px-6 py-3">Space</th>
-                      <th className="px-6 py-3">Check In</th>
-                      <th className="px-6 py-3">Status</th>
-                      <th className="px-6 py-3 text-right">Fee</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-neutral-border text-sm text-neutral-primary">
-                    {stats?.recentSessions.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="px-6 py-10 text-center text-neutral-secondary font-medium">
-                          No recent parking sessions recorded
-                        </td>
-                      </tr>
-                    ) : (
-                      stats?.recentSessions.map((session) => (
-                        <tr key={session.id} className="hover:bg-neutral-border/10 transition-colors">
-                          <td className="px-6 py-4 font-mono font-bold tracking-tight">
-                            {session.plateNumber}
-                          </td>
-                          <td className="px-6 py-4 font-semibold">
-                            {session.spaceNumber}
-                          </td>
-                          <td className="px-6 py-4 text-neutral-secondary text-xs">
-                            {new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
-                              session.status === "ACTIVE" 
-                                ? theme.colors.status.AVAILABLE.badge 
-                                : "bg-neutral-border text-neutral-secondary"
-                            }`}>
-                              {session.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-right font-bold text-neutral-primary">
-                            {session.fee ? `$${session.fee.toFixed(2)}` : "—"}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <Card className="p-0 overflow-hidden">
+              <CardHeader className="px-6 py-5 border-b border-neutral-border flex flex-row justify-between items-center space-y-0">
+                <div>
+                  <CardTitle>Recent Parking Activity</CardTitle>
+                  <CardDescription>Latest registered vehicle check-ins and check-outs.</CardDescription>
+                </div>
+                <Badge variant="default">Live Polling</Badge>
+              </CardHeader>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Vehicle</TableHead>
+                    <TableHead>Space</TableHead>
+                    <TableHead>Check In</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Fee</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {!stats?.recentSessions || stats.recentSessions.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-neutral-secondary font-medium py-10">
+                        {isLoading ? "Loading activity..." : "No recent parking sessions recorded"}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    stats.recentSessions.map((session: RecentSession) => (
+                      <TableRow key={session.id}>
+                        <TableCell className="font-mono font-bold tracking-tight">
+                          {session.plateNumber}
+                        </TableCell>
+                        <TableCell>
+                          {session.spaceNumber}
+                        </TableCell>
+                        <TableCell className="text-neutral-secondary text-xs">
+                          {new Date(session.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={session.status === "ACTIVE" ? "AVAILABLE" : "neutral"}>
+                            {session.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right font-bold text-neutral-primary">
+                          {session.fee ? `$${session.fee.toFixed(2)}` : "—"}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </Card>
           </div>
 
           <div className="space-y-6">
-            <div className={`${theme.components.card} space-y-6`}>
-              <div>
-                <h3 className="text-lg font-bold text-neutral-primary mb-1">Check In Vehicle</h3>
-                <p className="text-xs text-neutral-secondary">Register a vehicle entry and assign a slot.</p>
-              </div>
-              <form onSubmit={handleCheckIn} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-secondary mb-1.5">
-                    Plate Number
-                  </label>
-                  <input
-                    type="text"
-                    value={entryPlate}
-                    onChange={(e) => setEntryPlate(e.target.value.toUpperCase())}
+            <Card>
+              <CardHeader>
+                <CardTitle>Check In Vehicle</CardTitle>
+                <CardDescription>Register a vehicle entry and assign a slot.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleCheckInSubmit(onCheckInSubmit)} className="space-y-4">
+                  <Input
+                    label="Plate Number"
                     placeholder="e.g. MH12AB1234"
-                    className={theme.components.inputMono}
-                    required
+                    mono
+                    error={checkInErrors.plateNumber?.message}
+                    {...registerCheckIn("plateNumber")}
                   />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-secondary mb-1.5">
-                    Available Parking Space
-                  </label>
-                  <select
-                    value={entrySpaceId}
-                    onChange={(e) => setEntrySpaceId(e.target.value)}
-                    className={theme.components.input}
-                    required
+                  <Select
+                    label="Available Parking Space"
+                    error={checkInErrors.spaceId?.message}
+                    {...registerCheckIn("spaceId")}
                   >
                     <option value="">Select a space</option>
-                    {spaces?.filter(s => s.status === "AVAILABLE").map((space) => (
+                    {(spaces as ParkingSpace[])?.filter(s => s.status === "AVAILABLE").map((space) => (
                       <option key={space.id} value={space.id}>
                         {space.spaceNumber} ({space.type})
                       </option>
                     ))}
-                  </select>
-                </div>
-                <button
-                  type="submit"
-                  disabled={checkInMutation.status === "pending"}
-                  className={theme.components.buttonPrimary}
-                >
-                  <Plus className="w-4 h-4 stroke-[2]" />
-                  Check In Entry
-                </button>
-              </form>
-            </div>
+                  </Select>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    isLoading={checkInMutation.status === "pending"}
+                    className="w-full"
+                  >
+                    <Plus className="w-4 h-4 stroke-[2]" />
+                    Check In Entry
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
 
-            <div className={`${theme.components.card} space-y-6`}>
-              <div>
-                <h3 className="text-lg font-bold text-neutral-primary mb-1">Check Out Vehicle</h3>
-                <p className="text-xs text-neutral-secondary">Register exit and calculate outstanding fees.</p>
-              </div>
-              <form onSubmit={handleCheckOut} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-neutral-secondary mb-1.5">
-                    Active Plate Number
-                  </label>
-                  <select
-                    value={exitPlate}
-                    onChange={(e) => setExitPlate(e.target.value)}
-                    className={theme.components.inputMono}
-                    required
+            <Card>
+              <CardHeader>
+                <CardTitle>Check Out Vehicle</CardTitle>
+                <CardDescription>Register exit and calculate outstanding fees.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleCheckOutSubmit(onCheckOutSubmit)} className="space-y-4">
+                  <Select
+                    label="Active Plate Number"
+                    error={checkOutErrors.plateNumber?.message}
+                    {...registerCheckOut("plateNumber")}
                   >
                     <option value="">Select parked vehicle</option>
                     {activeSpaces.map((space) => {
-                      const session = stats?.recentSessions.find(s => s.spaceNumber === space.spaceNumber && s.status === "ACTIVE");
+                      const session = (stats?.recentSessions as RecentSession[])?.find(s => s.spaceNumber === space.spaceNumber && s.status === "ACTIVE");
                       return session ? (
                         <option key={session.id} value={session.plateNumber}>
                           {session.plateNumber} (Space: {space.spaceNumber})
                         </option>
                       ) : null;
                     })}
-                  </select>
-                </div>
-                <button
-                  type="submit"
-                  disabled={checkOutMutation.status === "pending"}
-                  className={theme.components.buttonSecondary}
-                >
-                  <Key className="w-4 h-4 stroke-[1.5]" />
-                  Process Checkout
-                </button>
-              </form>
-            </div>
+                  </Select>
+                  <Button
+                    type="submit"
+                    variant="secondary"
+                    isLoading={checkOutMutation.status === "pending"}
+                    className="w-full"
+                  >
+                    <Key className="w-4 h-4 stroke-[1.5]" />
+                    Process Checkout
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </main>
