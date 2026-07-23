@@ -125,9 +125,6 @@ export const AnprSimulator: FC = () => {
       };
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
       setIsCameraActive(true);
 
       const devices = await navigator.mediaDevices.enumerateDevices();
@@ -159,6 +156,13 @@ export const AnprSimulator: FC = () => {
       await startCamera(deviceId);
     }
   };
+
+  useEffect(() => {
+    if (isCameraActive && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+      videoRef.current.play().catch(() => {});
+    }
+  }, [isCameraActive]);
 
   useEffect(() => {
     return () => {
