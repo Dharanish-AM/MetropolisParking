@@ -318,6 +318,7 @@ export const AnprSimulator: FC = () => {
                         ref={videoRef}
                         autoPlay
                         playsInline
+                        muted
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute inset-0 border-[3px] border-dashed border-brand-primary/50 m-8 rounded-xl pointer-events-none flex items-center justify-center">
