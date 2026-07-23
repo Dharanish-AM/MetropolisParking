@@ -118,8 +118,8 @@
 | # | Task | Status | Notes |
 |---|---|---|---|
 | 8.1 | Full docker-compose up: backend + frontend + postgres + flyway (§47) | ✅ Verified | docker-compose.yml extended with frontend service (nginx:alpine) depending on backend healthcheck |
-| 8.2 | End-to-end manual smoke test of every API endpoint from the UI | 🟡 In Progress | Playwright E2E covers auth/sessions/payments; full manual smoke pending |
-| 8.3 | CORS/reverse-proxy verified in containerized mode | 🟡 In Progress | nginx.conf /api proxy configured; verify on full docker compose up |
+| 8.2 | End-to-end manual smoke test of every API endpoint from the UI | ✅ Verified | Browser smoke test walked through login, dashboard, lots, spaces, vehicles, sessions, payments, and profile successfully |
+| 8.3 | CORS/reverse-proxy verified in containerized mode | ✅ Verified | Rebuilt frontend with VITE_API_URL=/api and verified all API traffic correctly routed through Nginx with backend port 8080 mapping closed |
 | 8.4 | README with setup instructions for both backend and frontend | ✅ Verified | Full README: architecture, prerequisites, Docker quick start, local dev, test commands, env vars, API overview |
 | 8.5 | Final pass against MetropolisParking-Full-Project.md — confirm nothing in the spec is unimplemented | ✅ Verified | Full spec read. Deviations: React Context instead of Redux (functionally equivalent); no Recharts (dashboard uses stat cards). All mandatory requirements implemented. |
 
