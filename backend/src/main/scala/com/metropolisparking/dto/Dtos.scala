@@ -36,6 +36,11 @@ case class ReservationResponse(
   fee: BigDecimal
 )
 
+case class AnprEntryRequest(plateNumber: String, lotId: UUID)
+case class AnprExitRequest(plateNumber: String)
+case class AnprEntryResponse(sessionId: UUID, plateNumber: String, spaceNumber: String, levelNumber: Int, entryTime: String)
+case class AnprExitResponse(sessionId: UUID, plateNumber: String, durationMinutes: Long, fee: BigDecimal, paymentStatus: String)
+
 object DtoFormats {
   implicit val loginRequestFormat: RootJsonFormat[LoginRequest] = jsonFormat2(LoginRequest)
   implicit val userResponseFormat: RootJsonFormat[UserResponse] = jsonFormat4(UserResponse)
@@ -58,4 +63,9 @@ object DtoFormats {
 
   implicit val reservationCreateRequestFormat: RootJsonFormat[ReservationCreateRequest] = jsonFormat3(ReservationCreateRequest)
   implicit val reservationResponseFormat: RootJsonFormat[ReservationResponse] = jsonFormat9(ReservationResponse)
+
+  implicit val anprEntryRequestFormat: RootJsonFormat[AnprEntryRequest] = jsonFormat2(AnprEntryRequest)
+  implicit val anprExitRequestFormat: RootJsonFormat[AnprExitRequest] = jsonFormat1(AnprExitRequest)
+  implicit val anprEntryResponseFormat: RootJsonFormat[AnprEntryResponse] = jsonFormat5(AnprEntryResponse)
+  implicit val anprExitResponseFormat: RootJsonFormat[AnprExitResponse] = jsonFormat5(AnprExitResponse)
 }

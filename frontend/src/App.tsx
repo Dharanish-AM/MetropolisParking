@@ -10,6 +10,7 @@ import { Sessions } from './pages/Sessions';
 import { Payments } from './pages/Payments';
 import { Profile } from './pages/Profile';
 import { Reservations } from './pages/Reservations';
+import { AnprSimulator } from './pages/AnprSimulator';
 import { useWebSocket } from './hooks/useWebSocket';
 
 function App() {
@@ -50,6 +51,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR']}>
                 <Sessions />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/anpr-simulator"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR']}>
+                <AnprSimulator />
               </ProtectedRoute>
             }
           />

@@ -127,7 +127,7 @@
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| 9.1 | ANPR/LPR | ⬜ | Deferred |
+| 9.1 | ANPR/LPR | ✅ Verified | Implemented custom endpoints /anpr/entry and /anpr/exit, database auto-registration/billing, and frontend mobile camera OCR scanning page |
 | 9.2 | QR Code Entry | ⬜ | Deferred |
 | 9.3 | Reservation System | ✅ Verified | Implemented database migration, jOOQ model mapping, overlap check constraint logic, fee calculation rules, and React Reservations page |
 | 9.4 | Multi-tenant / multi-site support | ⬜ | Deferred |
