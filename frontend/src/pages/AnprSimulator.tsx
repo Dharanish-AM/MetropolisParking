@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import type { FC } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import Tesseract from 'tesseract.js';
@@ -19,12 +19,18 @@ import {
   AlertTriangle,
   RefreshCw,
   HelpCircle,
+  Video,
 } from 'lucide-react';
 
 interface ParkingLot {
   id: string;
   name: string;
   location: string;
+}
+
+interface CameraDevice {
+  deviceId: string;
+  label: string;
 }
 
 interface AnprEntryResponse {
@@ -52,10 +58,39 @@ export const AnprSimulator: FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [entryResult, setEntryResult] = useState<AnprEntryResponse | null>(null);
   const [exitResult, setExitResult] = useState<AnprExitResponse | null>(null);
+  const [cameraDevices, setCameraDevices] = useState<CameraDevice[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+
+  const enumerateDevices = useCallback(async () => {
+    try {
+      await navigator.mediaDevices.getUserMedia({ video: true });
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices
+        .filter(d => d.kind === 'videoinput')
+        .map((d, i) => ({
+          deviceId: d.deviceId,
+          label: d.label || `Camera ${i + 1}`,
+        }));
+      setCameraDevices(videoDevices);
+      if (videoDevices.length > 0 && !selectedDeviceId) {
+        setSelectedDeviceId(videoDevices[0].deviceId);
+      }
+    } catch {
+      setCameraDevices([]);
+    }
+  }, [selectedDeviceId]);
+
+  useEffect(() => {
+    enumerateDevices();
+    navigator.mediaDevices.addEventListener('devicechange', enumerateDevices);
+    return () => {
+      navigator.mediaDevices.removeEventListener('devicechange', enumerateDevices);
+    };
+  }, [enumerateDevices]);
 
   const { data: lots } = useQuery<ParkingLot[]>({
     queryKey: ['parking-lots'],
@@ -79,19 +114,31 @@ export const AnprSimulator: FC = () => {
     },
   });
 
-  const startCamera = async () => {
+  const startCamera = async (deviceId?: string) => {
     try {
       setError(null);
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
-      });
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(t => t.stop());
+      }
+      const constraints: MediaStreamConstraints = {
+        video: deviceId ? { deviceId: { exact: deviceId } } : true,
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
       setIsCameraActive(true);
-    } catch (err) {
-      setError('Could not access camera. Make sure permissions are granted.');
+
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices
+        .filter(d => d.kind === 'videoinput')
+        .map((d, i) => ({ deviceId: d.deviceId, label: d.label || `Camera ${i + 1}` }));
+      setCameraDevices(videoDevices);
+    } catch {
+      setError(
+        'Could not access camera. Make sure permissions are granted and the selected device is connected.'
+      );
     }
   };
 
@@ -104,6 +151,13 @@ export const AnprSimulator: FC = () => {
     }
     setIsCameraActive(false);
     streamRef.current = null;
+  };
+
+  const switchCamera = async (deviceId: string) => {
+    setSelectedDeviceId(deviceId);
+    if (isCameraActive) {
+      await startCamera(deviceId);
+    }
   };
 
   useEffect(() => {
@@ -145,10 +199,12 @@ export const AnprSimulator: FC = () => {
       if (cleaned.length >= 4) {
         setPlateNumber(cleaned);
       } else {
-        setError('No valid plate characters detected. Ensure the plate is clear and aligned.');
+        setError(
+          'No valid plate characters detected. Ensure the plate is clear, well-lit and centered in the frame.'
+        );
       }
-    } catch (err) {
-      setError('Optical Character Recognition processing failed.');
+    } catch {
+      setError('OCR processing failed. Please try again or enter the plate manually.');
     } finally {
       setIsOcrProcessing(false);
     }
@@ -157,15 +213,9 @@ export const AnprSimulator: FC = () => {
   const generateMockPlate = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const nums = '0123456789';
-    let mockPlate = '';
-    for (let i = 0; i < 2; i++) mockPlate += chars.charAt(Math.floor(Math.random() * chars.length));
-    mockPlate += '-';
-    for (let i = 0; i < 2; i++) mockPlate += nums.charAt(Math.floor(Math.random() * nums.length));
-    mockPlate += '-';
-    for (let i = 0; i < 2; i++) mockPlate += chars.charAt(Math.floor(Math.random() * chars.length));
-    mockPlate += '-';
-    for (let i = 0; i < 4; i++) mockPlate += nums.charAt(Math.floor(Math.random() * nums.length));
-    setPlateNumber(mockPlate);
+    const rand = (s: string) => s.charAt(Math.floor(Math.random() * s.length));
+    const plate = `${rand(chars)}${rand(chars)}-${rand(nums)}${rand(nums)}-${rand(chars)}${rand(chars)}-${rand(nums)}${rand(nums)}${rand(nums)}${rand(nums)}`;
+    setPlateNumber(plate);
     setError(null);
   };
 
@@ -178,20 +228,15 @@ export const AnprSimulator: FC = () => {
       setError('Please scan or enter a license plate number.');
       return;
     }
-
     setEntryResult(null);
     setExitResult(null);
     setError(null);
-
     entryMutation.mutate(
       { plateNumber, lotId: selectedLotId },
       {
-        onSuccess: (data: AnprEntryResponse) => {
-          setEntryResult(data);
-        },
-        onError: (err: any) => {
-          setError(err.response?.data?.message || 'Failed to process gate entry.');
-        },
+        onSuccess: (data: AnprEntryResponse) => setEntryResult(data),
+        onError: (err: any) =>
+          setError(err.response?.data?.message || 'Failed to process gate entry.'),
       }
     );
   };
@@ -201,22 +246,17 @@ export const AnprSimulator: FC = () => {
       setError('Please scan or enter a license plate number.');
       return;
     }
-
     setEntryResult(null);
     setExitResult(null);
     setError(null);
-
     exitMutation.mutate(
       { plateNumber },
       {
-        onSuccess: (data: AnprExitResponse) => {
-          setExitResult(data);
-        },
-        onError: (err: any) => {
+        onSuccess: (data: AnprExitResponse) => setExitResult(data),
+        onError: (err: any) =>
           setError(
             err.response?.data?.message || 'No active session found for this license plate.'
-          );
-        },
+          ),
       }
     );
   };
@@ -229,7 +269,8 @@ export const AnprSimulator: FC = () => {
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight">ANPR Camera Simulator</h1>
           <p className="text-neutral-secondary text-sm mt-1">
-            Simulate entry & exit operations using plate scan simulation
+            Use any connected camera — including <strong>iVCam</strong> — to scan license plates in
+            real time
           </p>
         </div>
 
@@ -238,13 +279,38 @@ export const AnprSimulator: FC = () => {
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <Camera className="w-5 h-5 text-brand-primary" />
-                  <span className="font-bold text-sm uppercase tracking-wider">
-                    Gate Camera Source
-                  </span>
+                  <Video className="w-5 h-5 text-brand-primary" />
+                  <span className="font-bold text-sm uppercase tracking-wider">Camera Source</span>
                 </div>
               </CardHeader>
               <div className="p-6 space-y-4">
+                {cameraDevices.length > 0 ? (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-neutral-secondary uppercase tracking-wider">
+                      Select Camera / iVCam Device
+                    </label>
+                    <Select value={selectedDeviceId} onChange={e => switchCamera(e.target.value)}>
+                      {cameraDevices.map(d => (
+                        <option key={d.deviceId} value={d.deviceId}>
+                          {d.label}
+                        </option>
+                      ))}
+                    </Select>
+                    <p className="text-[11px] text-neutral-secondary">
+                      iVCam, DroidCam or any virtual webcam will appear in this list once its app is
+                      running on your phone.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-100 rounded-xl text-amber-700 text-xs">
+                    <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span>
+                      No cameras detected. Start iVCam on your iPhone or grant browser permissions
+                      first.
+                    </span>
+                  </div>
+                )}
+
                 <div className="relative aspect-video rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-border flex items-center justify-center">
                   {isCameraActive ? (
                     <>
@@ -257,6 +323,11 @@ export const AnprSimulator: FC = () => {
                       <div className="absolute inset-0 border-[3px] border-dashed border-brand-primary/50 m-8 rounded-xl pointer-events-none flex items-center justify-center">
                         <ScanLine className="w-8 h-8 text-brand-primary animate-pulse" />
                       </div>
+                      {selectedDeviceId && cameraDevices.length > 0 && (
+                        <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] px-2 py-1 rounded-lg font-mono truncate max-w-[80%]">
+                          {cameraDevices.find(d => d.deviceId === selectedDeviceId)?.label}
+                        </div>
+                      )}
                     </>
                   ) : (
                     <div className="text-center space-y-2">
@@ -280,14 +351,16 @@ export const AnprSimulator: FC = () => {
                     </>
                   ) : (
                     <Button
-                      onClick={startCamera}
+                      onClick={() => startCamera(selectedDeviceId || undefined)}
                       className="w-full flex items-center justify-center gap-2"
+                      disabled={cameraDevices.length === 0}
                     >
                       <Camera className="w-4 h-4" />
                       <span>Start Camera Stream</span>
                     </Button>
                   )}
                 </div>
+
                 {isOcrProcessing && (
                   <div className="space-y-1">
                     <div className="flex justify-between text-xs font-bold text-brand-primary">
@@ -375,8 +448,8 @@ export const AnprSimulator: FC = () => {
               <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-700 text-sm flex gap-3 items-start animate-shake">
                 <AlertTriangle className="w-5 h-5 shrink-0" />
                 <div>
-                  <span className="font-bold">Simulation Error:</span>
-                  <p className="mt-0.5">{error}</p>
+                  <span className="font-bold">Error: </span>
+                  <span>{error}</span>
                 </div>
               </div>
             )}
@@ -390,11 +463,10 @@ export const AnprSimulator: FC = () => {
                   <div>
                     <h3 className="text-xl font-bold text-emerald-900">Entry Gate Opened</h3>
                     <p className="text-emerald-700 text-xs mt-0.5">
-                      Automated registration and space allocation completed
+                      Vehicle registered and space allocated
                     </p>
                   </div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-white border border-emerald-100/50 rounded-2xl p-4">
                     <span className="text-[10px] text-emerald-800/60 uppercase font-bold tracking-wider">
@@ -413,7 +485,6 @@ export const AnprSimulator: FC = () => {
                     </p>
                   </div>
                 </div>
-
                 <div className="bg-white border border-emerald-100/50 rounded-2xl p-6 space-y-4">
                   <div className="flex justify-between items-center text-sm border-b border-emerald-50 pb-3">
                     <span className="text-emerald-800/60 font-medium">Scanned Plate</span>
@@ -442,11 +513,10 @@ export const AnprSimulator: FC = () => {
                       Exit Gate Bill Summary
                     </h3>
                     <p className="text-neutral-secondary text-xs mt-0.5">
-                      License plate departure scanned & auto-billed
+                      Departure scanned &amp; payment auto-settled
                     </p>
                   </div>
                 </div>
-
                 <div className="bg-white border border-neutral-border rounded-2xl p-6 space-y-4">
                   <div className="flex justify-between items-center text-sm border-b border-neutral-border pb-3">
                     <span className="text-neutral-secondary font-medium">Scanned Plate</span>
@@ -477,10 +547,10 @@ export const AnprSimulator: FC = () => {
             {!entryResult && !exitResult && !error && (
               <div className="bg-neutral-card/50 border border-neutral-border rounded-3xl p-12 text-center flex flex-col items-center justify-center space-y-3 min-h-[300px]">
                 <HelpCircle className="w-12 h-12 text-neutral-border" />
-                <h4 className="font-bold text-neutral-primary">Awaiting Simulation Trigger</h4>
+                <h4 className="font-bold text-neutral-primary">Awaiting Scan</h4>
                 <p className="text-neutral-secondary text-sm max-w-sm">
-                  Point the camera at a license plate, scan it, and click simulate to view real-time
-                  gate responses.
+                  Select your <strong>iVCam</strong> or any connected camera, start the stream,
+                  point it at a license plate, then hit <em>Scan Plate</em> to auto-fill the number.
                 </p>
               </div>
             )}
