@@ -47,6 +47,7 @@ object Main {
     val paymentRepo = new PaymentRepository(dslContext)
     val pricingRuleRepo = new PricingRuleRepository(dslContext)
     val auditLogRepo = new AuditLogRepository(dslContext)
+    val reservationRepo = new ReservationRepository(dslContext)
 
     val auditLogService = new AuditLogService(auditLogRepo)
     val authService = new AuthService(userRepo, securityModule, auditLogService)
@@ -56,6 +57,7 @@ object Main {
     val sessionService = new ParkingSessionService(sessionRepo, lotRepo, vehicleService, pricingRuleRepo, paymentRepo, auditLogService, wsService)
     val paymentService = new PaymentService(paymentRepo, auditLogService)
     val dashboardService = new DashboardService(dslContext)
+    val reservationService = new ReservationService(reservationRepo, lotRepo, pricingRuleRepo, auditLogService, wsService)
 
     val authRoutes = new AuthRoutes(authService, rbacMiddleware)
     val lotRoutes = new ParkingLotRoutes(lotService, rbacMiddleware)
@@ -66,6 +68,7 @@ object Main {
     val dashboardRoutes = new DashboardRoutes(dashboardService, rbacMiddleware)
     val wsRoutes = new WebSocketRoutes(wsService)
     val docRoutes = new DocRoutes
+    val reservationRoutes = new ReservationRoutes(reservationService, rbacMiddleware)
 
     val healthRoute =
       path("health") {
@@ -84,7 +87,8 @@ object Main {
       paymentRoutes.routes ~
       dashboardRoutes.routes ~
       wsRoutes.routes ~
-      docRoutes.routes
+      docRoutes.routes ~
+      reservationRoutes.routes
 
     val finalRoute = handleExceptions(GlobalErrorHandler.exceptionHandler) {
       handleRejections(GlobalErrorHandler.rejectionHandler) {

@@ -9,6 +9,7 @@ import { Vehicles } from './pages/Vehicles';
 import { Sessions } from './pages/Sessions';
 import { Payments } from './pages/Payments';
 import { Profile } from './pages/Profile';
+import { Reservations } from './pages/Reservations';
 import { useWebSocket } from './hooks/useWebSocket';
 
 function App() {
@@ -49,6 +50,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR']}>
                 <Sessions />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reservations"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR', 'CUSTOMER']}>
+                <Reservations />
               </ProtectedRoute>
             }
           />

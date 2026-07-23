@@ -12,6 +12,7 @@ import com.metropolisparking.jooq.tables.ParkingSpaces
 import com.metropolisparking.jooq.tables.Payments
 import com.metropolisparking.jooq.tables.Permissions
 import com.metropolisparking.jooq.tables.PricingRules
+import com.metropolisparking.jooq.tables.Reservations
 import com.metropolisparking.jooq.tables.RolePermissions
 import com.metropolisparking.jooq.tables.Roles
 import com.metropolisparking.jooq.tables.Users
@@ -24,6 +25,7 @@ import com.metropolisparking.jooq.tables.records.ParkingSpacesRecord
 import com.metropolisparking.jooq.tables.records.PaymentsRecord
 import com.metropolisparking.jooq.tables.records.PermissionsRecord
 import com.metropolisparking.jooq.tables.records.PricingRulesRecord
+import com.metropolisparking.jooq.tables.records.ReservationsRecord
 import com.metropolisparking.jooq.tables.records.RolePermissionsRecord
 import com.metropolisparking.jooq.tables.records.RolesRecord
 import com.metropolisparking.jooq.tables.records.UsersRecord
@@ -57,6 +59,7 @@ object Keys {
   val PERMISSIONS_NAME_KEY: UniqueKey[PermissionsRecord] = Internal.createUniqueKey(Permissions.PERMISSIONS, DSL.name("permissions_name_key"), Array(Permissions.PERMISSIONS.NAME).asInstanceOf[Array[TableField[PermissionsRecord, _] ] ], true)
   val PERMISSIONS_PKEY: UniqueKey[PermissionsRecord] = Internal.createUniqueKey(Permissions.PERMISSIONS, DSL.name("permissions_pkey"), Array(Permissions.PERMISSIONS.ID).asInstanceOf[Array[TableField[PermissionsRecord, _] ] ], true)
   val PRICING_RULES_PKEY: UniqueKey[PricingRulesRecord] = Internal.createUniqueKey(PricingRules.PRICING_RULES, DSL.name("pricing_rules_pkey"), Array(PricingRules.PRICING_RULES.ID).asInstanceOf[Array[TableField[PricingRulesRecord, _] ] ], true)
+  val RESERVATIONS_PKEY: UniqueKey[ReservationsRecord] = Internal.createUniqueKey(Reservations.RESERVATIONS, DSL.name("reservations_pkey"), Array(Reservations.RESERVATIONS.ID).asInstanceOf[Array[TableField[ReservationsRecord, _] ] ], true)
   val ROLE_PERMISSIONS_PKEY: UniqueKey[RolePermissionsRecord] = Internal.createUniqueKey(RolePermissions.ROLE_PERMISSIONS, DSL.name("role_permissions_pkey"), Array(RolePermissions.ROLE_PERMISSIONS.ROLE_ID, RolePermissions.ROLE_PERMISSIONS.PERMISSION_ID).asInstanceOf[Array[TableField[RolePermissionsRecord, _] ] ], true)
   val ROLES_NAME_KEY: UniqueKey[RolesRecord] = Internal.createUniqueKey(Roles.ROLES, DSL.name("roles_name_key"), Array(Roles.ROLES.NAME).asInstanceOf[Array[TableField[RolesRecord, _] ] ], true)
   val ROLES_PKEY: UniqueKey[RolesRecord] = Internal.createUniqueKey(Roles.ROLES, DSL.name("roles_pkey"), Array(Roles.ROLES.ID).asInstanceOf[Array[TableField[RolesRecord, _] ] ], true)
@@ -77,6 +80,8 @@ object Keys {
   val PARKING_SPACES__PARKING_SPACES_LOT_ID_FKEY: ForeignKey[ParkingSpacesRecord, ParkingLotsRecord] = Internal.createForeignKey(ParkingSpaces.PARKING_SPACES, DSL.name("parking_spaces_lot_id_fkey"), Array(ParkingSpaces.PARKING_SPACES.LOT_ID).asInstanceOf[Array[TableField[ParkingSpacesRecord, _] ] ], Keys.PARKING_LOTS_PKEY, Array(ParkingLots.PARKING_LOTS.ID).asInstanceOf[Array[TableField[ParkingLotsRecord, _] ] ], true)
   val PAYMENTS__PAYMENTS_SESSION_ID_FKEY: ForeignKey[PaymentsRecord, ParkingSessionsRecord] = Internal.createForeignKey(Payments.PAYMENTS, DSL.name("payments_session_id_fkey"), Array(Payments.PAYMENTS.SESSION_ID).asInstanceOf[Array[TableField[PaymentsRecord, _] ] ], Keys.PARKING_SESSIONS_PKEY, Array(ParkingSessions.PARKING_SESSIONS.ID).asInstanceOf[Array[TableField[ParkingSessionsRecord, _] ] ], true)
   val PRICING_RULES__PRICING_RULES_LOT_ID_FKEY: ForeignKey[PricingRulesRecord, ParkingLotsRecord] = Internal.createForeignKey(PricingRules.PRICING_RULES, DSL.name("pricing_rules_lot_id_fkey"), Array(PricingRules.PRICING_RULES.LOT_ID).asInstanceOf[Array[TableField[PricingRulesRecord, _] ] ], Keys.PARKING_LOTS_PKEY, Array(ParkingLots.PARKING_LOTS.ID).asInstanceOf[Array[TableField[ParkingLotsRecord, _] ] ], true)
+  val RESERVATIONS__RESERVATIONS_SPACE_ID_FKEY: ForeignKey[ReservationsRecord, ParkingSpacesRecord] = Internal.createForeignKey(Reservations.RESERVATIONS, DSL.name("reservations_space_id_fkey"), Array(Reservations.RESERVATIONS.SPACE_ID).asInstanceOf[Array[TableField[ReservationsRecord, _] ] ], Keys.PARKING_SPACES_PKEY, Array(ParkingSpaces.PARKING_SPACES.ID).asInstanceOf[Array[TableField[ParkingSpacesRecord, _] ] ], true)
+  val RESERVATIONS__RESERVATIONS_USER_ID_FKEY: ForeignKey[ReservationsRecord, UsersRecord] = Internal.createForeignKey(Reservations.RESERVATIONS, DSL.name("reservations_user_id_fkey"), Array(Reservations.RESERVATIONS.USER_ID).asInstanceOf[Array[TableField[ReservationsRecord, _] ] ], Keys.USERS_PKEY, Array(Users.USERS.ID).asInstanceOf[Array[TableField[UsersRecord, _] ] ], true)
   val ROLE_PERMISSIONS__ROLE_PERMISSIONS_PERMISSION_ID_FKEY: ForeignKey[RolePermissionsRecord, PermissionsRecord] = Internal.createForeignKey(RolePermissions.ROLE_PERMISSIONS, DSL.name("role_permissions_permission_id_fkey"), Array(RolePermissions.ROLE_PERMISSIONS.PERMISSION_ID).asInstanceOf[Array[TableField[RolePermissionsRecord, _] ] ], Keys.PERMISSIONS_PKEY, Array(Permissions.PERMISSIONS.ID).asInstanceOf[Array[TableField[PermissionsRecord, _] ] ], true)
   val ROLE_PERMISSIONS__ROLE_PERMISSIONS_ROLE_ID_FKEY: ForeignKey[RolePermissionsRecord, RolesRecord] = Internal.createForeignKey(RolePermissions.ROLE_PERMISSIONS, DSL.name("role_permissions_role_id_fkey"), Array(RolePermissions.ROLE_PERMISSIONS.ROLE_ID).asInstanceOf[Array[TableField[RolePermissionsRecord, _] ] ], Keys.ROLES_PKEY, Array(Roles.ROLES.ID).asInstanceOf[Array[TableField[RolesRecord, _] ] ], true)
   val USERS__USERS_ROLE_ID_FKEY: ForeignKey[UsersRecord, RolesRecord] = Internal.createForeignKey(Users.USERS, DSL.name("users_role_id_fkey"), Array(Users.USERS.ROLE_ID).asInstanceOf[Array[TableField[UsersRecord, _] ] ], Keys.ROLES_PKEY, Array(Roles.ROLES.ID).asInstanceOf[Array[TableField[RolesRecord, _] ] ], true)

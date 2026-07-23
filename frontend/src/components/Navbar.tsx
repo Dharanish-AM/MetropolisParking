@@ -10,6 +10,7 @@ import {
   Clock,
   CreditCard,
   User,
+  Calendar,
 } from 'lucide-react';
 import { MetropolisLogo } from './MetropolisLogo';
 
@@ -31,6 +32,12 @@ export const Navbar: FC = () => {
       roles: ['ADMIN', 'OPERATOR'],
     },
     { label: 'Sessions', path: '/sessions', icon: Clock, roles: ['ADMIN', 'OPERATOR'] },
+    {
+      label: 'Reservations',
+      path: '/reservations',
+      icon: Calendar,
+      roles: ['ADMIN', 'OPERATOR', 'CUSTOMER'],
+    },
     { label: 'Payments', path: '/payments', icon: CreditCard, roles: ['ADMIN', 'OPERATOR'] },
     { label: 'Vehicles', path: '/vehicles', icon: Car, roles: ['ADMIN', 'OPERATOR', 'CUSTOMER'] },
     { label: 'Profile', path: '/profile', icon: User, roles: ['ADMIN', 'OPERATOR', 'CUSTOMER'] },

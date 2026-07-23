@@ -50,4 +50,5 @@ object JsonFormats extends DefaultJsonProtocol {
   implicit val paymentFormat: RootJsonFormat[Payment] = jsonFormat5(Payment)
   implicit val pricingRuleFormat: RootJsonFormat[PricingRule] = jsonFormat5(PricingRule)
   implicit val auditLogFormat: RootJsonFormat[AuditLog] = jsonFormat7(AuditLog)
+  implicit val reservationFormat: RootJsonFormat[Reservation] = jsonFormat9(Reservation)
 }
