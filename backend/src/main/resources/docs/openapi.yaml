@@ -1,0 +1,646 @@
+openapi: 3.0.3
+info:
+  title: MetropolisParking Platform API
+  version: 1.0.0
+  description: Enterprise smart parking management API documentation.
+paths:
+  /auth/login:
+    post:
+      summary: User Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Successful Login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Invalid Credentials
+
+  /auth/logout:
+    post:
+      summary: User Logout
+      responses:
+        '200':
+          description: Logged out successfully
+
+  /me:
+    get:
+      summary: Get Current Profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Current user profile details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+
+  /parking-lots:
+    get:
+      summary: List Parking Lots
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of all lots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ParkingLot'
+    post:
+      summary: Create Parking Lot
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParkingLotCreate'
+      responses:
+        '201':
+          description: Lot created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingLot'
+
+  /parking-lots/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Get Parking Lot Details
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lot details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingLot'
+    put:
+      summary: Update Parking Lot
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParkingLotCreate'
+      responses:
+        '200':
+          description: Lot updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingLot'
+    delete:
+      summary: Delete Parking Lot
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lot deleted successfully
+
+  /parking-lots/{id}/levels:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: List Parking Levels
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of levels
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ParkingLevel'
+    post:
+      summary: Create Parking Level
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - levelNumber
+              properties:
+                levelNumber:
+                  type: integer
+      responses:
+        '201':
+          description: Level created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingLevel'
+
+  /spaces:
+    get:
+      summary: List Parking Spaces
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: lotId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: levelId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of spaces
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ParkingSpace'
+    post:
+      summary: Create Parking Space
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParkingSpaceCreate'
+      responses:
+        '201':
+          description: Space created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingSpace'
+
+  /spaces/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      summary: Update Parking Space
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParkingSpaceCreate'
+      responses:
+        '200':
+          description: Space updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingSpace'
+
+  /vehicles:
+    get:
+      summary: List Vehicles
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of vehicles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Vehicle'
+    post:
+      summary: Register Vehicle
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleCreate'
+      responses:
+        '201':
+          description: Vehicle registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+
+  /sessions:
+    get:
+      summary: List Parking Sessions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: activeOnly
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: List of sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ParkingSession'
+
+  /sessions/start:
+    post:
+      summary: Start Parking Session
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - plateNumber
+                - spaceId
+              properties:
+                plateNumber:
+                  type: string
+                spaceId:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Session started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingSession'
+
+  /sessions/end:
+    post:
+      summary: End Parking Session
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - plateNumber
+              properties:
+                plateNumber:
+                  type: string
+      responses:
+        '200':
+          description: Session ended and fee calculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingSession'
+
+  /sessions/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Get Parking Session Details
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Session details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParkingSession'
+
+  /payments:
+    get:
+      summary: List Payments
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Payment'
+
+  /payments/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      summary: Settle Payment
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - method
+              properties:
+                method:
+                  type: string
+                  enum: [CASH, CARD, UPI, WALLET]
+      responses:
+        '200':
+          description: Payment settled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+
+  /dashboard:
+    get:
+      summary: Get Dashboard Analytics
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Analytics dashboard metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardMetrics'
+
+  /health:
+    get:
+      summary: Get System Health Status
+      responses:
+        '200':
+          description: System healthy
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: OK
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [ADMIN, OPERATOR, CUSTOMER]
+
+    ParkingLot:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        location:
+          type: string
+
+    ParkingLotCreate:
+      type: object
+      required:
+        - name
+        - location
+      properties:
+        name:
+          type: string
+        location:
+          type: string
+
+    ParkingLevel:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        lotId:
+          type: string
+          format: uuid
+        levelNumber:
+          type: integer
+
+    ParkingSpace:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        lotId:
+          type: string
+          format: uuid
+        levelId:
+          type: string
+          format: uuid
+        spaceNumber:
+          type: string
+        type:
+          type: string
+          enum: [CAR, BIKE, SUV, TRUCK, EV]
+        status:
+          type: string
+          enum: [AVAILABLE, OCCUPIED, RESERVED, OUT_OF_SERVICE]
+
+    ParkingSpaceCreate:
+      type: object
+      required:
+        - lotId
+        - levelId
+        - spaceNumber
+        - type
+      properties:
+        lotId:
+          type: string
+          format: uuid
+        levelId:
+          type: string
+          format: uuid
+        spaceNumber:
+          type: string
+        type:
+          type: string
+          enum: [CAR, BIKE, SUV, TRUCK, EV]
+
+    Vehicle:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        plateNumber:
+          type: string
+        type:
+          type: string
+        ownerId:
+          type: string
+          format: uuid
+          nullable: true
+
+    VehicleCreate:
+      type: object
+      required:
+        - plateNumber
+        - type
+      properties:
+        plateNumber:
+          type: string
+        type:
+          type: string
+        ownerId:
+          type: string
+          format: uuid
+          nullable: true
+
+    ParkingSession:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        vehicleId:
+          type: string
+          format: uuid
+        spaceId:
+          type: string
+          format: uuid
+        entryTime:
+          type: string
+          format: date-time
+        exitTime:
+          type: string
+          format: date-time
+          nullable: true
+        durationMinutes:
+          type: integer
+          nullable: true
+        fee:
+          type: number
+          format: double
+          nullable: true
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sessionId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          format: double
+        method:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, SUCCESS, FAILED, REFUNDED]
+
+    DashboardMetrics:
+      type: object
+      properties:
+        occupancyRate:
+          type: number
+        totalRevenue:
+          type: number
+        activeSessions:
+          type: integer
+        availableSpaces:
+          type: integer
+        revenueByMethod:
+          type: object
+          additionalProperties:
+            type: number
+        topLotsByUsage:
+          type: array
+          items:
+            type: object
+            properties:
+              lotName:
+                type: string
+              activeSessions:
+                type: integer

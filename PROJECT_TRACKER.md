@@ -133,7 +133,7 @@
 | 9.4 | Multi-tenant / multi-site support | ⬜ | Deferred |
 | 9.5 | WebSocket live occupancy (§40) | ✅ Verified | Implemented lightweight Akka Streams WebSocket broadcast to push space updates and dashboard updates for live TanStack Query invalidation |
 | 9.6 | Kafka / Redis caching / background jobs | ⬜ | Deferred |
-| 9.7 | OpenAPI/Swagger docs | ⬜ | Deferred |
+| 9.7 | OpenAPI/Swagger docs | ✅ Verified | Created full OpenAPI 3.0 YAML specification and CDN-based Swagger UI index.html, served via Akka HTTP resources at /api/docs |
 
 ---
 

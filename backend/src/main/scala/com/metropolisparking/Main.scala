@@ -65,6 +65,7 @@ object Main {
     val paymentRoutes = new PaymentRoutes(paymentService, rbacMiddleware)
     val dashboardRoutes = new DashboardRoutes(dashboardService, rbacMiddleware)
     val wsRoutes = new WebSocketRoutes(wsService)
+    val docRoutes = new DocRoutes
 
     val healthRoute =
       path("health") {
@@ -82,7 +83,8 @@ object Main {
       sessionRoutes.routes ~
       paymentRoutes.routes ~
       dashboardRoutes.routes ~
-      wsRoutes.routes
+      wsRoutes.routes ~
+      docRoutes.routes
 
     val finalRoute = handleExceptions(GlobalErrorHandler.exceptionHandler) {
       handleRejections(GlobalErrorHandler.rejectionHandler) {
