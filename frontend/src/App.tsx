@@ -9,8 +9,11 @@ import { Vehicles } from './pages/Vehicles';
 import { Sessions } from './pages/Sessions';
 import { Payments } from './pages/Payments';
 import { Profile } from './pages/Profile';
+import { useWebSocket } from './hooks/useWebSocket';
 
 function App() {
+  useWebSocket();
+
   return (
     <AuthProvider>
       <BrowserRouter>

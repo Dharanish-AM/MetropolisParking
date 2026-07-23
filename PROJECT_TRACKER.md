@@ -131,7 +131,7 @@
 | 9.2 | QR Code Entry | ⬜ | Deferred |
 | 9.3 | Reservation System | ⬜ | Deferred |
 | 9.4 | Multi-tenant / multi-site support | ⬜ | Deferred |
-| 9.5 | WebSocket live occupancy (§40) | ⬜ | Deferred |
+| 9.5 | WebSocket live occupancy (§40) | ✅ Verified | Implemented lightweight Akka Streams WebSocket broadcast to push space updates and dashboard updates for live TanStack Query invalidation |
 | 9.6 | Kafka / Redis caching / background jobs | ⬜ | Deferred |
 | 9.7 | OpenAPI/Swagger docs | ⬜ | Deferred |
 

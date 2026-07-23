@@ -13,7 +13,8 @@ class ParkingSessionService(
   vehicleService: VehicleService,
   pricingRuleRepo: PricingRuleRepository,
   paymentRepo: PaymentRepository,
-  auditLogService: AuditLogService
+  auditLogService: AuditLogService,
+  wsService: WebSocketService
 ) {
   def startSession(req: SessionStartRequest, userId: Option[UUID]): ParkingSession = {
     val vehicle = vehicleService.getByPlateNumber(req.plateNumber).getOrElse {
@@ -51,6 +52,8 @@ class ParkingSessionService(
         Some(session.id),
         Some(s"Vehicle ${vehicle.plateNumber} entered space ${space.spaceNumber}")
       )
+      wsService.broadcast(s"""{"event":"space_updated","spaceId":"${space.id}","status":"OCCUPIED"}""")
+      wsService.broadcast("""{"event":"dashboard_updated"}""")
       session
     }
   }
@@ -99,6 +102,8 @@ class ParkingSessionService(
         Some(session.id),
         Some(s"Vehicle ${vehicle.plateNumber} left space ${space.spaceNumber}. Fee: $fee")
       )
+      wsService.broadcast(s"""{"event":"space_updated","spaceId":"${space.id}","status":"AVAILABLE"}""")
+      wsService.broadcast("""{"event":"dashboard_updated"}""")
       updatedSession
     }
   }
