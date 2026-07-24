@@ -21,6 +21,7 @@ import { Modal } from '../components/ui/Modal';
 import { Skeleton } from '../components/ui/Skeleton';
 import { useSessions, useStartSession, useEndSession } from '../features/sessions/hooks';
 import { useSpaces } from '../features/spaces/hooks';
+import { useVehicles } from '../features/vehicles/hooks';
 import { Clock, Plus, Square, Search, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 const startSessionSchema = z.object({
@@ -48,9 +49,13 @@ export const Sessions: FC = () => {
 
   const { data: sessions, isLoading, refetch } = useSessions();
   const { data: spaces } = useSpaces();
+  const { data: vehicles } = useVehicles();
 
   const startSessionMutation = useStartSession();
   const endSessionMutation = useEndSession();
+
+  const vehicleMap = new Map<string, string>((vehicles || []).map((v: any) => [v.id, v.plateNumber]));
+  const spaceMap = new Map<string, string>((spaces || []).map((s: any) => [s.id, s.spaceNumber]));
 
   const {
     register,
@@ -114,9 +119,11 @@ export const Sessions: FC = () => {
   };
 
   const filteredSessions = (sessions || []).filter(session => {
+    const plate = session.plateNumber || vehicleMap.get(session.vehicleId) || '';
+    const spaceNum = session.spaceNumber || spaceMap.get(session.spaceId) || '';
     const matchesPlate =
-      (session.plateNumber || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (session.spaceNumber || '').toLowerCase().includes(searchTerm.toLowerCase());
+      plate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      spaceNum.toLowerCase().includes(searchTerm.toLowerCase());
 
     const isSessionActive =
       session.exitTime === null || session.exitTime === undefined || session.status === 'ACTIVE';
@@ -131,6 +138,26 @@ export const Sessions: FC = () => {
   });
 
   const availableSpaces = (spaces || []).filter((space: any) => space.status === 'AVAILABLE');
+
+  const formatDuration = (session: any): string => {
+    const mins = session.durationMinutes ?? session.duration;
+    if (mins !== undefined && mins !== null) {
+      if (mins < 60) return `${mins} min${mins === 1 ? '' : 's'}`;
+      const hrs = Math.floor(mins / 60);
+      const rem = mins % 60;
+      return `${hrs}h ${rem}m`;
+    }
+    if (session.entryTime && session.exitTime) {
+      const diffMins = Math.max(
+        1,
+        Math.round(
+          (new Date(session.exitTime).getTime() - new Date(session.entryTime).getTime()) / 60000
+        )
+      );
+      return `${diffMins} min${diffMins === 1 ? '' : 's'}`;
+    }
+    return '—';
+  };
 
   return (
     <div className="min-h-screen bg-neutral-bg text-neutral-primary flex flex-col font-sans">
@@ -281,13 +308,15 @@ export const Sessions: FC = () => {
                     session.exitTime === null ||
                     session.exitTime === undefined ||
                     session.status === 'ACTIVE';
+                  const plate = session.plateNumber || vehicleMap.get(session.vehicleId) || '—';
+                  const spaceNum = session.spaceNumber || spaceMap.get(session.spaceId) || '—';
                   return (
                     <TableRow key={session.id}>
                       <TableCell className="font-mono font-bold tracking-tight text-neutral-primary">
-                        {session.plateNumber || '—'}
+                        {plate}
                       </TableCell>
                       <TableCell className="font-semibold text-neutral-primary">
-                        {session.spaceNumber || '—'}
+                        {spaceNum}
                       </TableCell>
                       <TableCell className="text-xs text-neutral-secondary">
                         {new Date(session.entryTime).toLocaleString([], {
@@ -304,7 +333,7 @@ export const Sessions: FC = () => {
                           : '—'}
                       </TableCell>
                       <TableCell className="text-sm font-semibold">
-                        {session.duration ? `${session.duration} mins` : '—'}
+                        {formatDuration(session)}
                       </TableCell>
                       <TableCell className="font-bold text-neutral-primary">
                         {session.fee !== null && session.fee !== undefined
@@ -317,10 +346,10 @@ export const Sessions: FC = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        {isActive ? (
+                        {isActive && plate !== '—' ? (
                           <Button
                             variant="secondary"
-                            onClick={() => handleEndSession(session.plateNumber!)}
+                            onClick={() => handleEndSession(plate)}
                             className="px-3 py-1.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-100 font-bold"
                           >
                             <Square className="w-3 h-3 mr-1 fill-red-600 text-red-600" />

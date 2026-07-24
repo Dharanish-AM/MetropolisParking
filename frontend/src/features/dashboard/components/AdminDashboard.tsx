@@ -256,13 +256,13 @@ export const AdminDashboard: FC = () => {
               {(lots as ParkingLot[])?.length || 0}
             </div>
             <div className="flex flex-col gap-1">
-              {(lots as ParkingLot[])?.slice(0, 2).map(lot => (
+              {(lots as ParkingLot[])?.slice(0, 3).map((lot, idx) => (
                 <div
                   key={lot.id}
                   className="flex items-center gap-1.5 text-xs text-neutral-secondary"
                 >
-                  <MapPin className="w-3.5 h-3.5 shrink-0" />
-                  <span className="font-semibold">{lot.name}</span>
+                  <MapPin className="w-3.5 h-3.5 shrink-0 text-brand-primary/70" />
+                  <span className="font-semibold">{lot.name} {lot.location ? `(${lot.location})` : `#${idx + 1}`}</span>
                 </div>
               ))}
             </div>

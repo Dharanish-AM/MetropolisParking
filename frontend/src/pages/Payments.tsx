@@ -176,23 +176,25 @@ export const Payments: FC = () => {
               ) : (
                 payments.map(payment => (
                   <TableRow key={payment.id}>
-                    <TableCell className="font-mono text-xs text-neutral-secondary select-all">
-                      {payment.id}
+                    <TableCell className="font-mono text-xs font-bold text-neutral-primary select-all" title={payment.id}>
+                      #{payment.id.slice(0, 8)}
                     </TableCell>
-                    <TableCell className="font-mono text-xs text-neutral-secondary">
-                      {payment.sessionId}
+                    <TableCell className="font-mono text-xs text-neutral-secondary select-all" title={payment.sessionId}>
+                      #{payment.sessionId.slice(0, 8)}
                     </TableCell>
                     <TableCell className="font-bold text-neutral-primary">
                       ${payment.amount.toFixed(2)}
                     </TableCell>
                     <TableCell className="text-sm font-semibold">
-                      {payment.method ? (
+                      {payment.method && payment.method.toUpperCase() !== 'PENDING' ? (
                         <span className="flex items-center">
                           {getMethodIcon(payment.method)}
                           {payment.method}
                         </span>
                       ) : (
-                        '—'
+                        <span className="text-xs text-neutral-secondary font-medium italic">
+                          Unassigned
+                        </span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -210,8 +212,8 @@ export const Payments: FC = () => {
                           Settle Invoice
                         </Button>
                       ) : (
-                        <span className="text-xs text-neutral-secondary font-semibold pr-3">
-                          Setted
+                        <span className="text-xs text-emerald-600 font-bold pr-3">
+                          Settled
                         </span>
                       )}
                     </TableCell>
