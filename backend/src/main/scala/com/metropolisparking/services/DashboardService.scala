@@ -1,12 +1,28 @@
 package com.metropolisparking.services
 
 import com.metropolisparking.dto.{DashboardStats, OccupancyStats, FinancialStats, SessionDetail}
+import com.metropolisparking.dto.DtoFormats._
 import com.metropolisparking.jooq.Tables.{PARKING_SPACES, PAYMENTS, PARKING_SESSIONS, VEHICLES}
 import org.jooq.DSLContext
+import spray.json._
 import scala.jdk.CollectionConverters._
+import scala.util.Try
 
-class DashboardService(dsl: DSLContext) {
+class DashboardService(dsl: DSLContext, redisService: Option[RedisService] = None) {
+  private val CacheKey = "dashboard:stats"
+  private val CacheTtlSeconds = 30
+
   def getStats(): DashboardStats = {
+    redisService.flatMap(_.get(CacheKey)).flatMap { cachedJson =>
+      Try(cachedJson.parseJson.convertTo[DashboardStats]).toOption
+    }.getOrElse {
+      val stats = computeStats()
+      redisService.foreach(_.setEx(CacheKey, CacheTtlSeconds, stats.toJson.compactPrint))
+      stats
+    }
+  }
+
+  private def computeStats(): DashboardStats = {
     val totalSpaces = dsl.fetchCount(PARKING_SPACES, PARKING_SPACES.DELETED_AT.isNull)
     val occupiedSpaces = dsl.fetchCount(
       PARKING_SPACES,
@@ -53,5 +69,9 @@ class DashboardService(dsl: DSLContext) {
       }.toList
 
     DashboardStats(occupancy, financial, recent)
+  }
+
+  def invalidateCache(): Unit = {
+    redisService.foreach(_.del(CacheKey))
   }
 }

@@ -11,6 +11,7 @@ import { Payments } from './pages/Payments';
 import { Profile } from './pages/Profile';
 import { Reservations } from './pages/Reservations';
 import { AnprSimulator } from './pages/AnprSimulator';
+import { QrScannerPage } from './pages/QrScannerPage';
 import { useWebSocket } from './hooks/useWebSocket';
 
 function App() {
@@ -59,6 +60,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR']}>
                 <AnprSimulator />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/qr-scanner"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR', 'CUSTOMER']}>
+                <QrScannerPage />
               </ProtectedRoute>
             }
           />

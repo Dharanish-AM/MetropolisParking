@@ -32,6 +32,21 @@ class VehicleRepository(dsl: DSLContext) extends BaseRepository(dsl) {
     }
   }
 
+  def findById(id: UUID): Option[Vehicle] = {
+    Option(
+      dsl.selectFrom(VEHICLES)
+        .where(VEHICLES.ID.eq(id).and(VEHICLES.DELETED_AT.isNull))
+        .fetchOne()
+    ).map { r =>
+      Vehicle(
+        id = r.getId,
+        plateNumber = r.getPlateNumber,
+        `type` = r.getType,
+        ownerId = Option(r.getOwnerId)
+      )
+    }
+  }
+
   def list(): List[Vehicle] = {
     dsl.selectFrom(VEHICLES)
       .where(VEHICLES.DELETED_AT.isNull)

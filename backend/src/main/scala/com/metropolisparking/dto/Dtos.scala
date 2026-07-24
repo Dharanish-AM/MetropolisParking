@@ -41,6 +41,10 @@ case class AnprExitRequest(plateNumber: String)
 case class AnprEntryResponse(sessionId: UUID, plateNumber: String, spaceNumber: String, levelNumber: Int, entryTime: String)
 case class AnprExitResponse(sessionId: UUID, plateNumber: String, durationMinutes: Long, fee: BigDecimal, paymentStatus: String)
 
+case class QrGenerateResponse(qrToken: String, payload: String)
+case class QrScanRequest(qrToken: String)
+case class QrScanResponse(action: String, entityId: UUID, entityType: String, plateNumber: String, spaceNumber: String, status: String, message: String)
+
 object DtoFormats {
   implicit val loginRequestFormat: RootJsonFormat[LoginRequest] = jsonFormat2(LoginRequest)
   implicit val userResponseFormat: RootJsonFormat[UserResponse] = jsonFormat4(UserResponse)
@@ -68,4 +72,8 @@ object DtoFormats {
   implicit val anprExitRequestFormat: RootJsonFormat[AnprExitRequest] = jsonFormat1(AnprExitRequest)
   implicit val anprEntryResponseFormat: RootJsonFormat[AnprEntryResponse] = jsonFormat5(AnprEntryResponse)
   implicit val anprExitResponseFormat: RootJsonFormat[AnprExitResponse] = jsonFormat5(AnprExitResponse)
+
+  implicit val qrGenerateResponseFormat: RootJsonFormat[QrGenerateResponse] = jsonFormat2(QrGenerateResponse)
+  implicit val qrScanRequestFormat: RootJsonFormat[QrScanRequest] = jsonFormat1(QrScanRequest)
+  implicit val qrScanResponseFormat: RootJsonFormat[QrScanResponse] = jsonFormat7(QrScanResponse)
 }

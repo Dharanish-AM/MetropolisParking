@@ -12,6 +12,7 @@ import {
   User,
   Calendar,
   Camera,
+  QrCode,
 } from 'lucide-react';
 import { MetropolisLogo } from './MetropolisLogo';
 
@@ -38,6 +39,12 @@ export const Navbar: FC = () => {
       path: '/anpr-simulator',
       icon: Camera,
       roles: ['ADMIN', 'OPERATOR'],
+    },
+    {
+      label: 'QR Gate Pass',
+      path: '/qr-scanner',
+      icon: QrCode,
+      roles: ['ADMIN', 'OPERATOR', 'CUSTOMER'],
     },
     {
       label: 'Reservations',
