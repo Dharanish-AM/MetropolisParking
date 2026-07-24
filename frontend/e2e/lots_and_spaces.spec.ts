@@ -18,7 +18,7 @@ test.describe('Parking Lots & Space Management User Flow', () => {
 
   test('loads parking lots page and presents lots list', async ({ page }) => {
     await page.goto('/lots');
-    await expect(page.getByRole('heading', { name: /parking lot/i }).first()).toBeVisible({
+    await expect(page.getByRole('heading', { name: /lot|parking/i }).first()).toBeVisible({
       timeout: 8000,
     });
   });

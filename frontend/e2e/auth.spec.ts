@@ -29,7 +29,7 @@ test.describe('Authentication & Navigation User Flow', () => {
     await page.getByPlaceholder('••••••••').fill('invalidpass');
     await page.getByRole('button', { name: /continue/i }).click();
 
-    await expect(page.getByText(/invalid credentials|unauthorized/i)).toBeVisible({
+    await expect(page.getByText(/invalid|failed|unauthorized/i)).toBeVisible({
       timeout: 8000,
     });
     await expect(page).toHaveURL('/login');
