@@ -262,7 +262,9 @@ export const AdminDashboard: FC = () => {
                   className="flex items-center gap-1.5 text-xs text-neutral-secondary"
                 >
                   <MapPin className="w-3.5 h-3.5 shrink-0 text-brand-primary/70" />
-                  <span className="font-semibold">{lot.name} {lot.location ? `(${lot.location})` : `#${idx + 1}`}</span>
+                  <span className="font-semibold">
+                    {lot.name} {lot.location ? `(${lot.location})` : `#${idx + 1}`}
+                  </span>
                 </div>
               ))}
             </div>

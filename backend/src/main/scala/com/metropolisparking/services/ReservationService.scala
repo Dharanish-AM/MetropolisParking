@@ -68,7 +68,7 @@ class ReservationService(
   }
 
   def listReservations(userId: UUID, role: String): List[ReservationResponse] = {
-    val reservations = if (role.equalsIgnoreCase("ADMIN") || role.equalsIgnoreCase("OPERATOR")) {
+    val reservations = if (role.equalsIgnoreCase("ADMIN")) {
       resRepo.listAll()
     } else {
       resRepo.listByUserId(userId)
@@ -98,7 +98,7 @@ class ReservationService(
       throw NotFoundException(s"Reservation '$id' not found")
     }
 
-    if (!role.equalsIgnoreCase("ADMIN") && !role.equalsIgnoreCase("OPERATOR") && res.userId != userId) {
+    if (!role.equalsIgnoreCase("ADMIN") && res.userId != userId) {
       throw ValidationException("You are not authorized to cancel this reservation")
     }
 

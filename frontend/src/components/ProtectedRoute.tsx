@@ -4,7 +4,7 @@ import { useAuth } from '../features/auth/hooks/useAuth';
 
 interface ProtectedRouteProps {
   children: ReactElement;
-  allowedRoles?: Array<'ADMIN' | 'OPERATOR' | 'CUSTOMER'>;
+  allowedRoles?: Array<'ADMIN' | 'CUSTOMER'>;
 }
 
 export const ProtectedRoute: FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {

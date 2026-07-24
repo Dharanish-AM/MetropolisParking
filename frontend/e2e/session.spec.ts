@@ -36,15 +36,11 @@ test.describe('Sessions', () => {
     await expect(page.getByPlaceholder('e.g. MH12AB1234')).toBeVisible({ timeout: 5000 });
   });
 
-  test('shows validation error for invalid plate number', async ({ page }) => {
+  test('shows validation state for invalid plate number', async ({ page }) => {
     await page.goto('/sessions');
     await page.getByRole('button', { name: 'Start Session' }).first().click();
 
     await page.getByPlaceholder('e.g. MH12AB1234').fill('AB');
-
-    await page.getByRole('button', { name: 'Start', exact: true }).click();
-    await expect(
-      page.getByText(/plate number must be|alphanumeric|4 to 15/i)
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('button', { name: 'Start', exact: true })).toBeDisabled();
   });
 });

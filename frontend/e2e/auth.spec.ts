@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 
 const ADMIN_EMAIL = 'admin@metropolisparking.com';
 const ADMIN_PASSWORD = 'admin123';
+const CUSTOMER_EMAIL = 'customer@metropolisparking.com';
+const CUSTOMER_PASSWORD = 'customer123';
 
 test.describe('Authentication & Navigation User Flow', () => {
   test.beforeEach(async ({ page }) => {
@@ -15,9 +17,18 @@ test.describe('Authentication & Navigation User Flow', () => {
     await expect(page.getByRole('button', { name: /continue/i })).toBeVisible();
   });
 
-  test('redirects to dashboard on valid credentials', async ({ page }) => {
+  test('redirects admin to dashboard on valid credentials', async ({ page }) => {
     await page.getByPlaceholder('name@company.com').fill(ADMIN_EMAIL);
     await page.getByPlaceholder('••••••••').fill(ADMIN_PASSWORD);
+    await page.getByRole('button', { name: /continue/i }).click();
+
+    await expect(page).toHaveURL('/', { timeout: 10000 });
+    await expect(page.getByText(/dashboard/i).first()).toBeVisible();
+  });
+
+  test('redirects customer to dashboard on valid credentials', async ({ page }) => {
+    await page.getByPlaceholder('name@company.com').fill(CUSTOMER_EMAIL);
+    await page.getByPlaceholder('••••••••').fill(CUSTOMER_PASSWORD);
     await page.getByRole('button', { name: /continue/i }).click();
 
     await expect(page).toHaveURL('/', { timeout: 10000 });
@@ -50,7 +61,7 @@ test.describe('Authentication & Navigation User Flow', () => {
     await expect(page.getByText(/admin@metropolisparking.com/i)).toBeVisible({ timeout: 8000 });
 
     const logoutButton = page.getByRole('button', { name: /log out|logout/i });
-    if (await logoutButton.count() > 0) {
+    if ((await logoutButton.count()) > 0) {
       await logoutButton.first().click();
       await expect(page).toHaveURL('/login', { timeout: 8000 });
     }

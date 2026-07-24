@@ -176,10 +176,16 @@ export const Payments: FC = () => {
               ) : (
                 payments.map(payment => (
                   <TableRow key={payment.id}>
-                    <TableCell className="font-mono text-xs font-bold text-neutral-primary select-all" title={payment.id}>
+                    <TableCell
+                      className="font-mono text-xs font-bold text-neutral-primary select-all"
+                      title={payment.id}
+                    >
                       #{payment.id.slice(0, 8)}
                     </TableCell>
-                    <TableCell className="font-mono text-xs text-neutral-secondary select-all" title={payment.sessionId}>
+                    <TableCell
+                      className="font-mono text-xs text-neutral-secondary select-all"
+                      title={payment.sessionId}
+                    >
                       #{payment.sessionId.slice(0, 8)}
                     </TableCell>
                     <TableCell className="font-bold text-neutral-primary">
@@ -212,9 +218,7 @@ export const Payments: FC = () => {
                           Settle Invoice
                         </Button>
                       ) : (
-                        <span className="text-xs text-emerald-600 font-bold pr-3">
-                          Settled
-                        </span>
+                        <span className="text-xs text-emerald-600 font-bold pr-3">Settled</span>
                       )}
                     </TableCell>
                   </TableRow>

@@ -26,7 +26,7 @@
 | # | Task | Status | Notes |
 |---|---|---|---|
 | 1.1 | V1 — `users` table | ✅ Verified | Schema created with auto-generated UUIDs, name, email, password_hash, timestamps |
-| 1.2 | V2 — `roles` table | ✅ Verified | Roles (ADMIN, OPERATOR, CUSTOMER), permissions, and user-role relations created; default admin seeded |
+| 1.2 | V2 — `roles` table | ✅ Verified | Roles (ADMIN, CUSTOMER), permissions, and user-role relations created; default admin seeded |
 | 1.3 | V3 — `parking_lots` table | ✅ Verified | Parking lots schema created with UUID PK and timestamps |
 | 1.4 | V4 — `parking_levels` table | ✅ Verified | Parking levels schema created with unique constraint on (lot_id, level_number) |
 | 1.5 | V5 — `parking_spaces` table | ✅ Verified | Parking spaces schema created with unique constraint on (level_id, space_number) |
@@ -47,7 +47,7 @@
 | 2.4 | Global exception handler + error response shape (§18) | ✅ Verified | Implemented custom exception formats and global Exception/Rejection handlers mapping status codes |
 | 2.5 | Request validation framework (§19) | ✅ Verified | Created validation helpers for formats, numeric ranges, and required bounds |
 | 2.6 | JWT + BCrypt security module (§14) | ✅ Verified | Cryptography utility implementing BCrypt hash/check and JWT claim signing/verification |
-| 2.7 | RBAC middleware (ADMIN/OPERATOR/CUSTOMER) | ✅ Verified | Implemented RbacMiddleware gating access using authenticated JWT claims |
+| 2.7 | RBAC middleware (ADMIN/CUSTOMER) | ✅ Verified | Implemented RbacMiddleware gating access using authenticated JWT claims |
 | 2.8 | Health check endpoint `GET /health` | ✅ Verified | Integrated health route under LoggingMiddleware and ExceptionHandler controls |
 
 ### Phase 3 — Backend Domain Modules

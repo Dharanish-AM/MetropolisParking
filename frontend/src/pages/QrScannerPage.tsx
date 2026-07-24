@@ -6,7 +6,16 @@ import type { QrScanResponse } from '../api/endpoints/qr';
 import { getSessions } from '../api/endpoints/sessions';
 import { getReservations } from '../api/endpoints/reservations';
 import type { ReservationItem } from '../api/endpoints/reservations';
-import { QrCode, Scan, CheckCircle2, AlertCircle, RefreshCw, Ticket, Camera, Upload } from 'lucide-react';
+import {
+  QrCode,
+  Scan,
+  CheckCircle2,
+  AlertCircle,
+  RefreshCw,
+  Ticket,
+  Camera,
+  Upload,
+} from 'lucide-react';
 import QRCode from 'qrcode';
 
 export const QrScannerPage: FC = () => {
@@ -16,8 +25,13 @@ export const QrScannerPage: FC = () => {
   const [scanResult, setScanResult] = useState<QrScanResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const [activePasses, setActivePasses] = useState<{ id: string; type: 'SESSION' | 'RESERVATION'; title: string; subtitle: string }[]>([]);
-  const [selectedPass, setSelectedPass] = useState<{ id: string; type: 'SESSION' | 'RESERVATION' } | null>(null);
+  const [activePasses, setActivePasses] = useState<
+    { id: string; type: 'SESSION' | 'RESERVATION'; title: string; subtitle: string }[]
+  >([]);
+  const [selectedPass, setSelectedPass] = useState<{
+    id: string;
+    type: 'SESSION' | 'RESERVATION';
+  } | null>(null);
   const [qrToken, setQrToken] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -32,7 +46,12 @@ export const QrScannerPage: FC = () => {
         getReservations().catch(() => []),
       ]);
 
-      const passes: { id: string; type: 'SESSION' | 'RESERVATION'; title: string; subtitle: string }[] = [];
+      const passes: {
+        id: string;
+        type: 'SESSION' | 'RESERVATION';
+        title: string;
+        subtitle: string;
+      }[] = [];
 
       sessions.forEach(s => {
         if (!s.exitTime) {
@@ -101,7 +120,9 @@ export const QrScannerPage: FC = () => {
       setScanResult(res);
       setQrInput('');
     } catch (err: any) {
-      setErrorMessage(err.response?.data?.message || 'Failed to validate QR Code. Invalid token format.');
+      setErrorMessage(
+        err.response?.data?.message || 'Failed to validate QR Code. Invalid token format.'
+      );
     } finally {
       setLoading(false);
     }
@@ -127,7 +148,9 @@ export const QrScannerPage: FC = () => {
             <button
               onClick={() => setActiveTab('scan')}
               className={`flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all cursor-pointer ${
-                activeTab === 'scan' ? 'bg-brand-primary text-white shadow-xs' : 'text-neutral-secondary hover:text-neutral-primary'
+                activeTab === 'scan'
+                  ? 'bg-brand-primary text-white shadow-xs'
+                  : 'text-neutral-secondary hover:text-neutral-primary'
               }`}
             >
               <Scan className="w-4 h-4" />
@@ -136,7 +159,9 @@ export const QrScannerPage: FC = () => {
             <button
               onClick={() => setActiveTab('passes')}
               className={`flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all cursor-pointer ${
-                activeTab === 'passes' ? 'bg-brand-primary text-white shadow-xs' : 'text-neutral-secondary hover:text-neutral-primary'
+                activeTab === 'passes'
+                  ? 'bg-brand-primary text-white shadow-xs'
+                  : 'text-neutral-secondary hover:text-neutral-primary'
               }`}
             >
               <Ticket className="w-4 h-4" />
@@ -176,12 +201,20 @@ export const QrScannerPage: FC = () => {
                     disabled={loading || !qrInput.trim()}
                     className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-brand-primary text-white rounded-xl font-bold hover:bg-brand-primary/90 transition-all disabled:opacity-50 cursor-pointer shadow-xs"
                   >
-                    {loading ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Scan className="w-5 h-5" />}
+                    {loading ? (
+                      <RefreshCw className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Scan className="w-5 h-5" />
+                    )}
                     Validate & Open Gate
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setQrInput(''); setScanResult(null); setErrorMessage(null); }}
+                    onClick={() => {
+                      setQrInput('');
+                      setScanResult(null);
+                      setErrorMessage(null);
+                    }}
                     className="px-4 py-3 border border-neutral-border text-neutral-secondary hover:bg-neutral-50 rounded-xl font-semibold text-sm transition-all cursor-pointer"
                   >
                     Clear
@@ -215,16 +248,28 @@ export const QrScannerPage: FC = () => {
 
                   <div className="bg-white rounded-xl p-4 border border-emerald-100 text-left grid grid-cols-2 gap-3 text-xs">
                     <div>
-                      <span className="text-neutral-secondary block font-semibold">Entity Type</span>
-                      <span className="font-bold text-neutral-primary">{scanResult.entityType}</span>
+                      <span className="text-neutral-secondary block font-semibold">
+                        Entity Type
+                      </span>
+                      <span className="font-bold text-neutral-primary">
+                        {scanResult.entityType}
+                      </span>
                     </div>
                     <div>
-                      <span className="text-neutral-secondary block font-semibold">Vehicle Plate</span>
-                      <span className="font-bold text-neutral-primary">{scanResult.plateNumber}</span>
+                      <span className="text-neutral-secondary block font-semibold">
+                        Vehicle Plate
+                      </span>
+                      <span className="font-bold text-neutral-primary">
+                        {scanResult.plateNumber}
+                      </span>
                     </div>
                     <div>
-                      <span className="text-neutral-secondary block font-semibold">Space Number</span>
-                      <span className="font-bold text-neutral-primary">{scanResult.spaceNumber}</span>
+                      <span className="text-neutral-secondary block font-semibold">
+                        Space Number
+                      </span>
+                      <span className="font-bold text-neutral-primary">
+                        {scanResult.spaceNumber}
+                      </span>
                     </div>
                     <div>
                       <span className="text-neutral-secondary block font-semibold">Status</span>
@@ -284,8 +329,12 @@ export const QrScannerPage: FC = () => {
               {selectedPass && qrToken ? (
                 <div className="text-center space-y-6 py-4 animate-fade-in">
                   <div>
-                    <h3 className="text-xl font-extrabold text-neutral-primary">Digital Gate Pass</h3>
-                    <p className="text-xs text-neutral-secondary mt-1">Show this QR code at the entrance or exit gate scanner.</p>
+                    <h3 className="text-xl font-extrabold text-neutral-primary">
+                      Digital Gate Pass
+                    </h3>
+                    <p className="text-xs text-neutral-secondary mt-1">
+                      Show this QR code at the entrance or exit gate scanner.
+                    </p>
                   </div>
 
                   <div className="p-6 bg-neutral-50 rounded-2xl border border-neutral-border inline-block shadow-inner">
@@ -293,14 +342,20 @@ export const QrScannerPage: FC = () => {
                   </div>
 
                   <div className="max-w-md mx-auto bg-neutral-50 p-4 rounded-xl border border-neutral-border text-left">
-                    <span className="text-[10px] font-bold text-neutral-secondary uppercase block mb-1">Signed Pass Token</span>
-                    <p className="text-[11px] font-mono text-neutral-primary break-all select-all">{qrToken}</p>
+                    <span className="text-[10px] font-bold text-neutral-secondary uppercase block mb-1">
+                      Signed Pass Token
+                    </span>
+                    <p className="text-[11px] font-mono text-neutral-primary break-all select-all">
+                      {qrToken}
+                    </p>
                   </div>
                 </div>
               ) : (
                 <div className="text-center py-16 text-neutral-secondary">
                   <QrCode className="w-16 h-16 mx-auto text-neutral-300 mb-3" />
-                  <p className="text-sm font-semibold">Select a pass from the left to display its QR code.</p>
+                  <p className="text-sm font-semibold">
+                    Select a pass from the left to display its QR code.
+                  </p>
                 </div>
               )}
             </div>

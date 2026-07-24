@@ -28,35 +28,35 @@ export const Navbar: FC = () => {
       label: 'Dashboard',
       path: '/',
       icon: LayoutDashboard,
-      roles: ['ADMIN', 'OPERATOR', 'CUSTOMER'],
+      roles: ['ADMIN', 'CUSTOMER'],
     },
     {
       label: 'Parking Lots',
       path: '/parking-lots',
       icon: ParkingSquare,
-      roles: ['ADMIN', 'OPERATOR'],
+      roles: ['ADMIN'],
     },
-    { label: 'Sessions', path: '/sessions', icon: Clock, roles: ['ADMIN', 'OPERATOR'] },
+    { label: 'Sessions', path: '/sessions', icon: Clock, roles: ['ADMIN'] },
     {
       label: 'ANPR Sim',
       path: '/anpr-simulator',
       icon: Camera,
-      roles: ['ADMIN', 'OPERATOR'],
+      roles: ['ADMIN'],
     },
     {
       label: 'QR Gate Pass',
       path: '/qr-scanner',
       icon: QrCode,
-      roles: ['ADMIN', 'OPERATOR', 'CUSTOMER'],
+      roles: ['ADMIN', 'CUSTOMER'],
     },
     {
       label: 'Reservations',
       path: '/reservations',
       icon: Calendar,
-      roles: ['ADMIN', 'OPERATOR', 'CUSTOMER'],
+      roles: ['ADMIN', 'CUSTOMER'],
     },
-    { label: 'Payments', path: '/payments', icon: CreditCard, roles: ['ADMIN', 'OPERATOR'] },
-    { label: 'Vehicles', path: '/vehicles', icon: Car, roles: ['ADMIN', 'OPERATOR', 'CUSTOMER'] },
+    { label: 'Payments', path: '/payments', icon: CreditCard, roles: ['ADMIN'] },
+    { label: 'Vehicles', path: '/vehicles', icon: Car, roles: ['ADMIN', 'CUSTOMER'] },
   ];
 
   const filteredNavItems = user ? navItems.filter(item => item.roles.includes(user.role)) : [];
@@ -182,4 +182,3 @@ export const Navbar: FC = () => {
     </header>
   );
 };
-

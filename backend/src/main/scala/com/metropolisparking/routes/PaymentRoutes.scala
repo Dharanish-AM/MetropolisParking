@@ -16,7 +16,7 @@ class PaymentRoutes(service: PaymentService, rbac: RbacMiddleware) {
       concat(
         pathEndOrSingleSlash {
           get {
-            rbac.authorizeRoles(Set("ADMIN", "OPERATOR")) { claims =>
+            rbac.authorizeRoles(Set("ADMIN")) { claims =>
               complete(service.list())
             }
           }

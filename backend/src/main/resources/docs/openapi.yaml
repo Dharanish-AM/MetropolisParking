@@ -468,7 +468,7 @@ components:
           type: string
         role:
           type: string
-          enum: [ADMIN, OPERATOR, CUSTOMER]
+          enum: [ADMIN, CUSTOMER]
 
     ParkingLot:
       type: object

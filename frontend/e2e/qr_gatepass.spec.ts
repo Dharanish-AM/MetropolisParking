@@ -25,9 +25,9 @@ test.describe('QR Gate Pass Scanner User Flow', () => {
 
   test('qr passes tab displays active digital passes', async ({ page }) => {
     await page.goto('/qr-scanner');
-    
+
     const passesTab = page.getByRole('button', { name: /my passes|digital passes/i });
-    if (await passesTab.count() > 0) {
+    if ((await passesTab.count()) > 0) {
       await passesTab.click();
       await expect(page.getByText(/session|reservation|active/i).first()).toBeVisible({
         timeout: 5000,
@@ -40,11 +40,11 @@ test.describe('QR Gate Pass Scanner User Flow', () => {
     await page.waitForTimeout(1000);
 
     const tokenInput = page.getByPlaceholder(/paste qr token|enter pass code/i);
-    if (await tokenInput.count() > 0) {
+    if ((await tokenInput.count()) > 0) {
       await tokenInput.fill('INVALID-TOKEN-12345');
 
       const verifyBtn = page.getByRole('button', { name: /verify|scan pass/i });
-      if (await verifyBtn.count() > 0) {
+      if ((await verifyBtn.count()) > 0) {
         await verifyBtn.click();
         await expect(page.getByText(/invalid|error|expired/i).first()).toBeVisible({
           timeout: 8000,

@@ -11,7 +11,7 @@ class DashboardRoutes(service: DashboardService, rbac: RbacMiddleware) {
   val routes: Route = {
     path("dashboard") {
       get {
-        rbac.authorizeRoles(Set("ADMIN", "OPERATOR")) { claims =>
+        rbac.authorizeRoles(Set("ADMIN")) { claims =>
           complete(service.getStats())
         }
       }

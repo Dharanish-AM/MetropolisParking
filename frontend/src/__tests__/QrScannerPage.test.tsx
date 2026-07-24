@@ -6,7 +6,12 @@ import { AuthContext } from '../features/auth/context/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const mockAdminAuth = {
-  user: { id: 'admin-id-123', name: 'Admin User', email: 'admin@metropolisparking.com', role: 'ADMIN' as const },
+  user: {
+    id: 'admin-id-123',
+    name: 'Admin User',
+    email: 'admin@metropolisparking.com',
+    role: 'ADMIN' as const,
+  },
   token: 'mock-token',
   login: vi.fn(),
   logout: vi.fn(),
@@ -49,7 +54,9 @@ describe('QrScannerPage Component', () => {
     const textarea = screen.getByPlaceholderText(/Paste JWT QR Token payload here.../i);
     const submitBtn = screen.getByRole('button', { name: /Validate & Open Gate/i });
 
-    fireEvent.change(textarea, { target: { value: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.valid-qr-token' } });
+    fireEvent.change(textarea, {
+      target: { value: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.valid-qr-token' },
+    });
     fireEvent.click(submitBtn);
 
     await waitFor(() => {

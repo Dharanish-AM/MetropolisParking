@@ -2,7 +2,6 @@ import type { FC } from 'react';
 import { Navbar } from '../components/Navbar';
 import { useAuth } from '../features/auth/hooks/useAuth';
 import { AdminDashboard } from '../features/dashboard/components/AdminDashboard';
-import { OperatorDashboard } from '../features/dashboard/components/OperatorDashboard';
 import { CustomerDashboard } from '../features/dashboard/components/CustomerDashboard';
 
 export const Dashboard: FC = () => {
@@ -12,8 +11,6 @@ export const Dashboard: FC = () => {
     switch (user?.role) {
       case 'ADMIN':
         return <AdminDashboard />;
-      case 'OPERATOR':
-        return <OperatorDashboard />;
       case 'CUSTOMER':
         return <CustomerDashboard />;
       default:

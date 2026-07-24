@@ -1,13 +1,14 @@
 import { test, expect, type Page } from '@playwright/test';
 
 const ADMIN_EMAIL = 'admin@metropolisparking.com';
-const OPERATOR_EMAIL = 'rajesh.verma@metropolis.in';
-const PASSWORD = 'admin123';
+const ADMIN_PASSWORD = 'admin123';
+const CUSTOMER_EMAIL = 'customer@metropolisparking.com';
+const CUSTOMER_PASSWORD = 'customer123';
 
-async function loginAs(page: Page, email: string) {
+async function loginAs(page: Page, email: string, pass: string = ADMIN_PASSWORD) {
   await page.goto('/login');
   await page.getByPlaceholder('name@company.com').fill(email);
-  await page.getByPlaceholder('••••••••').fill(PASSWORD);
+  await page.getByPlaceholder('••••••••').fill(pass);
   await page.getByRole('button', { name: /continue/i }).click();
   await expect(page).toHaveURL('/', { timeout: 10000 });
 }
@@ -26,15 +27,10 @@ test.describe('Parking Lots & Space Management User Flow', () => {
     }
   });
 
-  test('OPERATOR can view lots but delete lot button is hidden', async ({ page }) => {
-    await loginAs(page, OPERATOR_EMAIL);
+  test('CUSTOMER is redirected to unauthorized when visiting /parking-lots', async ({ page }) => {
+    await loginAs(page, CUSTOMER_EMAIL, CUSTOMER_PASSWORD);
     await page.goto('/parking-lots');
-    await expect(page.getByRole('heading', { name: /lot|parking/i }).first()).toBeVisible({
-      timeout: 8000,
-    });
-
-    const deleteLotBtn = page.getByRole('button', { name: /delete lot/i });
-    await expect(deleteLotBtn).toHaveCount(0);
+    await expect(page).toHaveURL('/unauthorized');
   });
 
   test('can open add parking lot modal', async ({ page }) => {

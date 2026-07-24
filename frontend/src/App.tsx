@@ -34,7 +34,7 @@ function App() {
           <Route
             path="/parking-lots"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR']}>
+              <ProtectedRoute allowedRoles={['ADMIN']}>
                 <ParkingLots />
               </ProtectedRoute>
             }
@@ -42,7 +42,7 @@ function App() {
           <Route
             path="/vehicles"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR', 'CUSTOMER']}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
                 <Vehicles />
               </ProtectedRoute>
             }
@@ -50,7 +50,7 @@ function App() {
           <Route
             path="/sessions"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR']}>
+              <ProtectedRoute allowedRoles={['ADMIN']}>
                 <Sessions />
               </ProtectedRoute>
             }
@@ -58,7 +58,7 @@ function App() {
           <Route
             path="/anpr-simulator"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR']}>
+              <ProtectedRoute allowedRoles={['ADMIN']}>
                 <AnprSimulator />
               </ProtectedRoute>
             }
@@ -66,7 +66,7 @@ function App() {
           <Route
             path="/qr-scanner"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR', 'CUSTOMER']}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
                 <QrScannerPage />
               </ProtectedRoute>
             }
@@ -74,7 +74,7 @@ function App() {
           <Route
             path="/reservations"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR', 'CUSTOMER']}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
                 <Reservations />
               </ProtectedRoute>
             }
@@ -82,7 +82,7 @@ function App() {
           <Route
             path="/payments"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR']}>
+              <ProtectedRoute allowedRoles={['ADMIN']}>
                 <Payments />
               </ProtectedRoute>
             }

@@ -297,8 +297,12 @@ export const ParkingLots: FC = () => {
                 const lotSpaces = (spaces as ParkingSpace[])?.filter(s => s.lotId === lot.id) || [];
                 const capacity = lotSpaces.length;
                 const occupiedCount = lotSpaces.filter(s => s.status === 'OCCUPIED').length;
-                const sameNameCount = (lots as ParkingLot[])?.filter(l => l.name === lot.name).length || 0;
-                const lotLabel = sameNameCount > 1 ? `${lot.name} (${lot.location || `Building ${idx + 1}`})` : lot.name;
+                const sameNameCount =
+                  (lots as ParkingLot[])?.filter(l => l.name === lot.name).length || 0;
+                const lotLabel =
+                  sameNameCount > 1
+                    ? `${lot.name} (${lot.location || `Building ${idx + 1}`})`
+                    : lot.name;
                 return (
                   <button
                     key={lot.id}
@@ -409,7 +413,8 @@ export const ParkingLots: FC = () => {
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
                 {filteredSpaces.map(space => {
-                  const isRawHex = space.spaceNumber.startsWith('S-') && space.spaceNumber.length > 6;
+                  const isRawHex =
+                    space.spaceNumber.startsWith('S-') && space.spaceNumber.length > 6;
                   const spaceLabel = isRawHex
                     ? `Spot ${space.spaceNumber.replace('S-', '').slice(0, 4).toUpperCase()}`
                     : space.spaceNumber;
@@ -420,7 +425,9 @@ export const ParkingLots: FC = () => {
                       className={`p-4 border rounded-2xl flex flex-col items-center justify-between gap-3 transition-all duration-150 hover:scale-[1.02] cursor-pointer text-center relative overflow-hidden bg-white border-neutral-border hover:border-brand-primary`}
                     >
                       <div className="flex items-center justify-between w-full text-xs font-semibold text-neutral-secondary">
-                        <span className="font-mono font-bold text-neutral-primary">{spaceLabel}</span>
+                        <span className="font-mono font-bold text-neutral-primary">
+                          {spaceLabel}
+                        </span>
                         {getSpaceIcon(space.type)}
                       </div>
                       <Badge variant={space.status as any} className="w-full justify-center">

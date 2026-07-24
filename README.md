@@ -64,7 +64,7 @@ MetropolisParking is a full-stack, production-ready smart parking management sys
 
 ## Project Overview
 
-**MetropolisParking** is an end-to-end management platform engineered to digitize parking facilities across commercial centers, residential complexes, and enterprise campuses. It bridges physical hardware automation with high-concurrency cloud architecture to eliminate parking congestion, optimize spot allocation, prevent revenue leakage, and deliver instant visibility to operators and facility managers.
+**MetropolisParking** is an end-to-end management platform engineered to digitize parking facilities across commercial centers, residential complexes, and enterprise campuses. It bridges physical hardware automation with high-concurrency cloud architecture to eliminate parking congestion, optimize spot allocation, prevent revenue leakage, and deliver instant visibility to facility managers.
 
 ### The Problem
 
@@ -76,8 +76,7 @@ Traditional parking facilities suffer from:
 
 ### Target Users
 
-- **Facility Managers & Administrators**: Oversee parking lot topologies, levels, spaces, dynamic rate policies, and financial ledgers.
-- **Gate Operators & Security Staff**: Manage real-time check-ins/checkouts, register unknown vehicles, process cash/card settlements, and audit active sessions.
+- **Facility Managers & Administrators**: Oversee parking lot topologies, levels, spaces, dynamic rate policies, financial ledgers, real-time check-ins/checkouts, and active sessions.
 - **Drivers & Customers**: Reserve parking spots in advance, receive instant QR code entry passes, track active parking session duration, and process self-checkout payments.
 
 ### Core Objectives & Business Value
@@ -93,7 +92,7 @@ Traditional parking facilities suffer from:
 
 ### Backend Architecture & Engine
 
-- **JWT Authentication & RBAC**: Secure multi-role access control (`ADMIN`, `OPERATOR`, `CUSTOMER`) gating granular API endpoints.
+- **JWT Authentication & RBAC**: Secure multi-role access control (`ADMIN`, `CUSTOMER`) gating granular API endpoints.
 - **Parking Lot & Multi-Floor Topology**: Full hierarchical control over parking lots, floors/levels, and individual parking spaces.
 - **Flexible Dynamic Pricing Engine**: Configurable pricing rules supporting hourly rates, daily caps, flat fees, and peak-hour multiplier surcharges.
 - **Automated Billing & Payment Processing**: Multi-channel payment lifecycle handling (`CASH`, `CARD`, `UPI`, `WALLET`) with transaction settlement validation.
@@ -257,7 +256,7 @@ flowchart TD
 The database schema is organized into 11 key tables managed sequentially by Flyway (V1 through V11):
 
 - `users`: Account identities, email credentials, password hashes, and profiles.
-- `roles` & `user_roles`: RBAC permissions mapping users to `ADMIN`, `OPERATOR`, or `CUSTOMER`.
+- `roles` & `user_roles`: RBAC permissions mapping users to `ADMIN` or `CUSTOMER`.
 - `parking_lots`: Top-level parking facility entities.
 - `parking_levels`: Multi-floor groupings tied to a specific parking lot.
 - `parking_spaces`: Individual parking slots with status indicators (`AVAILABLE`, `OCCUPIED`, `RESERVED`, `OUT_OF_SERVICE`).
@@ -304,6 +303,7 @@ Once the containers start up, access the system components using the details bel
 | **System Health Check** | `http://localhost:8080/health` | Diagnostic JSON Status |
 | **WebSocket Feed** | `ws://localhost:8080/ws/occupancy` | Real-Time Spot Broadcast |
 | **Default Admin Account** | — | **Email:** `admin@metropolisparking.com`<br>**Password:** `admin123` |
+| **Default Customer Account** | — | **Email:** `customer@metropolisparking.com`<br>**Password:** `customer123` |
 
 ---
 
@@ -384,17 +384,17 @@ Frontend environment variables can be provided in `frontend/.env.local`:
 | `POST` | `/parking-lots` | `ADMIN` | Create a new parking lot facility |
 | `GET` | `/parking-lots/:id/levels` | Authenticated | List floors/levels for a given lot |
 | `GET` | `/parking-spaces` | Authenticated | Fetch parking spaces with optional status filters |
-| `PATCH` | `/parking-spaces/:id/status` | `OPERATOR`, `ADMIN` | Update individual space status |
+| `PATCH` | `/parking-spaces/:id/status` | `ADMIN` | Update individual space status |
 | `GET` | `/vehicles` | Authenticated | List and search registered vehicles |
 | `POST` | `/vehicles` | Authenticated | Register a new vehicle |
-| `POST` | `/sessions/start` | `OPERATOR`, `ADMIN` | Start a new parking session |
-| `POST` | `/sessions/:plate/end` | `OPERATOR`, `ADMIN` | End active session & calculate fee |
-| `POST` | `/anpr/entry` | `OPERATOR`, `ADMIN` | Process automated ANPR entry scan |
-| `POST` | `/anpr/exit` | `OPERATOR`, `ADMIN` | Process automated ANPR exit scan |
+| `POST` | `/sessions/start` | Authenticated | Start a new parking session |
+| `POST` | `/sessions/:plate/end` | Authenticated | End active session & calculate fee |
+| `POST` | `/anpr/entry` | `ADMIN` | Process automated ANPR entry scan |
+| `POST` | `/anpr/exit` | `ADMIN` | Process automated ANPR exit scan |
 | `GET` | `/reservations` | Authenticated | List spot advance reservations |
 | `POST` | `/reservations` | Authenticated | Reserve a spot for a future time slot |
-| `GET` | `/payments` | Authenticated | List payment ledger transactions |
-| `POST` | `/payments/:id/process` | `OPERATOR`, `ADMIN` | Settle pending payment invoice |
+| `GET` | `/payments` | `ADMIN` | List payment ledger transactions |
+| `POST` | `/payments/:id/process` | Authenticated | Settle pending payment invoice |
 | `GET` | `/dashboard` | Authenticated | Retrieve aggregated occupancy & revenue statistics |
 | `GET` | `/health` | Public | System status and database health check |
 

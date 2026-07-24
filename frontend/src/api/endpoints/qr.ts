@@ -17,7 +17,9 @@ export interface QrScanResponse {
 
 export const qrApi = {
   generatePass: async (entityType: string, entityId: string): Promise<QrGenerateResponse> => {
-    const res = await client.get<QrGenerateResponse>(`/qr/generate?entityType=${entityType}&entityId=${entityId}`);
+    const res = await client.get<QrGenerateResponse>(
+      `/qr/generate?entityType=${entityType}&entityId=${entityId}`
+    );
     return res.data;
   },
   scanPass: async (qrToken: string): Promise<QrScanResponse> => {

@@ -28,7 +28,7 @@ test.describe('Vehicle Registry User Flow', () => {
     await page.waitForTimeout(1000);
 
     const searchInput = page.getByPlaceholder(/search plate/i);
-    if (await searchInput.count() > 0) {
+    if ((await searchInput.count()) > 0) {
       await searchInput.fill('MH12');
       await expect(searchInput).toHaveValue('MH12');
     }
@@ -36,9 +36,9 @@ test.describe('Vehicle Registry User Flow', () => {
 
   test('opens register vehicle modal and validates license plate format', async ({ page }) => {
     await page.goto('/vehicles');
-    
+
     const registerBtn = page.getByRole('button', { name: /register vehicle/i });
-    if (await registerBtn.count() > 0) {
+    if ((await registerBtn.count()) > 0) {
       await registerBtn.click();
 
       const plateInput = page.getByPlaceholder(/mh12ab1234/i);

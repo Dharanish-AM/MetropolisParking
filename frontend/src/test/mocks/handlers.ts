@@ -16,6 +16,17 @@ export const handlers = [
         },
       });
     }
+    if (body.email === 'customer@metropolisparking.com' && body.password === 'customer123') {
+      return HttpResponse.json({
+        token: 'mock-jwt-customer-token',
+        user: {
+          id: 'customer-id-123',
+          name: 'Customer User',
+          email: 'customer@metropolisparking.com',
+          role: 'CUSTOMER',
+        },
+      });
+    }
     return HttpResponse.json(
       { code: 'AUTH_FAILED', message: 'Invalid credentials', timestamp: new Date().toISOString() },
       { status: 401 }
@@ -74,7 +85,11 @@ export const handlers = [
       });
     }
     return HttpResponse.json(
-      { code: 'VALIDATION_ERROR', message: 'Invalid or expired QR code token', timestamp: new Date().toISOString() },
+      {
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid or expired QR code token',
+        timestamp: new Date().toISOString(),
+      },
       { status: 400 }
     );
   }),

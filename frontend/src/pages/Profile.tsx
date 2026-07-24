@@ -59,8 +59,6 @@ export const Profile: FC = () => {
                   </p>
                   <p className="font-semibold text-neutral-primary">
                     {user?.role === 'ADMIN' && 'System Administrator (Full Read/Write Access)'}
-                    {user?.role === 'OPERATOR' &&
-                      'Parking Attendant / Operator (Operational Access)'}
                     {user?.role === 'CUSTOMER' && 'Standard Parking Customer (Basic Access)'}
                   </p>
                 </div>

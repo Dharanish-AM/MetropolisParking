@@ -12,7 +12,7 @@ import com.metropolisparking.utils.JsonFormats._
 class AnprRoutes(service: AnprService, rbac: RbacMiddleware) {
   val routes: Route = {
     pathPrefix("anpr") {
-      rbac.authorizeRoles(Set("ADMIN", "OPERATOR")) { claims =>
+      rbac.authorizeRoles(Set("ADMIN")) { claims =>
         concat(
           path("entry") {
             post {

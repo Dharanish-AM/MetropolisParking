@@ -54,7 +54,9 @@ export const Sessions: FC = () => {
   const startSessionMutation = useStartSession();
   const endSessionMutation = useEndSession();
 
-  const vehicleMap = new Map<string, string>((vehicles || []).map((v: any) => [v.id, v.plateNumber]));
+  const vehicleMap = new Map<string, string>(
+    (vehicles || []).map((v: any) => [v.id, v.plateNumber])
+  );
   const spaceMap = new Map<string, string>((spaces || []).map((s: any) => [s.id, s.spaceNumber]));
 
   const {

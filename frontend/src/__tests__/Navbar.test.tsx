@@ -4,7 +4,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { Navbar } from '../components/Navbar';
 import { AuthContext } from '../features/auth/context/AuthContext';
 
-const mockAuthContext = (user: { id: string; name: string; email: string; role: 'ADMIN' | 'OPERATOR' | 'CUSTOMER' } | null) => ({
+const mockAuthContext = (
+  user: { id: string; name: string; email: string; role: 'ADMIN' | 'CUSTOMER' } | null
+) => ({
   user,
   token: user ? 'mock-token' : null,
   login: vi.fn(),
