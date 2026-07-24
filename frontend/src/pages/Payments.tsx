@@ -39,7 +39,7 @@ export const Payments: FC = () => {
 
   const handleSettleClick = (paymentId: string) => {
     setSelectedPaymentId(paymentId);
-    setPaymentMethod('CARD'); // Reset to default method
+    setPaymentMethod('CARD');
   };
 
   const handleProcessSubmit = (e: React.FormEvent) => {

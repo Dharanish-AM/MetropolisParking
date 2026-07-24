@@ -63,9 +63,10 @@ export const Sessions: FC = () => {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<StartSessionFormValues>({
     resolver: zodResolver(startSessionSchema),
+    mode: 'onChange',
     defaultValues: {
       plateNumber: '',
       spaceId: '',
@@ -417,7 +418,7 @@ export const Sessions: FC = () => {
                 type="submit"
                 isLoading={startSessionMutation.status === 'pending'}
                 className="w-auto px-5"
-                disabled={availableSpaces.length === 0}
+                disabled={availableSpaces.length === 0 || !isValid}
               >
                 Start
               </Button>
