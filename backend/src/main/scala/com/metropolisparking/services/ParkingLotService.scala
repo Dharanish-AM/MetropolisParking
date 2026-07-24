@@ -10,8 +10,9 @@ import java.util.UUID
 class ParkingLotService(
   repo: ParkingLotRepository,
   auditLogService: AuditLogService,
-  wsService: WebSocketService
+  wsService: WebSocketService = null
 ) {
+  private def broadcast(eventJson: String): Unit = Option(wsService).foreach(_.broadcast(eventJson))
   def createLot(req: ParkingLotCreateRequest, userId: Option[UUID]): ParkingLot = {
     Validator.validateLength(req.name, 2, 100, "name")
     Validator.validateLength(req.location, 2, 255, "location")
@@ -90,8 +91,8 @@ class ParkingLotService(
     )
     repo.createSpace(space)
     auditLogService.logAction(userId, "PARKING_SPACE_CREATED", "parking_spaces", Some(space.id), Some(s"Created space ${space.spaceNumber} on level ${space.levelId}"))
-    wsService.broadcast(s"""{"event":"space_updated","spaceId":"${space.id}","status":"AVAILABLE"}""")
-    wsService.broadcast("""{"event":"dashboard_updated"}""")
+    broadcast(s"""{"event":"space_updated","spaceId":"${space.id}","status":"AVAILABLE"}""")
+    broadcast("""{"event":"dashboard_updated"}""")
     space
   }
 
@@ -116,8 +117,8 @@ class ParkingLotService(
     val updated = existing.copy(spaceNumber = req.spaceNumber.toUpperCase, `type` = req.`type`.toUpperCase)
     repo.updateSpace(updated)
     auditLogService.logAction(userId, "PARKING_SPACE_UPDATED", "parking_spaces", Some(id), Some(s"Updated space details: ${updated.spaceNumber}"))
-    wsService.broadcast(s"""{"event":"space_updated","spaceId":"${updated.id}","status":"${updated.status}"}""")
-    wsService.broadcast("""{"event":"dashboard_updated"}""")
+    broadcast(s"""{"event":"space_updated","spaceId":"${updated.id}","status":"${updated.status}"}""")
+    broadcast("""{"event":"dashboard_updated"}""")
     updated
   }
 
@@ -128,8 +129,8 @@ class ParkingLotService(
     val updated = existing.copy(status = status.toUpperCase)
     repo.updateSpace(updated)
     auditLogService.logAction(userId, "PARKING_SPACE_STATUS_UPDATED", "parking_spaces", Some(id), Some(s"Updated space status to $status for space ${updated.spaceNumber}"))
-    wsService.broadcast(s"""{"event":"space_updated","spaceId":"${updated.id}","status":"${updated.status}"}""")
-    wsService.broadcast("""{"event":"dashboard_updated"}""")
+    broadcast(s"""{"event":"space_updated","spaceId":"${updated.id}","status":"${updated.status}"}""")
+    broadcast("""{"event":"dashboard_updated"}""")
     updated
   }
 
@@ -138,8 +139,8 @@ class ParkingLotService(
     val deleted = repo.deleteSpace(id)
     if (deleted) {
       auditLogService.logAction(userId, "PARKING_SPACE_DELETED", "parking_spaces", Some(id), Some(s"Deleted space ID: $id"))
-      wsService.broadcast(s"""{"event":"space_updated","spaceId":"${id}","status":"DELETED"}""")
-      wsService.broadcast("""{"event":"dashboard_updated"}""")
+      broadcast(s"""{"event":"space_updated","spaceId":"${id}","status":"DELETED"}""")
+      broadcast("""{"event":"dashboard_updated"}""")
     }
     deleted
   }

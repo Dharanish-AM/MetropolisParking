@@ -12,8 +12,9 @@ class AnprService(
   vehicleService: VehicleService,
   sessionService: ParkingSessionService,
   paymentService: PaymentService,
-  wsService: WebSocketService
+  wsService: WebSocketService = null
 ) {
+  private def broadcast(eventJson: String): Unit = Option(wsService).foreach(_.broadcast(eventJson))
   def simulateEntry(req: AnprEntryRequest): AnprEntryResponse = {
     val cleanPlate = req.plateNumber.toUpperCase.replaceAll("\\s", "")
 
@@ -33,7 +34,7 @@ class AnprService(
       .map(_.levelNumber)
       .getOrElse(0)
 
-    wsService.broadcast("""{"event":"dashboard_updated"}""")
+    broadcast("""{"event":"dashboard_updated"}""")
 
     AnprEntryResponse(
       sessionId = session.id,
@@ -55,7 +56,7 @@ class AnprService(
 
     val settledPayment = paymentService.processPayment(payment.id, PaymentProcessRequest("CARD"), None)
 
-    wsService.broadcast("""{"event":"dashboard_updated"}""")
+    broadcast("""{"event":"dashboard_updated"}""")
 
     AnprExitResponse(
       sessionId = session.id,

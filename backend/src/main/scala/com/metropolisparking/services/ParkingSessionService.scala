@@ -14,8 +14,9 @@ class ParkingSessionService(
   pricingRuleRepo: PricingRuleRepository,
   paymentRepo: PaymentRepository,
   auditLogService: AuditLogService,
-  wsService: WebSocketService
+  wsService: WebSocketService = null
 ) {
+  private def broadcast(eventJson: String): Unit = Option(wsService).foreach(_.broadcast(eventJson))
   def startSession(req: SessionStartRequest, userId: Option[UUID]): ParkingSession = {
     val vehicle = vehicleService.getByPlateNumber(req.plateNumber).getOrElse {
       vehicleService.register(VehicleCreateRequest(req.plateNumber, "CAR", None), userId)
@@ -52,8 +53,8 @@ class ParkingSessionService(
         Some(session.id),
         Some(s"Vehicle ${vehicle.plateNumber} entered space ${space.spaceNumber}")
       )
-      wsService.broadcast(s"""{"event":"space_updated","spaceId":"${space.id}","status":"OCCUPIED"}""")
-      wsService.broadcast("""{"event":"dashboard_updated"}""")
+      broadcast(s"""{"event":"space_updated","spaceId":"${space.id}","status":"OCCUPIED"}""")
+      broadcast("""{"event":"dashboard_updated"}""")
       session
     }
   }
@@ -102,8 +103,8 @@ class ParkingSessionService(
         Some(session.id),
         Some(s"Vehicle ${vehicle.plateNumber} left space ${space.spaceNumber}. Fee: $fee")
       )
-      wsService.broadcast(s"""{"event":"space_updated","spaceId":"${space.id}","status":"AVAILABLE"}""")
-      wsService.broadcast("""{"event":"dashboard_updated"}""")
+      broadcast(s"""{"event":"space_updated","spaceId":"${space.id}","status":"AVAILABLE"}""")
+      broadcast("""{"event":"dashboard_updated"}""")
       updatedSession
     }
   }
