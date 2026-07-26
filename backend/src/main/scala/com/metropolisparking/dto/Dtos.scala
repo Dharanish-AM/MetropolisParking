@@ -20,7 +20,15 @@ case class PaymentProcessRequest(method: String)
 
 case class OccupancyStats(totalSpaces: Int, occupiedSpaces: Int, availableSpaces: Int, occupancyRate: Double)
 case class FinancialStats(totalRevenue: BigDecimal, revenueByMethod: Map[String, BigDecimal])
-case class SessionDetail(id: UUID, plateNumber: String, spaceNumber: String, entryTime: String, status: String)
+case class SessionDetail(
+  id: UUID,
+  plateNumber: String,
+  spaceNumber: String,
+  startTime: String,
+  endTime: Option[String],
+  fee: Option[BigDecimal],
+  status: String
+)
 case class DashboardStats(occupancy: OccupancyStats, financial: FinancialStats, recentSessions: List[SessionDetail])
 
 case class ReservationCreateRequest(spaceId: UUID, startTime: String, endTime: String)
@@ -62,7 +70,7 @@ object DtoFormats {
 
   implicit val occupancyStatsFormat: RootJsonFormat[OccupancyStats] = jsonFormat4(OccupancyStats)
   implicit val financialStatsFormat: RootJsonFormat[FinancialStats] = jsonFormat2(FinancialStats)
-  implicit val sessionDetailFormat: RootJsonFormat[SessionDetail] = jsonFormat5(SessionDetail)
+  implicit val sessionDetailFormat: RootJsonFormat[SessionDetail] = jsonFormat7(SessionDetail)
   implicit val dashboardStatsFormat: RootJsonFormat[DashboardStats] = jsonFormat3(DashboardStats)
 
   implicit val reservationCreateRequestFormat: RootJsonFormat[ReservationCreateRequest] = jsonFormat3(ReservationCreateRequest)
