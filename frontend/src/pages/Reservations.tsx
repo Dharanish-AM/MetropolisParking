@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { client } from '../api/client';
 import { Navbar } from '../components/Navbar';
 import { Card, CardHeader } from '../components/ui/Card';
@@ -21,7 +22,7 @@ import {
 import { Badge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
 import { Skeleton } from '../components/ui/Skeleton';
-import { Calendar, Plus, XCircle, Info, AlertTriangle } from 'lucide-react';
+import { Calendar, Plus, XCircle, Info, AlertTriangle, QrCode } from 'lucide-react';
 
 const reservationSchema = z.object({
   lotId: z.string().min(1, 'Parking lot is required'),
@@ -58,7 +59,9 @@ interface ParkingSpace {
 }
 
 export const Reservations: FC = () => {
+  const navigate = useNavigate();
   const [isBookOpen, setIsBookOpen] = useState(false);
+  const [selectedReservation, setSelectedReservation] = useState<ReservationItem | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const {
@@ -96,6 +99,12 @@ export const Reservations: FC = () => {
     },
   });
 
+  const getFormattedDateTime = (minutesOffset = 5) => {
+    const d = new Date(Date.now() + minutesOffset * 60 * 1000);
+    const tzOffset = d.getTimezoneOffset() * 60000;
+    return new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
+  };
+
   const {
     register,
     handleSubmit,
@@ -107,10 +116,21 @@ export const Reservations: FC = () => {
     defaultValues: {
       lotId: '',
       spaceId: '',
-      startTime: '',
-      endTime: '',
+      startTime: getFormattedDateTime(5),
+      endTime: getFormattedDateTime(125),
     },
   });
+
+  const openBookModal = () => {
+    reset({
+      lotId: '',
+      spaceId: '',
+      startTime: getFormattedDateTime(5),
+      endTime: getFormattedDateTime(125),
+    });
+    setError(null);
+    setIsBookOpen(true);
+  };
 
   const selectedLotId = watch('lotId');
 
@@ -185,7 +205,7 @@ export const Reservations: FC = () => {
               Book and manage your parking spaces in advance
             </p>
           </div>
-          <Button onClick={() => setIsBookOpen(true)} className="flex items-center gap-2">
+          <Button onClick={openBookModal} className="flex items-center gap-2">
             <Plus className="w-4 h-4" />
             <span>Book Space</span>
           </Button>
@@ -245,16 +265,41 @@ export const Reservations: FC = () => {
                       <Badge variant={getStatusVariant(res.status)}>{res.status}</Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      {res.status === 'CONFIRMED' && (
+                      <div className="flex items-center justify-end gap-2">
                         <Button
                           variant="secondary"
                           size="sm"
-                          onClick={() => handleCancel(res.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2"
+                          onClick={() => setSelectedReservation(res)}
+                          className="px-2.5 py-1 text-xs font-semibold cursor-pointer"
                         >
-                          <XCircle className="w-4 h-4" />
+                          <Info className="w-3.5 h-3.5 mr-1 text-neutral-secondary" />
+                          Details
                         </Button>
-                      )}
+
+                        {(res.status === 'CONFIRMED' || res.status === 'PENDING') && (
+                          <>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => navigate('/qr-scanner')}
+                              className="px-2.5 py-1 text-xs font-semibold text-brand-primary cursor-pointer"
+                            >
+                              <QrCode className="w-3.5 h-3.5 mr-1" />
+                              Pass
+                            </Button>
+
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => handleCancel(res.id)}
+                              className="px-2.5 py-1 text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+                            >
+                              <XCircle className="w-3.5 h-3.5 mr-1" />
+                              Cancel
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -347,6 +392,80 @@ export const Reservations: FC = () => {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal
+        isOpen={selectedReservation !== null}
+        onClose={() => setSelectedReservation(null)}
+        title="Reservation Details"
+      >
+        {selectedReservation && (
+          <div className="space-y-4">
+            <div className="p-4 bg-neutral-50 rounded-xl border border-neutral-border space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase text-neutral-secondary">
+                  {selectedReservation.lotName}
+                </span>
+                <Badge variant={getStatusVariant(selectedReservation.status)}>
+                  {selectedReservation.status}
+                </Badge>
+              </div>
+              <div className="text-xl font-bold text-neutral-primary flex items-center gap-2">
+                Space{' '}
+                <span className="font-mono text-brand-primary">
+                  {selectedReservation.spaceNumber}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-border">
+                <span className="text-neutral-secondary block font-semibold mb-0.5">
+                  Start Time
+                </span>
+                <span className="font-medium text-neutral-primary">
+                  {formatDate(selectedReservation.startTime)}
+                </span>
+              </div>
+              <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-border">
+                <span className="text-neutral-secondary block font-semibold mb-0.5">End Time</span>
+                <span className="font-medium text-neutral-primary">
+                  {formatDate(selectedReservation.endTime)}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-border">
+                <span className="text-neutral-secondary block font-semibold mb-0.5">
+                  Total Fee
+                </span>
+                <span className="font-bold text-brand-primary text-sm">
+                  ${selectedReservation.fee.toFixed(2)}
+                </span>
+              </div>
+              <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-border">
+                <span className="text-neutral-secondary block font-semibold mb-0.5">
+                  Reservation ID
+                </span>
+                <span className="font-mono text-neutral-primary truncate block">
+                  {selectedReservation.id}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setSelectedReservation(null)}
+                className="w-auto px-5"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

@@ -23,7 +23,7 @@ class ReservationService(
     val endTime = try { Instant.parse(req.endTime) } catch { case _: Throwable => throw ValidationException("Invalid end time format") }
 
     val now = Instant.now()
-    if (!startTime.isAfter(now)) {
+    if (!startTime.isAfter(now.minusSeconds(300))) {
       throw ValidationException("Reservation start time must be in the future")
     }
     if (!startTime.isBefore(endTime)) {

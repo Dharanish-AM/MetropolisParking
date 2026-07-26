@@ -35,7 +35,7 @@ class ReservationRepository(dsl: DSLContext) extends BaseRepository(dsl) {
     Option(
       dsl.selectFrom(RESERVATIONS)
         .where(RESERVATIONS.ID.eq(id))
-        .fetchOne()
+        .fetchAny()
     ).map(mapRecord)
   }
 

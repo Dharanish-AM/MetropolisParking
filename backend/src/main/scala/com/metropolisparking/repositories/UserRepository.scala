@@ -12,7 +12,8 @@ class UserRepository(dsl: DSLContext) extends BaseRepository(dsl) {
         .from(USERS)
         .join(ROLES).on(USERS.ROLE_ID.eq(ROLES.ID))
         .where(USERS.EMAIL.eq(email).and(USERS.DELETED_AT.isNull))
-        .fetchOne()
+        .orderBy(USERS.CREATED_AT.desc())
+        .fetchAny()
     ).map { record =>
       val uRec = record.into(USERS)
       val user = User(
@@ -33,7 +34,7 @@ class UserRepository(dsl: DSLContext) extends BaseRepository(dsl) {
         .from(USERS)
         .join(ROLES).on(USERS.ROLE_ID.eq(ROLES.ID))
         .where(USERS.ID.eq(id).and(USERS.DELETED_AT.isNull))
-        .fetchOne()
+        .fetchAny()
     ).map { record =>
       val uRec = record.into(USERS)
       val user = User(
@@ -63,7 +64,7 @@ class UserRepository(dsl: DSLContext) extends BaseRepository(dsl) {
     Option(
       dsl.selectFrom(ROLES)
         .where(ROLES.NAME.eq(roleName))
-        .fetchOne()
+        .fetchAny()
     ).map(_.getId)
   }
 }

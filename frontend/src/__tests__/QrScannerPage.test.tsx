@@ -5,6 +5,17 @@ import { QrScannerPage } from '../pages/QrScannerPage';
 import { AuthContext } from '../features/auth/context/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
+vi.mock('html5-qrcode', () => {
+  return {
+    Html5Qrcode: vi.fn().mockImplementation(() => ({
+      start: vi.fn().mockResolvedValue(undefined),
+      stop: vi.fn().mockResolvedValue(undefined),
+      clear: vi.fn(),
+      isScanning: false,
+    })),
+  };
+});
+
 const mockAdminAuth = {
   user: {
     id: 'admin-id-123',
@@ -38,6 +49,24 @@ describe('QrScannerPage Component', () => {
 
     expect(screen.getByText(/QR Code Gate Entry & Passes/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Paste JWT QR Token payload here.../i)).toBeInTheDocument();
+  });
+
+  it('toggles camera scanner control', () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <AuthContext.Provider value={mockAdminAuth}>
+          <BrowserRouter>
+            <QrScannerPage />
+          </BrowserRouter>
+        </AuthContext.Provider>
+      </QueryClientProvider>
+    );
+
+    const cameraBtn = screen.getByRole('button', { name: /Use Camera Scanner/i });
+    expect(cameraBtn).toBeInTheDocument();
+
+    fireEvent.click(cameraBtn);
+    expect(screen.getByText(/Stop Camera/i)).toBeInTheDocument();
   });
 
   it('submits QR token string and renders MSW mock scan result', async () => {

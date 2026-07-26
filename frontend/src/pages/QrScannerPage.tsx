@@ -7,6 +7,7 @@ import { getSessions } from '../api/endpoints/sessions';
 import { getReservations } from '../api/endpoints/reservations';
 import type { ReservationItem } from '../api/endpoints/reservations';
 import { getVehicles } from '../api/endpoints/vehicles';
+import { getSpaces } from '../api/endpoints/spaces';
 import { useAuth } from '../features/auth/hooks/useAuth';
 import {
   QrCode,
@@ -16,9 +17,11 @@ import {
   RefreshCw,
   Ticket,
   Camera,
+  CameraOff,
   Upload,
 } from 'lucide-react';
 import QRCode from 'qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 
 export const QrScannerPage: FC = () => {
   const { user } = useAuth();
@@ -27,27 +30,82 @@ export const QrScannerPage: FC = () => {
   const [loading, setLoading] = useState(false);
   const [scanResult, setScanResult] = useState<QrScanResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
 
   const [activePasses, setActivePasses] = useState<
-    { id: string; type: 'SESSION' | 'RESERVATION'; title: string; subtitle: string }[]
+    {
+      id: string;
+      type: 'SESSION' | 'RESERVATION';
+      title: string;
+      subtitle: string;
+      details: {
+        lotName?: string;
+        spaceNumber?: string;
+        vehiclePlate?: string;
+        startTime?: string;
+        status?: string;
+        fee?: string;
+      };
+    }[]
   >([]);
+
   const [selectedPass, setSelectedPass] = useState<{
     id: string;
     type: 'SESSION' | 'RESERVATION';
   } | null>(null);
   const [qrToken, setQrToken] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
     fetchUserPasses();
   }, [user]);
 
+  useEffect(() => {
+    let html5QrCode: Html5Qrcode | null = null;
+
+    if (isCameraActive) {
+      setCameraError(null);
+      html5QrCode = new Html5Qrcode('qr-reader-container');
+      scannerRef.current = html5QrCode;
+
+      html5QrCode
+        .start(
+          { facingMode: 'environment' },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          (decodedText) => {
+            setQrInput(decodedText);
+            setIsCameraActive(false);
+            executeScan(decodedText);
+          },
+          () => {}
+        )
+        .catch(() => {
+          setCameraError('Unable to access webcam or camera. Please check camera permissions.');
+          setIsCameraActive(false);
+        });
+    }
+
+    return () => {
+      if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode
+          .stop()
+          .then(() => {
+            html5QrCode?.clear();
+          })
+          .catch(() => {});
+      }
+    };
+  }, [isCameraActive]);
+
   const fetchUserPasses = async () => {
     try {
-      const [vehiclesList, sessions, resList] = await Promise.all([
+      const [vehiclesList, sessions, resList, spacesList] = await Promise.all([
         getVehicles().catch(() => []),
         getSessions(true).catch(() => []),
         getReservations().catch(() => []),
+        getSpaces().catch(() => []),
       ]);
 
       const myVehicleIds = vehiclesList
@@ -59,15 +117,31 @@ export const QrScannerPage: FC = () => {
         type: 'SESSION' | 'RESERVATION';
         title: string;
         subtitle: string;
+        details: {
+          lotName?: string;
+          spaceNumber?: string;
+          vehiclePlate?: string;
+          startTime?: string;
+          status?: string;
+          fee?: string;
+        };
       }[] = [];
 
       sessions.forEach(s => {
         if (!s.exitTime && myVehicleIds.includes(s.vehicleId)) {
+          const veh = vehiclesList.find((v: any) => v.id === s.vehicleId);
+          const sp = spacesList.find((sp: any) => sp.id === s.spaceId);
           passes.push({
             id: s.id,
             type: 'SESSION',
             title: `Active Parking Session`,
             subtitle: `Session ID: ${s.id.slice(0, 8)}...`,
+            details: {
+              spaceNumber: s.spaceNumber || sp?.spaceNumber || (s.spaceId ? `Space #${s.spaceId.slice(0, 6)}` : 'N/A'),
+              vehiclePlate: s.plateNumber || veh?.plateNumber || 'Registered Vehicle',
+              startTime: s.entryTime ? new Date(s.entryTime).toLocaleString() : undefined,
+              status: s.status || 'ACTIVE',
+            },
           });
         }
       });
@@ -79,6 +153,13 @@ export const QrScannerPage: FC = () => {
             type: 'RESERVATION',
             title: `Reservation for Space ${r.spaceNumber}`,
             subtitle: `Lot: ${r.lotName} (${r.status})`,
+            details: {
+              lotName: r.lotName,
+              spaceNumber: r.spaceNumber,
+              startTime: r.startTime ? new Date(r.startTime).toLocaleString() : undefined,
+              status: r.status,
+              fee: r.fee !== undefined ? `$${r.fee.toFixed(2)}` : undefined,
+            },
           });
         }
       });
@@ -115,16 +196,15 @@ export const QrScannerPage: FC = () => {
     }
   };
 
-  const handleScanSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!qrInput.trim()) return;
+  const executeScan = async (token: string) => {
+    if (!token.trim()) return;
 
     setLoading(true);
     setScanResult(null);
     setErrorMessage(null);
 
     try {
-      const res = await qrApi.scanPass(qrInput.trim());
+      const res = await qrApi.scanPass(token.trim());
       setScanResult(res);
       setQrInput('');
     } catch (err: any) {
@@ -135,6 +215,33 @@ export const QrScannerPage: FC = () => {
       setLoading(false);
     }
   };
+
+  const handleScanSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    executeScan(qrInput);
+  };
+
+  const toggleCamera = () => {
+    if (isCameraActive) {
+      if (scannerRef.current && scannerRef.current.isScanning) {
+        scannerRef.current
+          .stop()
+          .then(() => {
+            scannerRef.current?.clear();
+            setIsCameraActive(false);
+          })
+          .catch(() => {
+            setIsCameraActive(false);
+          });
+      } else {
+        setIsCameraActive(false);
+      }
+    } else {
+      setIsCameraActive(true);
+    }
+  };
+
+  const currentPass = activePasses.find(p => p.id === selectedPass?.id);
 
   return (
     <div className="min-h-screen bg-neutral-bg text-neutral-primary flex flex-col font-sans">
@@ -181,13 +288,53 @@ export const QrScannerPage: FC = () => {
         {activeTab === 'scan' ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="bg-white rounded-2xl p-6 border border-neutral-border shadow-xs">
-              <h2 className="text-xl font-bold mb-2 text-neutral-primary flex items-center gap-2">
-                <Camera className="w-5 h-5 text-brand-primary" />
-                Scan Gate QR Pass
-              </h2>
-              <p className="text-sm text-neutral-secondary mb-6">
-                Paste or scan a signed QR token string to execute gate check-in or checkout.
-              </p>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-xl font-bold text-neutral-primary flex items-center gap-2">
+                    <Camera className="w-5 h-5 text-brand-primary" />
+                    Scan Gate QR Pass
+                  </h2>
+                  <p className="text-sm text-neutral-secondary mt-0.5">
+                    Use live webcam / mobile camera or paste a signed QR token string.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={toggleCamera}
+                  className={`flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer border ${
+                    isCameraActive
+                      ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'
+                      : 'bg-brand-primary/10 text-brand-primary border-brand-primary/20 hover:bg-brand-primary/20'
+                  }`}
+                >
+                  {isCameraActive ? (
+                    <>
+                      <CameraOff className="w-4 h-4" /> Stop Camera
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="w-4 h-4" /> Use Camera Scanner
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {isCameraActive && (
+                <div className="mb-6 p-3 bg-neutral-900 rounded-2xl overflow-hidden shadow-inner flex flex-col items-center">
+                  <div id="qr-reader-container" className="w-full max-w-sm rounded-xl overflow-hidden" />
+                  <p className="text-[11px] text-neutral-400 mt-2 font-medium">
+                    Point webcam or phone camera at QR Code
+                  </p>
+                </div>
+              )}
+
+              {cameraError && (
+                <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 text-amber-800 text-xs">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <span>{cameraError}</span>
+                </div>
+              )}
 
               <form onSubmit={handleScanSubmit} className="space-y-4">
                 <div>
@@ -335,7 +482,7 @@ export const QrScannerPage: FC = () => {
 
             <div className="bg-white rounded-2xl p-6 border border-neutral-border shadow-xs lg:col-span-2 flex flex-col items-center justify-center">
               {selectedPass && qrToken ? (
-                <div className="text-center space-y-6 py-4 animate-fade-in">
+                <div className="text-center space-y-6 py-4 animate-fade-in w-full max-w-lg mx-auto flex flex-col items-center">
                   <div>
                     <h3 className="text-xl font-extrabold text-neutral-primary">
                       Digital Gate Pass
@@ -349,7 +496,54 @@ export const QrScannerPage: FC = () => {
                     <canvas ref={canvasRef} className="mx-auto rounded-lg" />
                   </div>
 
-                  <div className="max-w-md mx-auto bg-neutral-50 p-4 rounded-xl border border-neutral-border text-left">
+                  {currentPass?.details && (
+                    <div className="w-full bg-neutral-50 rounded-2xl p-4 border border-neutral-border text-left grid grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <span className="text-neutral-secondary block font-semibold">Pass Type</span>
+                        <span className="font-extrabold uppercase text-brand-primary tracking-wider">
+                          {selectedPass.type}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-neutral-secondary block font-semibold">Status</span>
+                        <span className="font-bold text-emerald-600">
+                          {currentPass.details.status || 'ACTIVE'}
+                        </span>
+                      </div>
+                      {currentPass.details.lotName && (
+                        <div>
+                          <span className="text-neutral-secondary block font-semibold">Parking Lot</span>
+                          <span className="font-bold text-neutral-primary">{currentPass.details.lotName}</span>
+                        </div>
+                      )}
+                      {currentPass.details.spaceNumber && (
+                        <div>
+                          <span className="text-neutral-secondary block font-semibold">Space Number</span>
+                          <span className="font-mono font-bold text-brand-primary">{currentPass.details.spaceNumber}</span>
+                        </div>
+                      )}
+                      {currentPass.details.vehiclePlate && (
+                        <div>
+                          <span className="text-neutral-secondary block font-semibold">Vehicle Plate</span>
+                          <span className="font-mono font-bold text-neutral-primary">{currentPass.details.vehiclePlate}</span>
+                        </div>
+                      )}
+                      {currentPass.details.startTime && (
+                        <div>
+                          <span className="text-neutral-secondary block font-semibold">Start / Entry Time</span>
+                          <span className="font-medium text-neutral-primary">{currentPass.details.startTime}</span>
+                        </div>
+                      )}
+                      {currentPass.details.fee && (
+                        <div>
+                          <span className="text-neutral-secondary block font-semibold">Total Fee</span>
+                          <span className="font-bold text-brand-primary">{currentPass.details.fee}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="w-full bg-neutral-50 p-4 rounded-xl border border-neutral-border text-left">
                     <span className="text-[10px] font-bold text-neutral-secondary uppercase block mb-1">
                       Signed Pass Token
                     </span>
