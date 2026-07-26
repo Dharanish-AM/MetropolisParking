@@ -6,6 +6,8 @@ import type { QrScanResponse } from '../api/endpoints/qr';
 import { getSessions } from '../api/endpoints/sessions';
 import { getReservations } from '../api/endpoints/reservations';
 import type { ReservationItem } from '../api/endpoints/reservations';
+import { getVehicles } from '../api/endpoints/vehicles';
+import { useAuth } from '../features/auth/hooks/useAuth';
 import {
   QrCode,
   Scan,
@@ -19,6 +21,7 @@ import {
 import QRCode from 'qrcode';
 
 export const QrScannerPage: FC = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'scan' | 'passes'>('scan');
   const [qrInput, setQrInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -37,14 +40,19 @@ export const QrScannerPage: FC = () => {
 
   useEffect(() => {
     fetchUserPasses();
-  }, []);
+  }, [user]);
 
   const fetchUserPasses = async () => {
     try {
-      const [sessions, resList] = await Promise.all([
+      const [vehiclesList, sessions, resList] = await Promise.all([
+        getVehicles().catch(() => []),
         getSessions(true).catch(() => []),
         getReservations().catch(() => []),
       ]);
+
+      const myVehicleIds = vehiclesList
+        .filter((v: any) => v.ownerId === user?.id)
+        .map((v: any) => v.id);
 
       const passes: {
         id: string;
@@ -54,7 +62,7 @@ export const QrScannerPage: FC = () => {
       }[] = [];
 
       sessions.forEach(s => {
-        if (!s.exitTime) {
+        if (!s.exitTime && myVehicleIds.includes(s.vehicleId)) {
           passes.push({
             id: s.id,
             type: 'SESSION',

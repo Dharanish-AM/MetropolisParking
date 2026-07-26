@@ -99,15 +99,36 @@ export const CustomerDashboard: FC = () => {
   });
 
   const myVehicles = (vehicles || []).filter(v => v.ownerId === user?.id);
-  const myPlates = myVehicles.map(v => v.plateNumber);
+  const myVehicleIds = myVehicles.map(v => v.id);
+  const vehicleDetailsMap = new Map<string, { plateNumber: string; type: string }>(
+    (vehicles || []).map((v: any) => [v.id, { plateNumber: v.plateNumber, type: v.type }])
+  );
+  const spaceMap = new Map<string, string>((spaces || []).map((s: any) => [s.id, s.spaceNumber]));
 
   const activeStays = (sessions || []).filter(
-    s => (s.status === 'ACTIVE' || !s.exitTime) && myPlates.includes(s.plateNumber || '')
-  );
+    (s: any) => (s.status === 'ACTIVE' || !s.exitTime) && myVehicleIds.includes(s.vehicleId)
+  ).map((s: any) => {
+    const details = vehicleDetailsMap.get(s.vehicleId);
+    return {
+      ...s,
+      plateNumber: details?.plateNumber || 'Unknown',
+      vehicleType: details?.type || 'CAR',
+      spaceNumber: spaceMap.get(s.spaceId) || 'Unknown',
+    };
+  });
 
   const completedHistory = (sessions || []).filter(
-    s => s.status !== 'ACTIVE' && s.exitTime && myPlates.includes(s.plateNumber || '')
-  );
+    (s: any) => s.status !== 'ACTIVE' && s.exitTime && myVehicleIds.includes(s.vehicleId)
+  ).map((s: any) => {
+    const details = vehicleDetailsMap.get(s.vehicleId);
+    return {
+      ...s,
+      plateNumber: details?.plateNumber || 'Unknown',
+      vehicleType: details?.type || 'CAR',
+      spaceNumber: spaceMap.get(s.spaceId) || 'Unknown',
+      duration: s.durationMinutes ?? s.duration,
+    };
+  });
 
   const availableSpaces = (spaces as ParkingSpace[])?.filter(s => s.status === 'AVAILABLE') || [];
 
@@ -240,8 +261,8 @@ export const CustomerDashboard: FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           <Card className="p-0 overflow-hidden">
-            <CardHeader className="px-6 py-5 border-b border-neutral-border flex justify-between items-center">
-              <div>
+            <CardHeader className="px-6 py-5 border-b border-neutral-border flex flex-row items-center justify-between space-y-0">
+              <div className="text-left">
                 <CardTitle>Active Stays</CardTitle>
                 <CardDescription>Vehicles currently parked in the facility.</CardDescription>
               </div>
@@ -279,10 +300,19 @@ export const CustomerDashboard: FC = () => {
                   activeStays.map(session => (
                     <TableRow key={session.id}>
                       <TableCell className="font-mono font-bold tracking-tight text-neutral-primary">
-                        {session.plateNumber}
+                        <div className="flex items-center gap-2">
+                          <span>{session.plateNumber}</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full font-sans font-bold bg-neutral-100 text-neutral-600 border border-neutral-border">
+                            {session.vehicleType}
+                          </span>
+                        </div>
                       </TableCell>
-                      <TableCell className="font-semibold">{session.spaceNumber}</TableCell>
-                      <TableCell className="text-xs text-neutral-secondary">
+                      <TableCell className="font-bold text-brand-primary">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-brand-primary/5 border border-brand-primary/10 text-xs font-mono">
+                          {session.spaceNumber}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-xs text-neutral-secondary font-medium">
                         {new Date(session.entryTime).toLocaleString([], {
                           dateStyle: 'short',
                           timeStyle: 'short',
@@ -292,7 +322,7 @@ export const CustomerDashboard: FC = () => {
                         <Button
                           variant="secondary"
                           onClick={() => handleCheckOut(session.plateNumber!)}
-                          className="px-2.5 py-1.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-100 font-bold inline-flex items-center gap-1"
+                          className="px-2.5 py-1.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-100 font-bold inline-flex items-center gap-1 cursor-pointer"
                         >
                           <Square className="w-3 h-3 fill-red-600 text-red-600" />
                           Exit Parking
@@ -306,7 +336,7 @@ export const CustomerDashboard: FC = () => {
           </Card>
 
           <Card className="p-0 overflow-hidden">
-            <CardHeader className="px-6 py-5 border-b border-neutral-border">
+            <CardHeader className="px-6 py-5 border-b border-neutral-border text-left">
               <CardTitle>Parking History</CardTitle>
               <CardDescription>Records of your past visits and transactions.</CardDescription>
             </CardHeader>
