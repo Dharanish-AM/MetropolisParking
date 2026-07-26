@@ -53,9 +53,9 @@ export const AnprSimulator: FC = () => {
   const [selectedLotId, setSelectedLotId] = useState('');
   const [plateNumber, setPlateNumber] = useState('');
   const [isCameraActive, setIsCameraActive] = useState(false);
-  const [isOcrProcessing, setIsOcrProcessing] = useState(false);
-  const [ocrProgress, setOcrProgress] = useState(0);
+
   const [error, setError] = useState<string | null>(null);
+  const [ocrError, setOcrError] = useState<string | null>(null);
   const [entryResult, setEntryResult] = useState<AnprEntryResponse | null>(null);
   const [exitResult, setExitResult] = useState<AnprExitResponse | null>(null);
   const [cameraDevices, setCameraDevices] = useState<CameraDevice[]>([]);
@@ -64,6 +64,34 @@ export const AnprSimulator: FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const workerRef = useRef<any>(null);
+
+  useEffect(() => {
+    let active = true;
+    const initWorker = async () => {
+      try {
+        const worker = await Tesseract.createWorker('eng');
+        await worker.setParameters({
+          tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-',
+          tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE,
+        });
+        if (active) {
+          workerRef.current = worker;
+        } else {
+          await worker.terminate();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    initWorker();
+    return () => {
+      active = false;
+      if (workerRef.current) {
+        workerRef.current.terminate();
+      }
+    };
+  }, []);
 
   const enumerateDevices = useCallback(async () => {
     try {
@@ -85,10 +113,14 @@ export const AnprSimulator: FC = () => {
   }, [selectedDeviceId]);
 
   useEffect(() => {
-    enumerateDevices();
-    navigator.mediaDevices.addEventListener('devicechange', enumerateDevices);
+    if (typeof navigator !== 'undefined' && navigator.mediaDevices) {
+      enumerateDevices();
+      navigator.mediaDevices.addEventListener('devicechange', enumerateDevices);
+    }
     return () => {
-      navigator.mediaDevices.removeEventListener('devicechange', enumerateDevices);
+      if (typeof navigator !== 'undefined' && navigator.mediaDevices) {
+        navigator.mediaDevices.removeEventListener('devicechange', enumerateDevices);
+      }
     };
   }, [enumerateDevices]);
 
@@ -170,31 +202,52 @@ export const AnprSimulator: FC = () => {
     };
   }, []);
 
-  const scanPlate = async () => {
-    if (!videoRef.current || !canvasRef.current) return;
+  const scanPlate = useCallback(async (): Promise<boolean> => {
+    if (!videoRef.current || !canvasRef.current) return false;
     const video = videoRef.current;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) return false;
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const videoWidth = video.videoWidth;
+    const videoHeight = video.videoHeight;
+    const cropWidth = Math.round(videoWidth * 0.65);
+    const cropHeight = Math.round(videoHeight * 0.35);
+    const cropX = Math.round((videoWidth - cropWidth) / 2);
+    const cropY = Math.round((videoHeight - cropHeight) / 2);
 
-    setIsOcrProcessing(true);
-    setError(null);
-    setOcrProgress(0);
+    canvas.width = cropWidth;
+    canvas.height = cropHeight;
+    ctx.drawImage(video, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+      const contrast = 1.5;
+      const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+      const newGray = factor * (gray - 128) + 128;
+      data[i] = newGray;
+      data[i + 1] = newGray;
+      data[i + 2] = newGray;
+    }
+    ctx.putImageData(imageData, 0, 0);
+
+    setOcrError(null);
 
     try {
-      const result = await Tesseract.recognize(canvas.toDataURL('image/png'), 'eng', {
-        logger: m => {
-          if (m.status === 'recognizing') {
-            setOcrProgress(Math.round(m.progress * 100));
-          }
-        },
-      });
+      let recognizedText = '';
+      if (workerRef.current) {
+        const result = await workerRef.current.recognize(canvas.toDataURL('image/png'));
+        recognizedText = result.data.text;
+      } else {
+        const result = await Tesseract.recognize(canvas.toDataURL('image/png'), 'eng');
+        recognizedText = result.data.text;
+      }
 
-      const recognizedText = result.data.text;
       const cleaned = recognizedText
         .toUpperCase()
         .replace(/[^A-Z0-9-]/g, '')
@@ -202,17 +255,36 @@ export const AnprSimulator: FC = () => {
 
       if (cleaned.length >= 4) {
         setPlateNumber(cleaned);
-      } else {
-        setError(
-          'No valid plate characters detected. Ensure the plate is clear, well-lit and centered in the frame.'
-        );
+        setOcrError(null);
+        return true;
       }
     } catch {
-      setError('OCR processing failed. Please try again or enter the plate manually.');
-    } finally {
-      setIsOcrProcessing(false);
+      setOcrError('OCR processing failed. Please try again or enter the plate manually.');
     }
-  };
+    return false;
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    let timerId: any = null;
+
+    const runLoop = async () => {
+      if (!active || !isCameraActive) return;
+      await scanPlate();
+      if (active && isCameraActive) {
+        timerId = setTimeout(runLoop, 1000);
+      }
+    };
+
+    if (isCameraActive) {
+      timerId = setTimeout(runLoop, 1000);
+    }
+
+    return () => {
+      active = false;
+      if (timerId) clearTimeout(timerId);
+    };
+  }, [isCameraActive, scanPlate]);
 
   const generateMockPlate = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -346,14 +418,9 @@ export const AnprSimulator: FC = () => {
 
                 <div className="flex gap-2">
                   {isCameraActive ? (
-                    <>
-                      <Button variant="secondary" onClick={stopCamera} className="flex-1">
-                        Turn Off
-                      </Button>
-                      <Button onClick={scanPlate} isLoading={isOcrProcessing} className="flex-1">
-                        Scan Plate
-                      </Button>
-                    </>
+                    <Button variant="secondary" onClick={stopCamera} className="w-full">
+                      Turn Off Camera
+                    </Button>
                   ) : (
                     <Button
                       onClick={() => startCamera(selectedDeviceId || undefined)}
@@ -366,18 +433,10 @@ export const AnprSimulator: FC = () => {
                   )}
                 </div>
 
-                {isOcrProcessing && (
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs font-bold text-brand-primary">
-                      <span>Analyzing Frame...</span>
-                      <span>{ocrProgress}%</span>
-                    </div>
-                    <div className="w-full h-1 bg-neutral-border rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-brand-primary transition-all duration-300"
-                        style={{ width: `${ocrProgress}%` }}
-                      />
-                    </div>
+                {isCameraActive && (
+                  <div className="flex items-center justify-center gap-2 text-xs font-bold text-brand-primary animate-pulse py-1">
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Scanning for license plate continuously...</span>
                   </div>
                 )}
               </div>
@@ -449,6 +508,16 @@ export const AnprSimulator: FC = () => {
           </div>
 
           <div className="lg:col-span-7 space-y-6">
+            {ocrError && (
+              <div className="p-4 bg-amber-50 border border-amber-100 rounded-2xl text-amber-700 text-sm flex gap-3 items-start animate-shake">
+                <AlertTriangle className="w-5 h-5 shrink-0" />
+                <div>
+                  <span className="font-bold">OCR Warning: </span>
+                  <span>{ocrError}</span>
+                </div>
+              </div>
+            )}
+
             {error && (
               <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-700 text-sm flex gap-3 items-start animate-shake">
                 <AlertTriangle className="w-5 h-5 shrink-0" />

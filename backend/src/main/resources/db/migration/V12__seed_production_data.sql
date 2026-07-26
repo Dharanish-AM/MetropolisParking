@@ -166,7 +166,7 @@ BEGIN
 
     FOR i IN 1..500 LOOP
         sess_id := gen_random_uuid();
-        e_time := CURRENT_TIMESTAMP - (INTERVAL '1 day' * (i % 28)) - (INTERVAL '1 minute' * ((i * 19) % 1440));
+        e_time := CURRENT_TIMESTAMP - (INTERVAL '1 day' * (1 + (i % 28))) - (INTERVAL '1 minute' * ((i * 19) % 1440));
         dur := 30 + ((i * 13) % 450);
         x_time := e_time + (INTERVAL '1 minute' * dur);
         calc_fee := round(((dur::numeric / 60.0) * (40 + (i % 60))), 2);
@@ -185,7 +185,7 @@ BEGIN
         );
 
         p_method := methods[1 + (i % array_length(methods, 1))];
-        p_status := CASE WHEN i % 20 = 0 THEN 'FAILED' WHEN i % 25 = 0 THEN 'REFUNDED' WHEN i % 30 = 0 THEN 'PENDING' ELSE 'SUCCESSFUL' END;
+        p_status := CASE WHEN i % 20 = 0 THEN 'FAILED' WHEN i % 25 = 0 THEN 'REFUNDED' WHEN i % 30 = 0 THEN 'PENDING' ELSE 'SUCCESS' END;
 
         INSERT INTO payments (id, session_id, amount, method, status, created_at, updated_at)
         VALUES (
@@ -200,7 +200,7 @@ BEGIN
     END LOOP;
 
     FOR i IN 1..array_length(space_ids, 1) LOOP
-        IF i % 10 <= 6 THEN
+        IF i % 10 <= 4 THEN
             sess_id := gen_random_uuid();
             e_time := CURRENT_TIMESTAMP - (INTERVAL '1 minute' * (15 + (i * 7) % 300));
 
@@ -218,11 +218,11 @@ BEGIN
             );
 
             UPDATE parking_spaces SET status = 'OCCUPIED', updated_at = CURRENT_TIMESTAMP WHERE id = space_ids[i];
-        ELSIF i % 10 = 7 THEN
+        ELSIF i % 10 = 5 THEN
             UPDATE parking_spaces SET status = 'RESERVED', updated_at = CURRENT_TIMESTAMP WHERE id = space_ids[i];
-        ELSIF i % 10 = 8 THEN
+        ELSIF i % 10 = 6 THEN
             UPDATE parking_spaces SET status = 'MAINTENANCE', updated_at = CURRENT_TIMESTAMP WHERE id = space_ids[i];
-        ELSIF i % 10 = 9 THEN
+        ELSIF i % 10 = 7 THEN
             UPDATE parking_spaces SET status = 'OUT_OF_SERVICE', updated_at = CURRENT_TIMESTAMP WHERE id = space_ids[i];
         END IF;
     END LOOP;
