@@ -29,7 +29,7 @@ class ParkingLotRepository(dsl: DSLContext) extends BaseRepository(dsl) {
     Option(
       dsl.selectFrom(PARKING_LOTS)
         .where(PARKING_LOTS.ID.eq(id).and(PARKING_LOTS.DELETED_AT.isNull))
-        .fetchOne()
+        .fetchAny()
     ).map(r => ParkingLot(r.getId, r.getName, r.getLocation))
   }
 
@@ -71,7 +71,7 @@ class ParkingLotRepository(dsl: DSLContext) extends BaseRepository(dsl) {
     Option(
       dsl.selectFrom(PARKING_LEVELS)
         .where(PARKING_LEVELS.LOT_ID.eq(lotId).and(PARKING_LEVELS.LEVEL_NUMBER.eq(java.lang.Integer.valueOf(levelNumber))))
-        .fetchOne()
+        .fetchAny()
     ).map(r => ParkingLevel(r.getId, r.getLotId, r.getLevelNumber.intValue()))
   }
 
@@ -100,7 +100,7 @@ class ParkingLotRepository(dsl: DSLContext) extends BaseRepository(dsl) {
     Option(
       dsl.selectFrom(PARKING_SPACES)
         .where(PARKING_SPACES.ID.eq(id).and(PARKING_SPACES.DELETED_AT.isNull))
-        .fetchOne()
+        .fetchAny()
     ).map(r => ParkingSpace(r.getId, r.getLotId, r.getLevelId, r.getSpaceNumber, r.getType, r.getStatus))
   }
 

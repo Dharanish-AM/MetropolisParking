@@ -37,5 +37,7 @@ class VehicleService(
     repo.findByPlateNumber(plateClean)
   }
 
+  def getById(id: UUID): Option[Vehicle] = repo.findById(id)
+
   def list(): List[Vehicle] = repo.list()
 }

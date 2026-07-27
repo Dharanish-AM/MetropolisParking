@@ -23,7 +23,7 @@ class PaymentRepository(dsl: DSLContext) extends BaseRepository(dsl) {
     Option(
       dsl.selectFrom(PAYMENTS)
         .where(PAYMENTS.ID.eq(id))
-        .fetchOne()
+        .fetchAny()
     ).map(mapRecord)
   }
 
@@ -31,7 +31,8 @@ class PaymentRepository(dsl: DSLContext) extends BaseRepository(dsl) {
     Option(
       dsl.selectFrom(PAYMENTS)
         .where(PAYMENTS.SESSION_ID.eq(sessionId))
-        .fetchOne()
+        .orderBy(PAYMENTS.CREATED_AT.desc())
+        .fetchAny()
     ).map(mapRecord)
   }
 

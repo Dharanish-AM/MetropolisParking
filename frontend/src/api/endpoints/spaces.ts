@@ -26,3 +26,9 @@ export const deleteSpace = async (spaceId: string) => {
   const res = await client.delete(`/spaces/${spaceId}`);
   return res.data;
 };
+
+export const getSpaceDetails = async (spaceId: string) => {
+  const res = await client.get(`/spaces/${spaceId}/details`);
+  return res.data;
+};
+

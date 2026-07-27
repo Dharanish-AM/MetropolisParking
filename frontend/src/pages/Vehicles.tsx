@@ -21,6 +21,7 @@ import { Modal } from '../components/ui/Modal';
 import { Skeleton } from '../components/ui/Skeleton';
 import { useAuth } from '../features/auth/hooks/useAuth';
 import { useVehicles, useCreateVehicle } from '../features/vehicles/hooks';
+import type { Vehicle } from '../api/endpoints/vehicles';
 import { Car, Plus, Search, Info } from 'lucide-react';
 
 const vehicleSchema = z.object({
@@ -41,6 +42,7 @@ export const Vehicles: FC = () => {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const { data: vehicles, isLoading, refetch } = useVehicles();
@@ -182,7 +184,11 @@ export const Vehicles: FC = () => {
                       </TableCell>
                     )}
                     <TableCell className="text-right">
-                      <Button variant="secondary" className="px-3 py-1.5 text-xs font-semibold">
+                      <Button
+                        variant="secondary"
+                        className="px-3 py-1.5 text-xs font-semibold cursor-pointer"
+                        onClick={() => setSelectedVehicle(vehicle)}
+                      >
                         <Info className="w-3.5 h-3.5 mr-1" />
                         Details
                       </Button>
@@ -243,6 +249,63 @@ export const Vehicles: FC = () => {
               </Button>
             </div>
           </form>
+        </Modal>
+
+        <Modal
+          isOpen={selectedVehicle !== null}
+          onClose={() => setSelectedVehicle(null)}
+          title="Vehicle Details"
+        >
+          {selectedVehicle && (
+            <div className="space-y-4">
+              <div className="p-4 bg-neutral-50 rounded-xl border border-neutral-border space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase text-neutral-secondary">
+                    Plate Number
+                  </span>
+                  <Badge variant="neutral">{selectedVehicle.type}</Badge>
+                </div>
+                <div className="text-2xl font-black font-mono tracking-wider text-brand-primary">
+                  {selectedVehicle.plateNumber}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-border">
+                  <span className="text-neutral-secondary block font-semibold mb-0.5">
+                    Vehicle Type
+                  </span>
+                  <span className="font-bold text-neutral-primary">{selectedVehicle.type}</span>
+                </div>
+                <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-border">
+                  <span className="text-neutral-secondary block font-semibold mb-0.5">
+                    Registration ID
+                  </span>
+                  <span className="font-mono font-bold text-neutral-primary truncate block">
+                    {selectedVehicle.id}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-border text-xs">
+                <span className="text-neutral-secondary block font-semibold mb-0.5">Owner ID</span>
+                <span className="font-mono text-neutral-primary font-bold">
+                  {selectedVehicle.ownerId || 'Guest / Unassigned'}
+                </span>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setSelectedVehicle(null)}
+                  className="w-auto px-5"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
         </Modal>
       </main>
     </div>

@@ -27,6 +27,7 @@ import {
   useCreateSpace,
   useUpdateSpaceStatus,
   useDeleteSpace,
+  useSpaceDetails,
 } from '../features/spaces/hooks';
 import {
   Building2,
@@ -35,7 +36,6 @@ import {
   AlertCircle,
   Car,
   Zap,
-  SlidersHorizontal,
   Plus,
   Trash2,
   Bike,
@@ -60,6 +60,36 @@ interface ParkingLot {
   id: string;
   name: string;
   location: string;
+}
+
+export interface ActiveSessionDetails {
+  id: string;
+  vehicleId: string;
+  plateNumber: string;
+  vehicleType: string;
+  entryTime: string;
+  customerName?: string;
+  customerEmail?: string;
+}
+
+export interface ActiveReservationDetails {
+  id: string;
+  userId: string;
+  customerName: string;
+  customerEmail: string;
+  startTime: string;
+  endTime: string;
+  status: string;
+  fee: number;
+}
+
+export interface SpaceDetailsResponse {
+  spaceId: string;
+  spaceNumber: string;
+  type: string;
+  status: string;
+  activeSession?: ActiveSessionDetails | null;
+  activeReservation?: ActiveReservationDetails | null;
 }
 
 const levelSchema = z.object({
@@ -91,6 +121,7 @@ export const ParkingLots: FC = () => {
 
   const { data: levels } = useLevels(activeLotId);
   const { data: spaces, isLoading: loadingSpaces } = useSpaces();
+  const { data: spaceDetails, isLoading: loadingDetails } = useSpaceDetails(selectedSpace?.id || null);
 
   const {
     register: registerLevel,
@@ -259,8 +290,8 @@ export const ParkingLots: FC = () => {
               </>
             )}
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-border text-xs font-semibold bg-white text-neutral-secondary">
-              <SlidersHorizontal className="w-3.5 h-3.5" />
-              Auto-Polling 5s
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              Live Updates
             </span>
           </div>
         </div>
@@ -293,10 +324,16 @@ export const ParkingLots: FC = () => {
             {loadingLots ? (
               <Skeleton className="h-10 w-48" />
             ) : (
-              (lots as ParkingLot[])?.map(lot => {
+              (lots as ParkingLot[])?.map((lot, idx) => {
                 const lotSpaces = (spaces as ParkingSpace[])?.filter(s => s.lotId === lot.id) || [];
                 const capacity = lotSpaces.length;
                 const occupiedCount = lotSpaces.filter(s => s.status === 'OCCUPIED').length;
+                const sameNameCount =
+                  (lots as ParkingLot[])?.filter(l => l.name === lot.name).length || 0;
+                const lotLabel =
+                  sameNameCount > 1
+                    ? `${lot.name} (${lot.location || `Building ${idx + 1}`})`
+                    : lot.name;
                 return (
                   <button
                     key={lot.id}
@@ -311,7 +348,7 @@ export const ParkingLots: FC = () => {
                     }`}
                   >
                     <Building2 className="w-4 h-4 stroke-[1.75]" />
-                    <span>{lot.name}</span>
+                    <span>{lotLabel}</span>
                     <span
                       className={`text-xs px-2 py-0.5 rounded-md ${
                         activeLotId === lot.id
@@ -407,6 +444,11 @@ export const ParkingLots: FC = () => {
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
                 {filteredSpaces.map(space => {
+                  const isRawHex =
+                    space.spaceNumber.startsWith('S-') && space.spaceNumber.length > 6;
+                  const spaceLabel = isRawHex
+                    ? `Spot ${space.spaceNumber.replace('S-', '').slice(0, 4).toUpperCase()}`
+                    : space.spaceNumber;
                   return (
                     <button
                       key={space.id}
@@ -414,7 +456,9 @@ export const ParkingLots: FC = () => {
                       className={`p-4 border rounded-2xl flex flex-col items-center justify-between gap-3 transition-all duration-150 hover:scale-[1.02] cursor-pointer text-center relative overflow-hidden bg-white border-neutral-border hover:border-brand-primary`}
                     >
                       <div className="flex items-center justify-between w-full text-xs font-semibold text-neutral-secondary">
-                        <span className="font-mono">{space.spaceNumber}</span>
+                        <span className="font-mono font-bold text-neutral-primary">
+                          {spaceLabel}
+                        </span>
                         {getSpaceIcon(space.type)}
                       </div>
                       <Badge variant={space.status as any} className="w-full justify-center">
@@ -522,6 +566,102 @@ export const ParkingLots: FC = () => {
                   ))}
                 </div>
               </div>
+
+              {(selectedSpace.status === 'OCCUPIED' || selectedSpace.status === 'RESERVED') && (
+                <div className="border-t border-neutral-border pt-4 space-y-4">
+                  {loadingDetails ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                    </div>
+                  ) : spaceDetails ? (
+                    <>
+                      {selectedSpace.status === 'OCCUPIED' && spaceDetails.activeSession && (
+                        <div className="bg-neutral-border/10 p-4 rounded-2xl border border-neutral-border space-y-3 text-left">
+                          <h3 className="text-sm font-bold text-neutral-primary flex items-center gap-1.5">
+                            <Car className="w-4 h-4 text-brand-primary" /> Active Session Info
+                          </h3>
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                            <div>
+                              <span className="text-neutral-secondary block">Plate Number</span>
+                              <span className="font-bold text-neutral-primary font-mono bg-white border border-neutral-border px-1.5 py-0.5 rounded-md inline-block mt-0.5">
+                                {spaceDetails.activeSession.plateNumber}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-neutral-secondary block">Vehicle Type</span>
+                              <span className="font-bold text-neutral-primary uppercase inline-block mt-0.5">
+                                {spaceDetails.activeSession.vehicleType}
+                              </span>
+                            </div>
+                            <div className="col-span-2 border-t border-neutral-border/50 my-1 pt-1.5">
+                              <span className="text-neutral-secondary block">Customer / Owner</span>
+                              <span className="font-bold text-neutral-primary block mt-0.5">
+                                {spaceDetails.activeSession.customerName || 'Walk-in / Unknown'}
+                              </span>
+                              {spaceDetails.activeSession.customerEmail && (
+                                <span className="text-neutral-secondary block mt-0.5 text-[11px]">
+                                  {spaceDetails.activeSession.customerEmail}
+                                </span>
+                              )}
+                            </div>
+                            <div className="col-span-2 border-t border-neutral-border/50 my-1 pt-1.5">
+                              <span className="text-neutral-secondary block">Parked Since</span>
+                              <span className="font-bold text-neutral-primary block mt-0.5">
+                                {new Date(spaceDetails.activeSession.entryTime).toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {selectedSpace.status === 'RESERVED' && spaceDetails.activeReservation && (
+                        <div className="bg-neutral-border/10 p-4 rounded-2xl border border-neutral-border space-y-3 text-left">
+                          <h3 className="text-sm font-bold text-neutral-primary flex items-center gap-1.5">
+                            <Layers className="w-4 h-4 text-brand-primary" /> Reservation Info
+                          </h3>
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                            <div className="col-span-2">
+                              <span className="text-neutral-secondary block">Reserved For</span>
+                              <span className="font-bold text-neutral-primary block mt-0.5">
+                                {spaceDetails.activeReservation.customerName}
+                              </span>
+                              <span className="text-neutral-secondary block mt-0.5 text-[11px]">
+                                {spaceDetails.activeReservation.customerEmail}
+                              </span>
+                            </div>
+                            <div className="col-span-2 border-t border-neutral-border/50 my-1 pt-1.5">
+                              <span className="text-neutral-secondary block">Reservation Period</span>
+                              <span className="font-bold text-neutral-primary block mt-0.5">
+                                {new Date(spaceDetails.activeReservation.startTime).toLocaleString()} -
+                              </span>
+                              <span className="font-bold text-neutral-primary block mt-0.5">
+                                {new Date(spaceDetails.activeReservation.endTime).toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="border-t border-neutral-border/50 my-1 pt-1.5">
+                              <span className="text-neutral-secondary block">Reservation Status</span>
+                              <Badge variant={spaceDetails.activeReservation.status as any} className="mt-1">
+                                {spaceDetails.activeReservation.status}
+                              </Badge>
+                            </div>
+                            <div className="border-t border-neutral-border/50 my-1 pt-1.5">
+                              <span className="text-neutral-secondary block">Estimated Fee</span>
+                              <span className="font-bold text-brand-primary block mt-1">
+                                ${Number(spaceDetails.activeReservation.fee).toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-xs text-neutral-secondary italic">
+                      No active session/reservation details found.
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="pt-4 border-t border-neutral-border flex justify-between gap-3">
                 {isAdmin && (

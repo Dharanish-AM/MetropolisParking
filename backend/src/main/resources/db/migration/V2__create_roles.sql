@@ -20,7 +20,6 @@ ALTER TABLE users ADD COLUMN role_id UUID REFERENCES roles(id);
 
 INSERT INTO roles (name, description) VALUES 
 ('ADMIN', 'System Administrator with full access'),
-('OPERATOR', 'Parking Lot Operator with operational access'),
 ('CUSTOMER', 'Parking Lot Customer with basic access');
 
 INSERT INTO permissions (name, description) VALUES 
@@ -37,11 +36,9 @@ SELECT r.id, p.id FROM roles r, permissions p WHERE r.name = 'ADMIN';
 
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r, permissions p 
-WHERE r.name = 'OPERATOR' AND p.name IN ('manage_lots', 'manage_spaces', 'manage_vehicles', 'manage_sessions', 'manage_payments', 'view_dashboard');
-
-INSERT INTO role_permissions (role_id, permission_id)
-SELECT r.id, p.id FROM roles r, permissions p 
 WHERE r.name = 'CUSTOMER' AND p.name IN ('manage_vehicles');
 
 INSERT INTO users (name, email, password_hash, role_id)
-VALUES ('Admin User', 'admin@metropolisparking.com', '$2a$12$7sTWE4JCB8Ih10RZO/18Z.DNh1wpw3KMCidd3yf5zwE/K3zUsJFmC', (SELECT id FROM roles WHERE name = 'ADMIN'));
+VALUES 
+('Admin User', 'admin@metropolisparking.com', '$2a$12$7sTWE4JCB8Ih10RZO/18Z.DNh1wpw3KMCidd3yf5zwE/K3zUsJFmC', (SELECT id FROM roles WHERE name = 'ADMIN')),
+('Customer User', 'customer@metropolisparking.com', '$2a$12$vErmsOdmHfNQa/Lrap4AkOWkho/J8yCtDRcispz67W7E2qRfgp37.', (SELECT id FROM roles WHERE name = 'CUSTOMER'));

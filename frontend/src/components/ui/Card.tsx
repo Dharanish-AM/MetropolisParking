@@ -14,7 +14,11 @@ Card.displayName = 'Card';
 
 export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className = '', ...props }, ref) => (
-    <div ref={ref} className={`flex flex-col space-y-1.5 pb-4 ${className}`} {...props} />
+    <div
+      ref={ref}
+      className={`pb-4 ${className.includes('flex-') ? 'flex space-y-1.5' : 'flex flex-col space-y-1.5'} ${className}`}
+      {...props}
+    />
   )
 );
 CardHeader.displayName = 'CardHeader';

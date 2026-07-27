@@ -115,7 +115,7 @@ echo "Fetching Payments..."
 PAYMENTS_RESP=$(curl -s -X GET http://localhost:8080/payments \
   -H "Authorization: Bearer $TOKEN")
 
-PAYMENT_ID=$(echo "$PAYMENTS_RESP" | grep -o '"id":"[^"]*' | head -n 1 | grep -o '[^"]*$')
+PAYMENT_ID=$(echo "$PAYMENTS_RESP" | grep -o '{[^}]*"sessionId":"'"$SESSION_ID"'"[^}]*}' | grep -o '"id":"[^"]*' | head -n 1 | grep -o '[^"]*$')
 if [ -z "$PAYMENT_ID" ]; then
   echo "Failed to retrieve pending payment"
   echo "Response: $PAYMENTS_RESP"

@@ -1,16 +1,22 @@
 package com.metropolisparking.services
 
-import com.metropolisparking.dto.{ParkingLotCreateRequest, ParkingSpaceCreateRequest}
+import com.metropolisparking.dto.{ParkingLotCreateRequest, ParkingSpaceCreateRequest, ActiveSessionDetails, ActiveReservationDetails, SpaceDetailsResponse}
 import com.metropolisparking.exceptions.{ConflictException, NotFoundException}
 import com.metropolisparking.models.{ParkingLevel, ParkingLot, ParkingSpace}
-import com.metropolisparking.repositories.ParkingLotRepository
+import com.metropolisparking.repositories.{ParkingLotRepository, ParkingSessionRepository, ReservationRepository, VehicleRepository, UserRepository}
 import com.metropolisparking.validation.Validator
 import java.util.UUID
 
 class ParkingLotService(
   repo: ParkingLotRepository,
-  auditLogService: AuditLogService
+  auditLogService: AuditLogService,
+  sessionRepo: ParkingSessionRepository = null,
+  reservationRepo: ReservationRepository = null,
+  vehicleRepo: VehicleRepository = null,
+  userRepo: UserRepository = null,
+  wsService: WebSocketService = null
 ) {
+  private def broadcast(eventJson: String): Unit = Option(wsService).foreach(_.broadcast(eventJson))
   def createLot(req: ParkingLotCreateRequest, userId: Option[UUID]): ParkingLot = {
     Validator.validateLength(req.name, 2, 100, "name")
     Validator.validateLength(req.location, 2, 255, "location")
@@ -89,6 +95,8 @@ class ParkingLotService(
     )
     repo.createSpace(space)
     auditLogService.logAction(userId, "PARKING_SPACE_CREATED", "parking_spaces", Some(space.id), Some(s"Created space ${space.spaceNumber} on level ${space.levelId}"))
+    broadcast(s"""{"event":"space_updated","spaceId":"${space.id}","status":"AVAILABLE"}""")
+    broadcast("""{"event":"dashboard_updated"}""")
     space
   }
 
@@ -97,6 +105,57 @@ class ParkingLotService(
   }
 
   def getSpace(id: UUID): Option[ParkingSpace] = repo.findSpaceById(id)
+
+  def getSpaceDetails(spaceId: UUID): SpaceDetailsResponse = {
+    val space = repo.findSpaceById(spaceId).getOrElse(throw NotFoundException(s"Parking space '$spaceId' not found"))
+
+    val activeSessionDetails = if (space.status.equalsIgnoreCase("OCCUPIED")) {
+      Option(sessionRepo).flatMap(_.findActiveBySpaceId(spaceId)).map { session =>
+        val vehicle = Option(vehicleRepo).flatMap(_.findById(session.vehicleId))
+        val plate = vehicle.map(_.plateNumber).getOrElse("Unknown")
+        val vType = vehicle.map(_.`type`).getOrElse("Unknown")
+        val customer = vehicle.flatMap(_.ownerId).flatMap(oid => Option(userRepo).flatMap(_.findById(oid)))
+        val custName = customer.map(_._1.name)
+        val custEmail = customer.map(_._1.email)
+
+        ActiveSessionDetails(
+          id = session.id,
+          vehicleId = session.vehicleId,
+          plateNumber = plate,
+          vehicleType = vType,
+          entryTime = session.entryTime.toString,
+          customerName = custName,
+          customerEmail = custEmail
+        )
+      }
+    } else None
+
+    val activeReservationDetails = if (space.status.equalsIgnoreCase("RESERVED")) {
+      Option(reservationRepo).flatMap(_.findActiveBySpaceId(spaceId)).flatMap { res =>
+        Option(userRepo).flatMap(_.findById(res.userId)).map { case (user, _) =>
+          ActiveReservationDetails(
+            id = res.id,
+            userId = res.userId,
+            customerName = user.name,
+            customerEmail = user.email,
+            startTime = res.startTime.toString,
+            endTime = res.endTime.toString,
+            status = res.status,
+            fee = res.fee
+          )
+        }
+      }
+    } else None
+
+    SpaceDetailsResponse(
+      spaceId = space.id,
+      spaceNumber = space.spaceNumber,
+      `type` = space.`type`,
+      status = space.status,
+      activeSession = activeSessionDetails,
+      activeReservation = activeReservationDetails
+    )
+  }
 
   def updateSpace(id: UUID, req: ParkingSpaceCreateRequest, userId: Option[UUID]): ParkingSpace = {
     val existing = repo.findSpaceById(id).getOrElse(throw NotFoundException(s"Parking space '$id' not found"))
@@ -113,6 +172,8 @@ class ParkingLotService(
     val updated = existing.copy(spaceNumber = req.spaceNumber.toUpperCase, `type` = req.`type`.toUpperCase)
     repo.updateSpace(updated)
     auditLogService.logAction(userId, "PARKING_SPACE_UPDATED", "parking_spaces", Some(id), Some(s"Updated space details: ${updated.spaceNumber}"))
+    broadcast(s"""{"event":"space_updated","spaceId":"${updated.id}","status":"${updated.status}"}""")
+    broadcast("""{"event":"dashboard_updated"}""")
     updated
   }
 
@@ -123,6 +184,8 @@ class ParkingLotService(
     val updated = existing.copy(status = status.toUpperCase)
     repo.updateSpace(updated)
     auditLogService.logAction(userId, "PARKING_SPACE_STATUS_UPDATED", "parking_spaces", Some(id), Some(s"Updated space status to $status for space ${updated.spaceNumber}"))
+    broadcast(s"""{"event":"space_updated","spaceId":"${updated.id}","status":"${updated.status}"}""")
+    broadcast("""{"event":"dashboard_updated"}""")
     updated
   }
 
@@ -131,6 +194,8 @@ class ParkingLotService(
     val deleted = repo.deleteSpace(id)
     if (deleted) {
       auditLogService.logAction(userId, "PARKING_SPACE_DELETED", "parking_spaces", Some(id), Some(s"Deleted space ID: $id"))
+      broadcast(s"""{"event":"space_updated","spaceId":"${id}","status":"DELETED"}""")
+      broadcast("""{"event":"dashboard_updated"}""")
     }
     deleted
   }

@@ -9,8 +9,14 @@ import { Vehicles } from './pages/Vehicles';
 import { Sessions } from './pages/Sessions';
 import { Payments } from './pages/Payments';
 import { Profile } from './pages/Profile';
+import { Reservations } from './pages/Reservations';
+import { AnprSimulator } from './pages/AnprSimulator';
+import { QrScannerPage } from './pages/QrScannerPage';
+import { useWebSocket } from './hooks/useWebSocket';
 
 function App() {
+  useWebSocket();
+
   return (
     <AuthProvider>
       <BrowserRouter>
@@ -28,7 +34,7 @@ function App() {
           <Route
             path="/parking-lots"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR']}>
+              <ProtectedRoute allowedRoles={['ADMIN']}>
                 <ParkingLots />
               </ProtectedRoute>
             }
@@ -36,7 +42,7 @@ function App() {
           <Route
             path="/vehicles"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR', 'CUSTOMER']}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
                 <Vehicles />
               </ProtectedRoute>
             }
@@ -44,15 +50,39 @@ function App() {
           <Route
             path="/sessions"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR']}>
+              <ProtectedRoute allowedRoles={['ADMIN']}>
                 <Sessions />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/anpr-simulator"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AnprSimulator />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/qr-scanner"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
+                <QrScannerPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reservations"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
+                <Reservations />
               </ProtectedRoute>
             }
           />
           <Route
             path="/payments"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'OPERATOR']}>
+              <ProtectedRoute allowedRoles={['ADMIN']}>
                 <Payments />
               </ProtectedRoute>
             }

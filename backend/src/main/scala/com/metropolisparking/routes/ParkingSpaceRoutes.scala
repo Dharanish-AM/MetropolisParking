@@ -23,7 +23,7 @@ class ParkingSpaceRoutes(service: ParkingLotService, rbac: RbacMiddleware) {
               }
             },
             post {
-              rbac.authorizeRoles(Set("ADMIN", "OPERATOR")) { claims =>
+              rbac.authorizeRoles(Set("ADMIN")) { claims =>
                 entity(as[ParkingSpaceCreateRequest]) { req =>
                   val userId = UUID.fromString(claims.userId)
                   complete(service.createSpace(req, Some(userId)))
@@ -37,7 +37,7 @@ class ParkingSpaceRoutes(service: ParkingLotService, rbac: RbacMiddleware) {
             pathEndOrSingleSlash {
               concat(
                 put {
-                  rbac.authorizeRoles(Set("ADMIN", "OPERATOR")) { claims =>
+                  rbac.authorizeRoles(Set("ADMIN")) { claims =>
                     entity(as[ParkingSpaceCreateRequest]) { req =>
                       val userId = UUID.fromString(claims.userId)
                       complete(service.updateSpace(spaceId, req, Some(userId)))
@@ -55,11 +55,18 @@ class ParkingSpaceRoutes(service: ParkingLotService, rbac: RbacMiddleware) {
             },
             path("status") {
               put {
-                rbac.authorizeRoles(Set("ADMIN", "OPERATOR")) { claims =>
+                rbac.authorizeRoles(Set("ADMIN")) { claims =>
                   entity(as[String]) { status =>
                     val userId = UUID.fromString(claims.userId)
                     complete(service.updateSpaceStatus(spaceId, status, Some(userId)))
                   }
+                }
+              }
+            },
+            path("details") {
+              get {
+                rbac.authenticateUser { _ =>
+                  complete(service.getSpaceDetails(spaceId))
                 }
               }
             }

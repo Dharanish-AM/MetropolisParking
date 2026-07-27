@@ -11,6 +11,9 @@
 
 This document covers the complete MetropolisParking system: the Scala backend service (Part I) and the React frontend application (Part II) that together form the end-to-end parking management platform.
 
+> [!NOTE]
+> For a detailed enterprise engineering design document featuring a full C4 architectural model, database ERD, sequence diagrams, and scalability plans, please refer to the [Enterprise Architecture & Design Document](file:///c:/Github Repositories/MetropolisParking/docs/MetropolisParking-Enterprise-Design.md).
+
 ---
 
 ## Table of Contents
@@ -547,7 +550,6 @@ GET /health
 Roles:
 
 - `ADMIN`
-- `OPERATOR`
 - `CUSTOMER`
 
 Each endpoint is protected through role-based access control.
@@ -800,7 +802,7 @@ Recommended production integrations:
 
 ## 29. Frontend Introduction
 
-The MetropolisParking frontend is a single-page application (SPA) that provides the operational interface for administrators, lot operators, and customers to interact with the parking platform. It consumes the backend's REST API to manage lots, spaces, vehicles, sessions, and payments, and to present real-time occupancy and revenue dashboards.
+The MetropolisParking frontend is a single-page application (SPA) that provides the operational interface for administrators and customers to interact with the parking platform. It consumes the backend's REST API to manage lots, spaces, vehicles, sessions, and payments, and to present real-time occupancy and revenue dashboards.
 
 The frontend is built as a component-driven, feature-modular React application, following the same separation-of-concerns philosophy as the backend: presentation, state, and data-access are kept in distinct layers.
 
@@ -919,13 +921,13 @@ metropolis-parking-frontend/
 |---|---|---|
 | `/login` | Login | Public |
 | `/` | Dashboard | Authenticated |
-| `/lots` | Parking Lots List | ADMIN, OPERATOR |
-| `/lots/:id` | Lot Details | ADMIN, OPERATOR |
-| `/spaces` | Space Management | ADMIN, OPERATOR |
-| `/vehicles` | Vehicle Registry | ADMIN, OPERATOR, CUSTOMER |
-| `/sessions` | Active & Past Sessions | ADMIN, OPERATOR |
-| `/sessions/:id` | Session Details | ADMIN, OPERATOR |
-| `/payments` | Payments | ADMIN, OPERATOR |
+| `/lots` | Parking Lots List | ADMIN |
+| `/lots/:id` | Lot Details | ADMIN |
+| `/spaces` | Space Management | ADMIN |
+| `/vehicles` | Vehicle Registry | ADMIN, CUSTOMER |
+| `/sessions` | Active & Past Sessions | ADMIN |
+| `/sessions/:id` | Session Details | ADMIN |
+| `/payments` | Payments | ADMIN |
 | `/profile` | User Profile | Authenticated |
 | `*` | Not Found | Public |
 
@@ -1008,7 +1010,7 @@ TypeScript types under `api/types/` mirror the backend DTOs (`ParkingLot`, `Park
   - `RESERVED` → amber
   - `OUT_OF_SERVICE` → gray
 - Dark mode supported via Tailwind's class strategy.
-- Responsive-first layout, with dashboard views optimized for desktop/tablet operator use and session/vehicle views optimized for mobile.
+- Responsive-first layout, with dashboard views optimized for desktop/tablet admin use and session/vehicle views optimized for mobile.
 
 ---
 

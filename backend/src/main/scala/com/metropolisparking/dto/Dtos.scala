@@ -20,8 +20,68 @@ case class PaymentProcessRequest(method: String)
 
 case class OccupancyStats(totalSpaces: Int, occupiedSpaces: Int, availableSpaces: Int, occupancyRate: Double)
 case class FinancialStats(totalRevenue: BigDecimal, revenueByMethod: Map[String, BigDecimal])
-case class SessionDetail(id: UUID, plateNumber: String, spaceNumber: String, entryTime: String, status: String)
+case class SessionDetail(
+  id: UUID,
+  plateNumber: String,
+  spaceNumber: String,
+  startTime: String,
+  endTime: Option[String],
+  fee: Option[BigDecimal],
+  status: String
+)
 case class DashboardStats(occupancy: OccupancyStats, financial: FinancialStats, recentSessions: List[SessionDetail])
+
+case class ReservationCreateRequest(spaceId: UUID, startTime: String, endTime: String)
+case class ReservationResponse(
+  id: UUID,
+  userId: UUID,
+  spaceId: UUID,
+  spaceNumber: String,
+  lotName: String,
+  startTime: String,
+  endTime: String,
+  status: String,
+  fee: BigDecimal
+)
+
+case class AnprEntryRequest(plateNumber: String, lotId: UUID)
+case class AnprExitRequest(plateNumber: String)
+case class AnprEntryResponse(sessionId: UUID, plateNumber: String, spaceNumber: String, levelNumber: Int, entryTime: String)
+case class AnprExitResponse(sessionId: UUID, plateNumber: String, durationMinutes: Long, fee: BigDecimal, paymentStatus: String)
+
+case class QrGenerateResponse(qrToken: String, payload: String)
+case class QrScanRequest(qrToken: String)
+case class QrScanResponse(action: String, entityId: UUID, entityType: String, plateNumber: String, spaceNumber: String, status: String, message: String)
+
+case class ActiveSessionDetails(
+  id: UUID,
+  vehicleId: UUID,
+  plateNumber: String,
+  vehicleType: String,
+  entryTime: String,
+  customerName: Option[String],
+  customerEmail: Option[String]
+)
+
+case class ActiveReservationDetails(
+  id: UUID,
+  userId: UUID,
+  customerName: String,
+  customerEmail: String,
+  startTime: String,
+  endTime: String,
+  status: String,
+  fee: BigDecimal
+)
+
+case class SpaceDetailsResponse(
+  spaceId: UUID,
+  spaceNumber: String,
+  `type`: String,
+  status: String,
+  activeSession: Option[ActiveSessionDetails],
+  activeReservation: Option[ActiveReservationDetails]
+)
 
 object DtoFormats {
   implicit val loginRequestFormat: RootJsonFormat[LoginRequest] = jsonFormat2(LoginRequest)
@@ -40,6 +100,23 @@ object DtoFormats {
 
   implicit val occupancyStatsFormat: RootJsonFormat[OccupancyStats] = jsonFormat4(OccupancyStats)
   implicit val financialStatsFormat: RootJsonFormat[FinancialStats] = jsonFormat2(FinancialStats)
-  implicit val sessionDetailFormat: RootJsonFormat[SessionDetail] = jsonFormat5(SessionDetail)
+  implicit val sessionDetailFormat: RootJsonFormat[SessionDetail] = jsonFormat7(SessionDetail)
   implicit val dashboardStatsFormat: RootJsonFormat[DashboardStats] = jsonFormat3(DashboardStats)
+
+  implicit val reservationCreateRequestFormat: RootJsonFormat[ReservationCreateRequest] = jsonFormat3(ReservationCreateRequest)
+  implicit val reservationResponseFormat: RootJsonFormat[ReservationResponse] = jsonFormat9(ReservationResponse)
+
+  implicit val anprEntryRequestFormat: RootJsonFormat[AnprEntryRequest] = jsonFormat2(AnprEntryRequest)
+  implicit val anprExitRequestFormat: RootJsonFormat[AnprExitRequest] = jsonFormat1(AnprExitRequest)
+  implicit val anprEntryResponseFormat: RootJsonFormat[AnprEntryResponse] = jsonFormat5(AnprEntryResponse)
+  implicit val anprExitResponseFormat: RootJsonFormat[AnprExitResponse] = jsonFormat5(AnprExitResponse)
+
+  implicit val qrGenerateResponseFormat: RootJsonFormat[QrGenerateResponse] = jsonFormat2(QrGenerateResponse)
+  implicit val qrScanRequestFormat: RootJsonFormat[QrScanRequest] = jsonFormat1(QrScanRequest)
+  implicit val qrScanResponseFormat: RootJsonFormat[QrScanResponse] = jsonFormat7(QrScanResponse)
+
+  implicit val activeSessionDetailsFormat: RootJsonFormat[ActiveSessionDetails] = jsonFormat7(ActiveSessionDetails)
+  implicit val activeReservationDetailsFormat: RootJsonFormat[ActiveReservationDetails] = jsonFormat8(ActiveReservationDetails)
+  implicit val spaceDetailsResponseFormat: RootJsonFormat[SpaceDetailsResponse] = jsonFormat6(SpaceDetailsResponse)
 }
+

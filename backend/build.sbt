@@ -23,6 +23,7 @@ libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "42.7.2",
   "ch.qos.logback" % "logback-classic" % "1.4.14",
   "org.slf4j" % "slf4j-api" % "2.0.9",
+  "redis.clients" % "jedis" % "5.1.0",
   "org.scalatest" %% "scalatest" % "3.2.18" % Test,
   "com.typesafe.akka" %% "akka-http-testkit" % AkkaHttpVersion % Test,
   "com.typesafe.akka" %% "akka-actor-testkit-typed" % AkkaVersion % Test

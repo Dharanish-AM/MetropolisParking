@@ -21,7 +21,7 @@ class ParkingLotRoutes(service: ParkingLotService, rbac: RbacMiddleware) {
               complete(service.listLots())
             },
             post {
-              rbac.authorizeRoles(Set("ADMIN", "OPERATOR")) { claims =>
+              rbac.authorizeRoles(Set("ADMIN")) { claims =>
                 entity(as[ParkingLotCreateRequest]) { req =>
                   val userId = UUID.fromString(claims.userId)
                   complete(service.createLot(req, Some(userId)))
@@ -41,7 +41,7 @@ class ParkingLotRoutes(service: ParkingLotService, rbac: RbacMiddleware) {
                   }
                 },
                 put {
-                  rbac.authorizeRoles(Set("ADMIN", "OPERATOR")) { claims =>
+                  rbac.authorizeRoles(Set("ADMIN")) { claims =>
                     entity(as[ParkingLotCreateRequest]) { req =>
                       val userId = UUID.fromString(claims.userId)
                       complete(service.updateLot(lotId, req, Some(userId)))
@@ -63,7 +63,7 @@ class ParkingLotRoutes(service: ParkingLotService, rbac: RbacMiddleware) {
                   complete(service.listLevels(lotId))
                 },
                 post {
-                  rbac.authorizeRoles(Set("ADMIN", "OPERATOR")) { claims =>
+                  rbac.authorizeRoles(Set("ADMIN")) { claims =>
                     entity(as[LevelCreateRequest]) { req =>
                       val userId = UUID.fromString(claims.userId)
                       complete(service.createLevel(lotId, req.levelNumber, Some(userId)))

@@ -12,6 +12,7 @@ import com.metropolisparking.jooq.tables.ParkingSpaces
 import com.metropolisparking.jooq.tables.Payments
 import com.metropolisparking.jooq.tables.Permissions
 import com.metropolisparking.jooq.tables.PricingRules
+import com.metropolisparking.jooq.tables.Reservations
 import com.metropolisparking.jooq.tables.RolePermissions
 import com.metropolisparking.jooq.tables.Roles
 import com.metropolisparking.jooq.tables.Users
@@ -79,6 +80,11 @@ class Public extends SchemaImpl("public", DefaultCatalog.DEFAULT_CATALOG) {
   def PRICING_RULES = PricingRules.PRICING_RULES
 
   /**
+   * The table <code>public.reservations</code>.
+   */
+  def RESERVATIONS = Reservations.RESERVATIONS
+
+  /**
    * The table <code>public.role_permissions</code>.
    */
   def ROLE_PERMISSIONS = RolePermissions.ROLE_PERMISSIONS
@@ -109,6 +115,7 @@ class Public extends SchemaImpl("public", DefaultCatalog.DEFAULT_CATALOG) {
     Payments.PAYMENTS,
     Permissions.PERMISSIONS,
     PricingRules.PRICING_RULES,
+    Reservations.RESERVATIONS,
     RolePermissions.ROLE_PERMISSIONS,
     Roles.ROLES,
     Users.USERS,

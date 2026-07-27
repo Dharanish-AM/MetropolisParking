@@ -22,7 +22,8 @@ class ParkingSessionRepository(dsl: DSLContext) extends BaseRepository(dsl) {
     Option(
       dsl.selectFrom(PARKING_SESSIONS)
         .where(PARKING_SESSIONS.VEHICLE_ID.eq(vehicleId).and(PARKING_SESSIONS.EXIT_TIME.isNull))
-        .fetchOne()
+        .orderBy(PARKING_SESSIONS.ENTRY_TIME.desc())
+        .fetchAny()
     ).map(mapRecord)
   }
 
@@ -30,7 +31,8 @@ class ParkingSessionRepository(dsl: DSLContext) extends BaseRepository(dsl) {
     Option(
       dsl.selectFrom(PARKING_SESSIONS)
         .where(PARKING_SESSIONS.SPACE_ID.eq(spaceId).and(PARKING_SESSIONS.EXIT_TIME.isNull))
-        .fetchOne()
+        .orderBy(PARKING_SESSIONS.ENTRY_TIME.desc())
+        .fetchAny()
     ).map(mapRecord)
   }
 
@@ -38,7 +40,7 @@ class ParkingSessionRepository(dsl: DSLContext) extends BaseRepository(dsl) {
     Option(
       dsl.selectFrom(PARKING_SESSIONS)
         .where(PARKING_SESSIONS.ID.eq(id))
-        .fetchOne()
+        .fetchAny()
     ).map(mapRecord)
   }
 

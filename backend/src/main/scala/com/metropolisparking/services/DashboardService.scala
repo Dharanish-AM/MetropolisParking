@@ -1,12 +1,28 @@
 package com.metropolisparking.services
 
 import com.metropolisparking.dto.{DashboardStats, OccupancyStats, FinancialStats, SessionDetail}
+import com.metropolisparking.dto.DtoFormats._
 import com.metropolisparking.jooq.Tables.{PARKING_SPACES, PAYMENTS, PARKING_SESSIONS, VEHICLES}
 import org.jooq.DSLContext
+import spray.json._
 import scala.jdk.CollectionConverters._
+import scala.util.Try
 
-class DashboardService(dsl: DSLContext) {
+class DashboardService(dsl: DSLContext, redisService: Option[RedisService] = None) {
+  private val CacheKey = "dashboard:stats"
+  private val CacheTtlSeconds = 30
+
   def getStats(): DashboardStats = {
+    redisService.flatMap(_.get(CacheKey)).flatMap { cachedJson =>
+      Try(cachedJson.parseJson.convertTo[DashboardStats]).toOption
+    }.getOrElse {
+      val stats = computeStats()
+      redisService.foreach(_.setEx(CacheKey, CacheTtlSeconds, stats.toJson.compactPrint))
+      stats
+    }
+  }
+
+  private def computeStats(): DashboardStats = {
     val totalSpaces = dsl.fetchCount(PARKING_SPACES, PARKING_SPACES.DELETED_AT.isNull)
     val occupiedSpaces = dsl.fetchCount(
       PARKING_SPACES,
@@ -34,24 +50,34 @@ class DashboardService(dsl: DSLContext) {
         PARKING_SESSIONS.ID,
         VEHICLES.PLATE_NUMBER,
         PARKING_SPACES.SPACE_NUMBER,
-        PARKING_SESSIONS.ENTRY_TIME
+        PARKING_SESSIONS.ENTRY_TIME,
+        PARKING_SESSIONS.EXIT_TIME,
+        PARKING_SESSIONS.FEE
       )
       .from(PARKING_SESSIONS)
       .join(VEHICLES).on(PARKING_SESSIONS.VEHICLE_ID.eq(VEHICLES.ID))
       .join(PARKING_SPACES).on(PARKING_SESSIONS.SPACE_ID.eq(PARKING_SPACES.ID))
-      .where(PARKING_SESSIONS.EXIT_TIME.isNull)
       .orderBy(PARKING_SESSIONS.ENTRY_TIME.desc())
       .limit(10)
       .fetch().asScala.map { r =>
+        val exitTimeOpt = Option(r.get(PARKING_SESSIONS.EXIT_TIME)).map(_.toInstant.toString)
+        val feeOpt = Option(r.get(PARKING_SESSIONS.FEE)).map(BigDecimal(_))
+        val status = if (exitTimeOpt.isDefined) "COMPLETED" else "ACTIVE"
         SessionDetail(
           id = r.get(PARKING_SESSIONS.ID),
           plateNumber = r.get(VEHICLES.PLATE_NUMBER),
           spaceNumber = r.get(PARKING_SPACES.SPACE_NUMBER),
-          entryTime = r.get(PARKING_SESSIONS.ENTRY_TIME).toString,
-          status = "ACTIVE"
+          startTime = r.get(PARKING_SESSIONS.ENTRY_TIME).toInstant.toString,
+          endTime = exitTimeOpt,
+          fee = feeOpt,
+          status = status
         )
       }.toList
 
     DashboardStats(occupancy, financial, recent)
+  }
+
+  def invalidateCache(): Unit = {
+    redisService.foreach(_.del(CacheKey))
   }
 }
