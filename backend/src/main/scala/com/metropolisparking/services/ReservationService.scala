@@ -19,6 +19,10 @@ class ReservationService(
       throw NotFoundException(s"Parking space '${req.spaceId}' not found")
     }
 
+    if (space.status.equalsIgnoreCase("OUT_OF_SERVICE") || space.status.equalsIgnoreCase("MAINTENANCE")) {
+      throw ConflictException(s"Parking space '${space.spaceNumber}' is currently ${space.status} and cannot be reserved")
+    }
+
     val startTime = try { Instant.parse(req.startTime) } catch { case _: Throwable => throw ValidationException("Invalid start time format") }
     val endTime = try { Instant.parse(req.endTime) } catch { case _: Throwable => throw ValidationException("Invalid end time format") }
 

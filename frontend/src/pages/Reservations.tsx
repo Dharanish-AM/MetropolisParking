@@ -365,7 +365,7 @@ export const Reservations: FC = () => {
               disabled={!selectedLotId}
             >
               <option value="">Choose a space...</option>
-              {spaces?.map(space => (
+              {spaces?.filter(space => space.status !== 'OUT_OF_SERVICE' && space.status !== 'MAINTENANCE').map(space => (
                 <option key={space.id} value={space.id}>
                   Space {space.spaceNumber} ({space.type} - {space.status})
                 </option>
