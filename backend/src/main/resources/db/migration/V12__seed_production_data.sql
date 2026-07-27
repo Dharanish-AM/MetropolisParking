@@ -227,6 +227,8 @@ BEGIN
         END IF;
     END LOOP;
 
+    SELECT array_agg(id) INTO space_ids FROM parking_spaces WHERE status NOT IN ('OUT_OF_SERVICE', 'MAINTENANCE');
+
     FOR i IN 1..100 LOOP
         e_time := CURRENT_TIMESTAMP + (INTERVAL '1 hour' * (i % 72)) - (INTERVAL '1 day' * (i % 5));
         x_time := e_time + INTERVAL '2 hours';
