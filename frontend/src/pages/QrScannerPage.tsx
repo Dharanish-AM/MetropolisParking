@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import { Html5Qrcode } from 'html5-qrcode';
+import { Skeleton } from '../components/ui/Skeleton';
 
 export const QrScannerPage: FC = () => {
   const { user } = useAuth();
@@ -55,7 +56,8 @@ export const QrScannerPage: FC = () => {
     type: 'SESSION' | 'RESERVATION';
   } | null>(null);
   const [qrToken, setQrToken] = useState<string | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+  const [passLoading, setPassLoading] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
@@ -183,19 +185,25 @@ export const QrScannerPage: FC = () => {
   }, [selectedPass]);
 
   useEffect(() => {
-    if (qrToken && canvasRef.current) {
-      QRCode.toCanvas(canvasRef.current, qrToken, { width: 220, margin: 2 }, (err: unknown) => {
-        if (err) console.error(err);
-      });
+    if (qrToken) {
+      QRCode.toDataURL(qrToken, { width: 220, margin: 2 })
+        .then(url => setQrCodeUrl(url))
+        .catch(err => console.error(err));
+    } else {
+      setQrCodeUrl('');
     }
   }, [qrToken]);
 
   const loadQrPass = async (type: 'SESSION' | 'RESERVATION', id: string) => {
+    setPassLoading(true);
+    setQrToken(null);
     try {
       const res = await qrApi.generatePass(type, id);
       setQrToken(res.qrToken);
     } catch {
       setQrToken(null);
+    } finally {
+      setPassLoading(false);
     }
   };
 
@@ -486,100 +494,132 @@ export const QrScannerPage: FC = () => {
               )}
             </div>
 
-            <div className="bg-white rounded-2xl p-6 border border-neutral-border shadow-xs lg:col-span-2 flex flex-col items-center justify-center">
-              {selectedPass && qrToken ? (
-                <div className="text-center space-y-6 py-4 animate-fade-in w-full max-w-lg mx-auto flex flex-col items-center">
-                  <div>
-                    <h3 className="text-xl font-extrabold text-neutral-primary">
-                      Digital Gate Pass
-                    </h3>
-                    <p className="text-xs text-neutral-secondary mt-1">
-                      Show this QR code at the entrance or exit gate scanner.
-                    </p>
+            <div className="bg-white rounded-2xl p-6 border border-neutral-border shadow-xs lg:col-span-2 flex flex-col items-center justify-center min-h-[500px]">
+              {selectedPass ? (
+                passLoading ? (
+                  <div className="text-center space-y-6 py-8 w-full max-w-lg mx-auto flex flex-col items-center animate-pulse">
+                    <div className="space-y-2 w-full text-center">
+                      <Skeleton className="h-6 w-48 mx-auto" />
+                      <Skeleton className="h-4 w-64 mx-auto" />
+                    </div>
+                    <Skeleton className="w-56 h-56 rounded-2xl" />
+                    <Skeleton className="h-32 w-full rounded-2xl" />
+                    <Skeleton className="h-16 w-full rounded-xl" />
                   </div>
+                ) : qrToken ? (
+                  <div className="text-center space-y-6 py-4 animate-fade-in w-full max-w-lg mx-auto flex flex-col items-center">
+                    <div>
+                      <h3 className="text-xl font-extrabold text-neutral-primary">
+                        Digital Gate Pass
+                      </h3>
+                      <p className="text-xs text-neutral-secondary mt-1">
+                        Show this QR code at the entrance or exit gate scanner.
+                      </p>
+                    </div>
 
-                  <div className="p-6 bg-neutral-50 rounded-2xl border border-neutral-border inline-block shadow-inner">
-                    <canvas ref={canvasRef} className="mx-auto rounded-lg" />
-                  </div>
-
-                  {currentPass?.details && (
-                    <div className="w-full bg-neutral-50 rounded-2xl p-4 border border-neutral-border text-left grid grid-cols-2 gap-3 text-xs">
-                      <div>
-                        <span className="text-neutral-secondary block font-semibold">
-                          Pass Type
-                        </span>
-                        <span className="font-extrabold uppercase text-brand-primary tracking-wider">
-                          {selectedPass.type}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-neutral-secondary block font-semibold">Status</span>
-                        <span className="font-bold text-emerald-600">
-                          {currentPass.details.status || 'ACTIVE'}
-                        </span>
-                      </div>
-                      {currentPass.details.lotName && (
-                        <div>
-                          <span className="text-neutral-secondary block font-semibold">
-                            Parking Lot
-                          </span>
-                          <span className="font-bold text-neutral-primary">
-                            {currentPass.details.lotName}
-                          </span>
-                        </div>
-                      )}
-                      {currentPass.details.spaceNumber && (
-                        <div>
-                          <span className="text-neutral-secondary block font-semibold">
-                            Space Number
-                          </span>
-                          <span className="font-mono font-bold text-brand-primary">
-                            {currentPass.details.spaceNumber}
-                          </span>
-                        </div>
-                      )}
-                      {currentPass.details.vehiclePlate && (
-                        <div>
-                          <span className="text-neutral-secondary block font-semibold">
-                            Vehicle Plate
-                          </span>
-                          <span className="font-mono font-bold text-neutral-primary">
-                            {currentPass.details.vehiclePlate}
-                          </span>
-                        </div>
-                      )}
-                      {currentPass.details.startTime && (
-                        <div>
-                          <span className="text-neutral-secondary block font-semibold">
-                            Start / Entry Time
-                          </span>
-                          <span className="font-medium text-neutral-primary">
-                            {currentPass.details.startTime}
-                          </span>
-                        </div>
-                      )}
-                      {currentPass.details.fee && (
-                        <div>
-                          <span className="text-neutral-secondary block font-semibold">
-                            Total Fee
-                          </span>
-                          <span className="font-bold text-brand-primary">
-                            {currentPass.details.fee}
-                          </span>
+                    <div className="p-4 bg-white rounded-3xl border border-neutral-border inline-block shadow-sm">
+                      {qrCodeUrl ? (
+                        <img src={qrCodeUrl} alt="QR Code" className="mx-auto rounded-xl w-[220px] h-[220px]" />
+                      ) : (
+                        <div className="w-[220px] h-[220px] flex items-center justify-center text-neutral-secondary font-semibold text-xs">
+                          Generating QR Code...
                         </div>
                       )}
                     </div>
-                  )}
 
-                  <div className="w-full bg-neutral-50 p-4 rounded-xl border border-neutral-border text-left">
-                    <span className="text-[10px] font-bold text-neutral-secondary uppercase block mb-1">
-                      Signed Pass Token
-                    </span>
-                    <p className="text-[11px] font-mono text-neutral-primary break-all select-all">
-                      {qrToken}
-                    </p>
+                    {currentPass?.details && (
+                      <div className="w-full bg-neutral-50 rounded-2xl p-4 border border-neutral-border text-left grid grid-cols-2 gap-3 text-xs">
+                        <div>
+                          <span className="text-neutral-secondary block font-semibold">
+                            Pass Type
+                          </span>
+                          <span className="font-extrabold uppercase text-brand-primary tracking-wider">
+                            {selectedPass.type}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-neutral-secondary block font-semibold">Status</span>
+                          <span className="font-bold text-emerald-600">
+                            {currentPass.details.status || 'ACTIVE'}
+                          </span>
+                        </div>
+                        {currentPass.details.lotName && (
+                          <div>
+                            <span className="text-neutral-secondary block font-semibold">
+                              Parking Lot
+                            </span>
+                            <span className="font-bold text-neutral-primary text-xs truncate block">
+                              {currentPass.details.lotName}
+                            </span>
+                          </div>
+                        )}
+                        {currentPass.details.spaceNumber && (
+                          <div>
+                            <span className="text-neutral-secondary block font-semibold">
+                              Space Number
+                            </span>
+                            <span className="font-mono font-bold text-brand-primary text-xs">
+                              {currentPass.details.spaceNumber}
+                            </span>
+                          </div>
+                        )}
+                        {currentPass.details.vehiclePlate && (
+                          <div>
+                            <span className="text-neutral-secondary block font-semibold">
+                              Vehicle Plate
+                            </span>
+                            <span className="font-mono font-bold text-neutral-primary text-xs">
+                              {currentPass.details.vehiclePlate}
+                            </span>
+                          </div>
+                        )}
+                        {currentPass.details.startTime && (
+                          <div>
+                            <span className="text-neutral-secondary block font-semibold">
+                              Start / Entry Time
+                            </span>
+                            <span className="font-medium text-neutral-primary text-[11px]">
+                              {currentPass.details.startTime}
+                            </span>
+                          </div>
+                        )}
+                        {currentPass.details.fee && (
+                          <div>
+                            <span className="text-neutral-secondary block font-semibold">
+                              Total Fee
+                            </span>
+                            <span className="font-bold text-brand-primary text-xs">
+                              {currentPass.details.fee}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="w-full bg-neutral-50 p-4 rounded-xl border border-neutral-border text-left">
+                      <span className="text-[10px] font-bold text-neutral-secondary uppercase block mb-1">
+                        Signed Pass Token
+                      </span>
+                      <p className="text-[11px] font-mono text-neutral-primary break-all select-all">
+                        {qrToken}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="text-center py-16 text-neutral-secondary space-y-4">
+                    <AlertCircle className="w-12 h-12 mx-auto text-red-500" />
+                    <div>
+                      <p className="text-sm font-bold text-neutral-primary">Failed to load gate pass</p>
+                      <p className="text-xs text-neutral-secondary mt-1">Please try again.</p>
+                    </div>
+                    <button
+                      onClick={() => loadQrPass(selectedPass.type, selectedPass.id)}
+                      className="px-4 py-2 bg-brand-primary/10 text-brand-primary border border-brand-primary/20 rounded-xl text-xs font-bold hover:bg-brand-primary/20 cursor-pointer"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                )
               ) : (
                 <div className="text-center py-16 text-neutral-secondary">
                   <QrCode className="w-16 h-16 mx-auto text-neutral-300 mb-3" />
