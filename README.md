@@ -2,15 +2,15 @@
 
 > **Enterprise-Grade Smart Parking Management & Real-Time Analytics Platform**
 
-MetropolisParking is a full-stack, production-ready smart parking management system built with **Scala 2.13 + Akka HTTP** on the backend and **React 18 + Vite + TypeScript** on the frontend. It features automated vehicle tracking, real-time occupancy broadcasting via WebSockets, multi-tier dynamic pricing, ANPR/LPR camera scanning, QR code entry passes, spot advance reservations, and interactive OpenAPI documentation.
+MetropolisParking is a full-stack, production-ready smart parking management system built with **Scala 2.13 + Akka HTTP** on the backend and **React 19 + Vite + TypeScript** on the frontend. It features automated vehicle tracking, real-time occupancy broadcasting via WebSockets, multi-tier dynamic pricing, ANPR/LPR camera scanning, QR code entry passes, spot advance reservations, and interactive OpenAPI documentation.
 
 ---
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Scala](https://img.shields.io/badge/Scala-2.13-red.svg?logo=scala)](https://www.scala-lang.org/)
 [![Akka HTTP](https://img.shields.io/badge/Akka%20HTTP-10.2-orange.svg?logo=akka)](https://akka.io/)
-[![React](https://img.shields.io/badge/React-18-61DAFB.svg?logo=react)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg?logo=typescript)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB.svg?logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue.svg?logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-v4-38B2AC.svg?logo=tailwind-css)](https://tailwindcss.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791.svg?logo=postgresql)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker)](https://www.docker.com/)
@@ -186,7 +186,7 @@ Traditional parking facilities suffer from:
 
 ```mermaid
 flowchart TD
-    subgraph Clients["Frontend Layer (React 18 + Vite + TS)"]
+    subgraph Clients["Frontend Layer (React 19 + Vite + TS)"]
         UI["SPA Web Interface"]
         OCR["ANPR / Camera Scanner"]
         QRScanner["QR Pass Scanner"]
@@ -238,13 +238,13 @@ flowchart TD
 | | Migrations | Flyway | 9.22.3 | Versioned DB Schema Evolution |
 | | Authentication | java-jwt / jBCrypt | 4.4.0 / 0.4 | Stateless JWT & Password Hashing |
 | | Caching | Jedis (Redis) | 5.1.0 | Fast In-Memory Analytics Cache |
-| **Frontend** | Framework | React | 18.2.0 | User Interface Library |
-| | Build Tool | Vite | 5.1.0 | Module Bundling & Hot Reloading |
-| | Language | TypeScript | 5.2.2 | Strict Static Type Safety |
+| **Frontend** | Framework | React | 19.2.7 | User Interface Library |
+| | Build Tool | Vite | 8.1.1 | Module Bundling & Hot Reloading |
+| | Language | TypeScript | 6.0.2 | Strict Static Type Safety |
 | | Styling | Tailwind CSS | v4 | Utility-First Styling System |
 | | Server State | TanStack Query | v5 | Data Fetching & Cache Invalidation |
-| | HTTP Client | Axios | 1.6.7 | REST Client with Interceptors |
-| | Form Handling | React Hook Form + Zod | 7.50 / 3.22 | Client Form Validation & Schemas |
+| | HTTP Client | Axios | 1.18.1 | REST Client with Interceptors |
+| | Form Handling | React Hook Form + Zod | 7.82 / 4.43 | Client Form Validation & Schemas |
 | **DevOps** | Database | PostgreSQL | 16-alpine | Relational Storage Engine |
 | | Cache Engine | Redis | 7-alpine | In-Memory Data Structure Store |
 | | Proxy | Nginx | alpine | Production Reverse Proxy & Static Web Host |
@@ -253,7 +253,7 @@ flowchart TD
 
 ### Database Schema (ERD Overview)
 
-The database schema is organized into 11 key tables managed sequentially by Flyway (V1 through V11):
+The database schema is organized into 11 key tables managed sequentially by Flyway (V1 through V13):
 
 - `users`: Account identities, email credentials, password hashes, and profiles.
 - `roles` & `user_roles`: RBAC permissions mapping users to `ADMIN` or `CUSTOMER`.
@@ -571,14 +571,22 @@ MetropolisParking/
 │   ├── src/
 │   │   ├── main/
 │   │   │   ├── resources/
-│   │   │   │   ├── db/migration/  # Flyway SQL schema scripts (V1-V10)
+│   │   │   │   ├── db/migration/  # Flyway SQL schema scripts (V1-V13)
 │   │   │   │   └── application.conf # HOCON environment configuration
-│   │   │   └── scala/com/metropolis/
-│   │   │       ├── api/        # Akka HTTP routes & RBAC middleware
-│   │   │       ├── service/    # Core business logic & pricing engine
-│   │   │       ├── repository/ # jOOQ database repositories
-│   │   │       ├── model/      # Clean domain case classes
-│   │   │       └── Main.scala  # Application entrypoint & dependency injection
+│   │   │   └── scala/com/metropolisparking/
+│   │   │       ├── config/     # Configuration mapping helpers
+│   │   │       ├── dto/        # Data transfer objects for APIs
+│   │   │       ├── exceptions/ # Global handlers & exception mapping
+│   │   │       ├── jooq/       # Generated database access entities
+│   │   │       ├── middleware/ # CORS & structured request logging
+│   │   │       ├── models/     # Clean domain case classes
+│   │   │       ├── repositories/ # Database repository access layer
+│   │   │       ├── routes/     # Akka HTTP endpoints & security gating
+│   │   │       ├── security/   # BCrypt hashing & JWT claim signers
+│   │   │       ├── services/   # Business logic, engines & aggregators
+│   │   │       ├── utils/      # MDC logging & scheduler tasks
+│   │   │       ├── validation/ # Input syntax checking helpers
+│   │   │       └── Main.scala  # Application entrypoint & bootstrapping
 │   │   └── test/               # ScalaTest unit & integration tests
 │   ├── build.sbt               # SBT build settings & dependency definitions
 │   └── Dockerfile              # Multi-stage Scala backend container build
