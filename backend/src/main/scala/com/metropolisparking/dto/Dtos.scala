@@ -53,6 +53,36 @@ case class QrGenerateResponse(qrToken: String, payload: String)
 case class QrScanRequest(qrToken: String)
 case class QrScanResponse(action: String, entityId: UUID, entityType: String, plateNumber: String, spaceNumber: String, status: String, message: String)
 
+case class ActiveSessionDetails(
+  id: UUID,
+  vehicleId: UUID,
+  plateNumber: String,
+  vehicleType: String,
+  entryTime: String,
+  customerName: Option[String],
+  customerEmail: Option[String]
+)
+
+case class ActiveReservationDetails(
+  id: UUID,
+  userId: UUID,
+  customerName: String,
+  customerEmail: String,
+  startTime: String,
+  endTime: String,
+  status: String,
+  fee: BigDecimal
+)
+
+case class SpaceDetailsResponse(
+  spaceId: UUID,
+  spaceNumber: String,
+  `type`: String,
+  status: String,
+  activeSession: Option[ActiveSessionDetails],
+  activeReservation: Option[ActiveReservationDetails]
+)
+
 object DtoFormats {
   implicit val loginRequestFormat: RootJsonFormat[LoginRequest] = jsonFormat2(LoginRequest)
   implicit val userResponseFormat: RootJsonFormat[UserResponse] = jsonFormat4(UserResponse)
@@ -84,4 +114,9 @@ object DtoFormats {
   implicit val qrGenerateResponseFormat: RootJsonFormat[QrGenerateResponse] = jsonFormat2(QrGenerateResponse)
   implicit val qrScanRequestFormat: RootJsonFormat[QrScanRequest] = jsonFormat1(QrScanRequest)
   implicit val qrScanResponseFormat: RootJsonFormat[QrScanResponse] = jsonFormat7(QrScanResponse)
+
+  implicit val activeSessionDetailsFormat: RootJsonFormat[ActiveSessionDetails] = jsonFormat7(ActiveSessionDetails)
+  implicit val activeReservationDetailsFormat: RootJsonFormat[ActiveReservationDetails] = jsonFormat8(ActiveReservationDetails)
+  implicit val spaceDetailsResponseFormat: RootJsonFormat[SpaceDetailsResponse] = jsonFormat6(SpaceDetailsResponse)
 }
+

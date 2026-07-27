@@ -1,15 +1,19 @@
 package com.metropolisparking.services
 
-import com.metropolisparking.dto.{ParkingLotCreateRequest, ParkingSpaceCreateRequest}
+import com.metropolisparking.dto.{ParkingLotCreateRequest, ParkingSpaceCreateRequest, ActiveSessionDetails, ActiveReservationDetails, SpaceDetailsResponse}
 import com.metropolisparking.exceptions.{ConflictException, NotFoundException}
 import com.metropolisparking.models.{ParkingLevel, ParkingLot, ParkingSpace}
-import com.metropolisparking.repositories.ParkingLotRepository
+import com.metropolisparking.repositories.{ParkingLotRepository, ParkingSessionRepository, ReservationRepository, VehicleRepository, UserRepository}
 import com.metropolisparking.validation.Validator
 import java.util.UUID
 
 class ParkingLotService(
   repo: ParkingLotRepository,
   auditLogService: AuditLogService,
+  sessionRepo: ParkingSessionRepository = null,
+  reservationRepo: ReservationRepository = null,
+  vehicleRepo: VehicleRepository = null,
+  userRepo: UserRepository = null,
   wsService: WebSocketService = null
 ) {
   private def broadcast(eventJson: String): Unit = Option(wsService).foreach(_.broadcast(eventJson))
@@ -101,6 +105,57 @@ class ParkingLotService(
   }
 
   def getSpace(id: UUID): Option[ParkingSpace] = repo.findSpaceById(id)
+
+  def getSpaceDetails(spaceId: UUID): SpaceDetailsResponse = {
+    val space = repo.findSpaceById(spaceId).getOrElse(throw NotFoundException(s"Parking space '$spaceId' not found"))
+
+    val activeSessionDetails = if (space.status.equalsIgnoreCase("OCCUPIED")) {
+      Option(sessionRepo).flatMap(_.findActiveBySpaceId(spaceId)).map { session =>
+        val vehicle = Option(vehicleRepo).flatMap(_.findById(session.vehicleId))
+        val plate = vehicle.map(_.plateNumber).getOrElse("Unknown")
+        val vType = vehicle.map(_.`type`).getOrElse("Unknown")
+        val customer = vehicle.flatMap(_.ownerId).flatMap(oid => Option(userRepo).flatMap(_.findById(oid)))
+        val custName = customer.map(_._1.name)
+        val custEmail = customer.map(_._1.email)
+
+        ActiveSessionDetails(
+          id = session.id,
+          vehicleId = session.vehicleId,
+          plateNumber = plate,
+          vehicleType = vType,
+          entryTime = session.entryTime.toString,
+          customerName = custName,
+          customerEmail = custEmail
+        )
+      }
+    } else None
+
+    val activeReservationDetails = if (space.status.equalsIgnoreCase("RESERVED")) {
+      Option(reservationRepo).flatMap(_.findActiveBySpaceId(spaceId)).flatMap { res =>
+        Option(userRepo).flatMap(_.findById(res.userId)).map { case (user, _) =>
+          ActiveReservationDetails(
+            id = res.id,
+            userId = res.userId,
+            customerName = user.name,
+            customerEmail = user.email,
+            startTime = res.startTime.toString,
+            endTime = res.endTime.toString,
+            status = res.status,
+            fee = res.fee
+          )
+        }
+      }
+    } else None
+
+    SpaceDetailsResponse(
+      spaceId = space.id,
+      spaceNumber = space.spaceNumber,
+      `type` = space.`type`,
+      status = space.status,
+      activeSession = activeSessionDetails,
+      activeReservation = activeReservationDetails
+    )
+  }
 
   def updateSpace(id: UUID, req: ParkingSpaceCreateRequest, userId: Option[UUID]): ParkingSpace = {
     val existing = repo.findSpaceById(id).getOrElse(throw NotFoundException(s"Parking space '$id' not found"))

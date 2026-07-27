@@ -39,6 +39,16 @@ class ReservationRepository(dsl: DSLContext) extends BaseRepository(dsl) {
     ).map(mapRecord)
   }
 
+  def findActiveBySpaceId(spaceId: UUID): Option[Reservation] = {
+    Option(
+      dsl.selectFrom(RESERVATIONS)
+        .where(RESERVATIONS.SPACE_ID.eq(spaceId))
+        .and(RESERVATIONS.STATUS.in("CONFIRMED", "PENDING"))
+        .orderBy(RESERVATIONS.START_TIME.asc())
+        .fetchAny()
+    ).map(mapRecord)
+  }
+
   def listAll(): List[Reservation] = {
     dsl.selectFrom(RESERVATIONS)
       .orderBy(RESERVATIONS.START_TIME.desc())

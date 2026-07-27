@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import type { FC } from 'react';
+import QRCode from 'qrcode';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+
 import { client } from '../api/client';
 import { Navbar } from '../components/Navbar';
 import { Card, CardHeader } from '../components/ui/Card';
@@ -59,10 +60,12 @@ interface ParkingSpace {
 }
 
 export const Reservations: FC = () => {
-  const navigate = useNavigate();
   const [isBookOpen, setIsBookOpen] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<ReservationItem | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [qrReservationId, setQrReservationId] = useState<string | null>(null);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+  const [qrLoading, setQrLoading] = useState<boolean>(false);
 
   const {
     data: reservations,
@@ -176,6 +179,22 @@ export const Reservations: FC = () => {
     }
   };
 
+  const handleOpenPass = async (resId: string) => {
+    setQrReservationId(resId);
+    setQrLoading(true);
+    setQrCodeUrl('');
+    try {
+      const resp = await client.get(`/qr/generate?entityType=RESERVATION&entityId=${resId}`);
+      const qrToken = resp.data.qrToken;
+      const url = await QRCode.toDataURL(qrToken, { width: 256, margin: 2 });
+      setQrCodeUrl(url);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setQrLoading(false);
+    }
+  };
+
   const getStatusVariant = (status: string) => {
     switch (status.toUpperCase()) {
       case 'CONFIRMED':
@@ -281,7 +300,7 @@ export const Reservations: FC = () => {
                             <Button
                               variant="secondary"
                               size="sm"
-                              onClick={() => navigate('/qr-scanner')}
+                              onClick={() => handleOpenPass(res.id)}
                               className="px-2.5 py-1 text-xs font-semibold text-brand-primary cursor-pointer"
                             >
                               <QrCode className="w-3.5 h-3.5 mr-1" />
@@ -464,6 +483,53 @@ export const Reservations: FC = () => {
             </div>
           </div>
         )}
+      </Modal>
+
+      <Modal
+        isOpen={qrReservationId !== null}
+        onClose={() => setQrReservationId(null)}
+        title="Gate QR Pass"
+      >
+        <div className="text-center space-y-6 py-4">
+          <p className="text-sm text-neutral-secondary">
+            Present this QR code at the entry/exit scanner to open the gate automatically.
+          </p>
+          
+          {qrLoading ? (
+            <div className="flex flex-col items-center justify-center space-y-3 py-8">
+              <Skeleton className="w-48 h-48 rounded-2xl" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          ) : qrCodeUrl ? (
+            <div className="space-y-4">
+              <div className="inline-block p-4 bg-white border border-neutral-border rounded-3xl shadow-sm">
+                <img src={qrCodeUrl} alt="Gate QR Pass" className="w-48 h-48 mx-auto" />
+              </div>
+              <div className="font-mono text-xs text-neutral-secondary select-all break-all bg-neutral-50 px-3 py-2 rounded-xl max-w-sm mx-auto">
+                {reservations?.find(r => r.id === qrReservationId)?.id}
+              </div>
+              <div className="text-sm font-bold text-neutral-primary">
+                Space {reservations?.find(r => r.id === qrReservationId)?.spaceNumber}
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-red-700 text-sm flex gap-2 items-start justify-center">
+              <AlertTriangle className="w-5 h-5 shrink-0" />
+              <span>Failed to load QR code. Please try again.</span>
+            </div>
+          )}
+
+          <div className="flex justify-center pt-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setQrReservationId(null)}
+              className="w-auto px-6"
+            >
+              Close Pass
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

@@ -17,7 +17,12 @@ class ParkingSessionServiceSpec extends AnyFunSpec with Matchers with TestDbSpec
   val auditLogRepo = new AuditLogRepository(dslContext)
 
   val auditLogService = new AuditLogService(auditLogRepo)
-  val lotService = new ParkingLotService(lotRepo, auditLogService)
+  val lotService = new ParkingLotService(
+    repo = lotRepo,
+    auditLogService = auditLogService,
+    sessionRepo = sessionRepo,
+    vehicleRepo = vehicleRepo
+  )
   val vehicleService = new VehicleService(vehicleRepo, auditLogService)
   val sessionService = new ParkingSessionService(
     sessionRepo, lotRepo, vehicleService, pricingRuleRepo, paymentRepo, auditLogService
@@ -37,6 +42,13 @@ class ParkingSessionServiceSpec extends AnyFunSpec with Matchers with TestDbSpec
 
       val activeSpace = lotService.getSpace(space.id).get
       activeSpace.status shouldBe "OCCUPIED"
+
+      val details = lotService.getSpaceDetails(space.id)
+      details.spaceId shouldBe space.id
+      details.status shouldBe "OCCUPIED"
+      details.activeSession shouldBe defined
+      details.activeSession.get.plateNumber shouldBe plate
+      details.activeSession.get.vehicleType shouldBe "CAR"
 
       intercept[ConflictException] {
         sessionService.startSession(SessionStartRequest(plate, space.id), None)

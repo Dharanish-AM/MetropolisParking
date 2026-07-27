@@ -58,7 +58,15 @@ object Main {
     val auditLogService = new AuditLogService(auditLogRepo)
     val authService = new AuthService(userRepo, securityModule, auditLogService)
     val wsService = new WebSocketService
-    val lotService = new ParkingLotService(lotRepo, auditLogService, wsService)
+    val lotService = new ParkingLotService(
+      repo = lotRepo,
+      auditLogService = auditLogService,
+      sessionRepo = sessionRepo,
+      reservationRepo = reservationRepo,
+      vehicleRepo = vehicleRepo,
+      userRepo = userRepo,
+      wsService = wsService
+    )
     val vehicleService = new VehicleService(vehicleRepo, auditLogService)
     val sessionService = new ParkingSessionService(sessionRepo, lotRepo, vehicleService, pricingRuleRepo, paymentRepo, auditLogService, wsService)
     val paymentService = new PaymentService(paymentRepo, auditLogService)

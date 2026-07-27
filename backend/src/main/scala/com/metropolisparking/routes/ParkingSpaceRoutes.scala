@@ -62,6 +62,13 @@ class ParkingSpaceRoutes(service: ParkingLotService, rbac: RbacMiddleware) {
                   }
                 }
               }
+            },
+            path("details") {
+              get {
+                rbac.authenticateUser { _ =>
+                  complete(service.getSpaceDetails(spaceId))
+                }
+              }
             }
           )
         }
