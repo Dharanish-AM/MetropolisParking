@@ -182,127 +182,142 @@ The PostgreSQL database schema consists of 11 core tables designed for integrity
 erDiagram
     users {
         UUID id PK
-        VARCHAR name
-        VARCHAR email UK
-        VARCHAR password_hash
+        string name
+        string email UK
+        string password_hash
         UUID role_id FK
-        TIMESTAMP WITH_TIME_ZONE created_at
-        TIMESTAMP WITH_TIME_ZONE updated_at
-        TIMESTAMP WITH_TIME_ZONE deleted_at
+        datetime created_at
+        datetime updated_at
+        datetime deleted_at
     }
+
     roles {
         UUID id PK
-        VARCHAR name UK
-        VARCHAR description
+        string name UK
+        string description
     }
+
     permissions {
         UUID id PK
-        VARCHAR name UK
-        VARCHAR description
+        string name UK
+        string description
     }
+
     role_permissions {
-        UUID role_id PK, FK
-        UUID permission_id PK, FK
+        UUID role_id FK
+        UUID permission_id FK
     }
+
     vehicles {
         UUID id PK
-        VARCHAR plate_number UK
-        VARCHAR type
+        string plate_number UK
+        string type
         UUID owner_id FK
-        TIMESTAMP WITH_TIME_ZONE created_at
-        TIMESTAMP WITH_TIME_ZONE updated_at
-        TIMESTAMP WITH_TIME_ZONE deleted_at
+        datetime created_at
+        datetime updated_at
+        datetime deleted_at
     }
+
     parking_lots {
         UUID id PK
-        VARCHAR name
-        VARCHAR location
-        TIMESTAMP WITH_TIME_ZONE created_at
-        TIMESTAMP WITH_TIME_ZONE updated_at
-        TIMESTAMP WITH_TIME_ZONE deleted_at
+        string name
+        string location
+        datetime created_at
+        datetime updated_at
+        datetime deleted_at
     }
+
     parking_levels {
         UUID id PK
         UUID lot_id FK
-        INT level_number
-        TIMESTAMP WITH_TIME_ZONE created_at
-        TIMESTAMP WITH_TIME_ZONE updated_at
+        int level_number
+        datetime created_at
+        datetime updated_at
     }
+
     parking_spaces {
         UUID id PK
         UUID lot_id FK
         UUID level_id FK
-        VARCHAR space_number
-        VARCHAR type
-        VARCHAR status
-        TIMESTAMP WITH_TIME_ZONE created_at
-        TIMESTAMP WITH_TIME_ZONE updated_at
-        TIMESTAMP WITH_TIME_ZONE deleted_at
+        string space_number
+        string type
+        string status
+        datetime created_at
+        datetime updated_at
+        datetime deleted_at
     }
+
     reservations {
         UUID id PK
         UUID user_id FK
         UUID space_id FK
-        TIMESTAMP WITH_TIME_ZONE start_time
-        TIMESTAMP WITH_TIME_ZONE end_time
-        VARCHAR status
-        NUMERIC fee
-        TIMESTAMP WITH_TIME_ZONE created_at
-        TIMESTAMP WITH_TIME_ZONE updated_at
+        datetime start_time
+        datetime end_time
+        string status
+        decimal fee
+        datetime created_at
+        datetime updated_at
     }
+
     parking_sessions {
         UUID id PK
         UUID vehicle_id FK
         UUID space_id FK
-        TIMESTAMP WITH_TIME_ZONE entry_time
-        TIMESTAMP WITH_TIME_ZONE exit_time
-        INT duration_minutes
-        DECIMAL fee
-        TIMESTAMP WITH_TIME_ZONE created_at
-        TIMESTAMP WITH_TIME_ZONE updated_at
+        datetime entry_time
+        datetime exit_time
+        int duration_minutes
+        decimal fee
+        datetime created_at
+        datetime updated_at
     }
+
     pricing_rules {
         UUID id PK
-        VARCHAR rule_type
-        DECIMAL rate
-        VARCHAR vehicle_type
+        string rule_type
+        decimal rate
+        string vehicle_type
         UUID lot_id FK
-        TIMESTAMP WITH_TIME_ZONE created_at
-        TIMESTAMP WITH_TIME_ZONE updated_at
+        datetime created_at
+        datetime updated_at
     }
+
     payments {
         UUID id PK
         UUID session_id FK
-        DECIMAL amount
-        VARCHAR method
-        VARCHAR status
-        TIMESTAMP WITH_TIME_ZONE created_at
-        TIMESTAMP WITH_TIME_ZONE updated_at
+        decimal amount
+        string method
+        string status
+        datetime created_at
+        datetime updated_at
     }
+
     audit_logs {
         UUID id PK
         UUID user_id FK
-        VARCHAR action
-        VARCHAR entity_type
+        string action
+        string entity_type
         UUID entity_id
-        TEXT details
-        TIMESTAMP WITH_TIME_ZONE timestamp
+        string details
+        datetime timestamp
     }
 
-    users ||--o| roles : has
-    roles ||--o{ role_permissions : defines
+    roles ||--o{ users : assigns
+    roles ||--o{ role_permissions : contains
     permissions ||--o{ role_permissions : grants
+
     users ||--o{ vehicles : owns
+    users ||--o{ reservations : creates
+    users ||--o{ audit_logs : performs
+
     parking_lots ||--o{ parking_levels : has
     parking_levels ||--o{ parking_spaces : contains
-    parking_lots ||--o{ parking_spaces : indexes
-    parking_spaces ||--o{ reservations : books
-    users ||--o{ reservations : creates
-    vehicles ||--o{ parking_sessions : logs
-    parking_spaces ||--o{ parking_sessions : hosts
-    parking_sessions ||--o| payments : settles
-    parking_lots ||--o{ pricing_rules : applies
-    users ||--o{ audit_logs : logs_action
+    parking_lots ||--o{ pricing_rules : uses
+
+    parking_spaces ||--o{ reservations : reserved_for
+    parking_spaces ||--o{ parking_sessions : occupied_by
+
+    vehicles ||--o{ parking_sessions : starts
+    parking_sessions ||--|| payments : generates
 ```
 
 ---
