@@ -458,15 +458,15 @@ export const QrScannerPage: FC = () => {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="bg-white rounded-2xl p-6 border border-neutral-border shadow-xs lg:col-span-1">
-              <h2 className="text-lg font-bold mb-4 text-neutral-primary">Active Passes</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            <div className="bg-white rounded-2xl p-6 border border-neutral-border shadow-xs lg:col-span-1 h-[680px] flex flex-col">
+              <h2 className="text-lg font-bold mb-4 text-neutral-primary shrink-0">Active Passes</h2>
               {activePasses.length === 0 ? (
-                <div className="text-center py-8 text-neutral-secondary text-xs">
+                <div className="text-center py-8 text-neutral-secondary text-xs flex-1 flex items-center justify-center">
                   No active session or reservation passes found.
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-3 flex-1 overflow-y-auto pr-2 scrollbar-thin">
                   {activePasses.map(pass => {
                     const isSelected = selectedPass?.id === pass.id;
                     return (
@@ -494,7 +494,7 @@ export const QrScannerPage: FC = () => {
               )}
             </div>
 
-            <div className="bg-white rounded-2xl p-6 border border-neutral-border shadow-xs lg:col-span-2 flex flex-col items-center justify-center min-h-[500px]">
+            <div className="bg-white rounded-2xl p-6 border border-neutral-border shadow-xs lg:col-span-2 flex flex-col items-center justify-center min-h-[680px] lg:h-[680px] overflow-y-auto">
               {selectedPass ? (
                 passLoading ? (
                   <div className="text-center space-y-6 py-8 w-full max-w-lg mx-auto flex flex-col items-center animate-pulse">
