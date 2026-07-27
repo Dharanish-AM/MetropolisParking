@@ -74,7 +74,7 @@ export const QrScannerPage: FC = () => {
         .start(
           { facingMode: 'environment' },
           { fps: 10, qrbox: { width: 250, height: 250 } },
-          (decodedText) => {
+          decodedText => {
             setQrInput(decodedText);
             setIsCameraActive(false);
             executeScan(decodedText);
@@ -137,7 +137,10 @@ export const QrScannerPage: FC = () => {
             title: `Active Parking Session`,
             subtitle: `Session ID: ${s.id.slice(0, 8)}...`,
             details: {
-              spaceNumber: s.spaceNumber || sp?.spaceNumber || (s.spaceId ? `Space #${s.spaceId.slice(0, 6)}` : 'N/A'),
+              spaceNumber:
+                s.spaceNumber ||
+                sp?.spaceNumber ||
+                (s.spaceId ? `Space #${s.spaceId.slice(0, 6)}` : 'N/A'),
               vehiclePlate: s.plateNumber || veh?.plateNumber || 'Registered Vehicle',
               startTime: s.entryTime ? new Date(s.entryTime).toLocaleString() : undefined,
               status: s.status || 'ACTIVE',
@@ -322,7 +325,10 @@ export const QrScannerPage: FC = () => {
 
               {isCameraActive && (
                 <div className="mb-6 p-3 bg-neutral-900 rounded-2xl overflow-hidden shadow-inner flex flex-col items-center">
-                  <div id="qr-reader-container" className="w-full max-w-sm rounded-xl overflow-hidden" />
+                  <div
+                    id="qr-reader-container"
+                    className="w-full max-w-sm rounded-xl overflow-hidden"
+                  />
                   <p className="text-[11px] text-neutral-400 mt-2 font-medium">
                     Point webcam or phone camera at QR Code
                   </p>
@@ -499,7 +505,9 @@ export const QrScannerPage: FC = () => {
                   {currentPass?.details && (
                     <div className="w-full bg-neutral-50 rounded-2xl p-4 border border-neutral-border text-left grid grid-cols-2 gap-3 text-xs">
                       <div>
-                        <span className="text-neutral-secondary block font-semibold">Pass Type</span>
+                        <span className="text-neutral-secondary block font-semibold">
+                          Pass Type
+                        </span>
                         <span className="font-extrabold uppercase text-brand-primary tracking-wider">
                           {selectedPass.type}
                         </span>
@@ -512,32 +520,52 @@ export const QrScannerPage: FC = () => {
                       </div>
                       {currentPass.details.lotName && (
                         <div>
-                          <span className="text-neutral-secondary block font-semibold">Parking Lot</span>
-                          <span className="font-bold text-neutral-primary">{currentPass.details.lotName}</span>
+                          <span className="text-neutral-secondary block font-semibold">
+                            Parking Lot
+                          </span>
+                          <span className="font-bold text-neutral-primary">
+                            {currentPass.details.lotName}
+                          </span>
                         </div>
                       )}
                       {currentPass.details.spaceNumber && (
                         <div>
-                          <span className="text-neutral-secondary block font-semibold">Space Number</span>
-                          <span className="font-mono font-bold text-brand-primary">{currentPass.details.spaceNumber}</span>
+                          <span className="text-neutral-secondary block font-semibold">
+                            Space Number
+                          </span>
+                          <span className="font-mono font-bold text-brand-primary">
+                            {currentPass.details.spaceNumber}
+                          </span>
                         </div>
                       )}
                       {currentPass.details.vehiclePlate && (
                         <div>
-                          <span className="text-neutral-secondary block font-semibold">Vehicle Plate</span>
-                          <span className="font-mono font-bold text-neutral-primary">{currentPass.details.vehiclePlate}</span>
+                          <span className="text-neutral-secondary block font-semibold">
+                            Vehicle Plate
+                          </span>
+                          <span className="font-mono font-bold text-neutral-primary">
+                            {currentPass.details.vehiclePlate}
+                          </span>
                         </div>
                       )}
                       {currentPass.details.startTime && (
                         <div>
-                          <span className="text-neutral-secondary block font-semibold">Start / Entry Time</span>
-                          <span className="font-medium text-neutral-primary">{currentPass.details.startTime}</span>
+                          <span className="text-neutral-secondary block font-semibold">
+                            Start / Entry Time
+                          </span>
+                          <span className="font-medium text-neutral-primary">
+                            {currentPass.details.startTime}
+                          </span>
                         </div>
                       )}
                       {currentPass.details.fee && (
                         <div>
-                          <span className="text-neutral-secondary block font-semibold">Total Fee</span>
-                          <span className="font-bold text-brand-primary">{currentPass.details.fee}</span>
+                          <span className="text-neutral-secondary block font-semibold">
+                            Total Fee
+                          </span>
+                          <span className="font-bold text-brand-primary">
+                            {currentPass.details.fee}
+                          </span>
                         </div>
                       )}
                     </div>

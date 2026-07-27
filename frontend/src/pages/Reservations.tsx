@@ -437,9 +437,7 @@ export const Reservations: FC = () => {
 
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-border">
-                <span className="text-neutral-secondary block font-semibold mb-0.5">
-                  Total Fee
-                </span>
+                <span className="text-neutral-secondary block font-semibold mb-0.5">Total Fee</span>
                 <span className="font-bold text-brand-primary text-sm">
                   ${selectedReservation.fee.toFixed(2)}
                 </span>

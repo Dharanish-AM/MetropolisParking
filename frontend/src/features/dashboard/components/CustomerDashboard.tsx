@@ -105,30 +105,32 @@ export const CustomerDashboard: FC = () => {
   );
   const spaceMap = new Map<string, string>((spaces || []).map((s: any) => [s.id, s.spaceNumber]));
 
-  const activeStays = (sessions || []).filter(
-    (s: any) => (s.status === 'ACTIVE' || !s.exitTime) && myVehicleIds.includes(s.vehicleId)
-  ).map((s: any) => {
-    const details = vehicleDetailsMap.get(s.vehicleId);
-    return {
-      ...s,
-      plateNumber: details?.plateNumber || 'Unknown',
-      vehicleType: details?.type || 'CAR',
-      spaceNumber: spaceMap.get(s.spaceId) || 'Unknown',
-    };
-  });
+  const activeStays = (sessions || [])
+    .filter(
+      (s: any) => (s.status === 'ACTIVE' || !s.exitTime) && myVehicleIds.includes(s.vehicleId)
+    )
+    .map((s: any) => {
+      const details = vehicleDetailsMap.get(s.vehicleId);
+      return {
+        ...s,
+        plateNumber: details?.plateNumber || 'Unknown',
+        vehicleType: details?.type || 'CAR',
+        spaceNumber: spaceMap.get(s.spaceId) || 'Unknown',
+      };
+    });
 
-  const completedHistory = (sessions || []).filter(
-    (s: any) => s.status !== 'ACTIVE' && s.exitTime && myVehicleIds.includes(s.vehicleId)
-  ).map((s: any) => {
-    const details = vehicleDetailsMap.get(s.vehicleId);
-    return {
-      ...s,
-      plateNumber: details?.plateNumber || 'Unknown',
-      vehicleType: details?.type || 'CAR',
-      spaceNumber: spaceMap.get(s.spaceId) || 'Unknown',
-      duration: s.durationMinutes ?? s.duration,
-    };
-  });
+  const completedHistory = (sessions || [])
+    .filter((s: any) => s.status !== 'ACTIVE' && s.exitTime && myVehicleIds.includes(s.vehicleId))
+    .map((s: any) => {
+      const details = vehicleDetailsMap.get(s.vehicleId);
+      return {
+        ...s,
+        plateNumber: details?.plateNumber || 'Unknown',
+        vehicleType: details?.type || 'CAR',
+        spaceNumber: spaceMap.get(s.spaceId) || 'Unknown',
+        duration: s.durationMinutes ?? s.duration,
+      };
+    });
 
   const availableSpaces = (spaces as ParkingSpace[])?.filter(s => s.status === 'AVAILABLE') || [];
 

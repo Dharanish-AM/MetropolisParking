@@ -288,9 +288,7 @@ export const Vehicles: FC = () => {
               </div>
 
               <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-border text-xs">
-                <span className="text-neutral-secondary block font-semibold mb-0.5">
-                  Owner ID
-                </span>
+                <span className="text-neutral-secondary block font-semibold mb-0.5">Owner ID</span>
                 <span className="font-mono text-neutral-primary font-bold">
                   {selectedVehicle.ownerId || 'Guest / Unassigned'}
                 </span>
