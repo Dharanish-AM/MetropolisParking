@@ -49,7 +49,7 @@ test.describe('QR Gate Pass Scanner User Flow', () => {
   test('manual token entry validates invalid token', async ({ page }) => {
     await page.goto('/qr-scanner');
 
-    const tokenInput = page.getByPlaceholder(/paste qr token|enter pass code/i);
+    const tokenInput = page.getByPlaceholder(/paste jwt qr token/i);
     await expect(tokenInput).toBeVisible({ timeout: 8000 });
     await tokenInput.fill('INVALID-TOKEN-12345');
 

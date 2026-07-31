@@ -26,7 +26,7 @@ test.describe('ANPR / LPR Simulator User Flow', () => {
   test('allows license plate entry simulation', async ({ page }) => {
     await page.goto('/anpr-simulator');
 
-    const plateInput = page.getByPlaceholder(/mh12ab1234/i).first();
+    const plateInput = page.getByPlaceholder(/mh-12-ab-1234/i).first();
     await expect(plateInput).toBeVisible({ timeout: 8000 });
 
     const testPlate = `E2EENTR${Date.now().toString().slice(-4)}`;
@@ -44,7 +44,7 @@ test.describe('ANPR / LPR Simulator User Flow', () => {
   test('allows license plate exit simulation and payment calculation', async ({ page }) => {
     await page.goto('/anpr-simulator');
 
-    const plateInput = page.getByPlaceholder(/mh12ab1234/i).first();
+    const plateInput = page.getByPlaceholder(/mh-12-ab-1234/i).first();
     await expect(plateInput).toBeVisible({ timeout: 8000 });
 
     const testPlate = `E2EEXITX${Date.now().toString().slice(-4)}`;

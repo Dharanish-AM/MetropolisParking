@@ -43,7 +43,7 @@ test.describe('Vehicle Registry User Flow', () => {
     await expect(plateInput).toBeVisible({ timeout: 5000 });
     await plateInput.fill('INVALID!');
 
-    const submitBtn = page.getByRole('button', { name: /register/i, exact: true });
+    const submitBtn = page.getByRole('button', { name: 'Register', exact: true });
     await submitBtn.click();
 
     await expect(page.getByText(/alphanumeric|4 to 15/i)).toBeVisible({ timeout: 5000 });

@@ -37,7 +37,7 @@ test.describe('Pre-Booking Reservations User Flow', () => {
   test('opens new reservation modal', async ({ page }) => {
     await page.goto('/reservations');
 
-    const reserveButton = page.getByRole('button', { name: /new reservation|reserve space/i });
+    const reserveButton = page.getByRole('button', { name: /book space/i });
     await expect(reserveButton.first()).toBeVisible({ timeout: 8000 });
     await reserveButton.first().click();
     await expect(page.getByText(/select lot|vehicle plate|start time/i).first()).toBeVisible({
@@ -49,7 +49,7 @@ test.describe('Pre-Booking Reservations User Flow', () => {
     await page.goto('/reservations');
 
     const qrPassButton = page
-      .getByRole('button', { name: /qr pass|view pass|gate pass/i })
+      .getByRole('button', { name: /^pass$/i })
       .first();
     await expect(qrPassButton).toBeVisible({ timeout: 10000 });
     await qrPassButton.click();
