@@ -4,7 +4,7 @@ import QRCode from 'qrcode';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { client } from '../../../api/client';
 import { Card, CardHeader } from '../../../components/ui/Card';
@@ -27,6 +27,7 @@ import { Calendar, Plus, XCircle, Info, AlertTriangle, QrCode } from 'lucide-rea
 const reservationSchema = z.object({
   lotId: z.string().min(1, 'Parking lot is required'),
   spaceId: z.string().min(1, 'Parking space is required'),
+  vehicleType: z.enum(['CAR', 'BIKE', 'SUV', 'TRUCK', 'EV']),
   startTime: z.string().min(1, 'Start time is required'),
   endTime: z.string().min(1, 'End time is required'),
 });
@@ -59,6 +60,7 @@ interface ParkingSpace {
 }
 
 export const ReservationsFeature: FC = () => {
+  const queryClient = useQueryClient();
   const [isBookOpen, setIsBookOpen] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<ReservationItem | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -118,6 +120,7 @@ export const ReservationsFeature: FC = () => {
     defaultValues: {
       lotId: '',
       spaceId: '',
+      vehicleType: 'CAR' as const,
       startTime: getFormattedDateTime(5),
       endTime: getFormattedDateTime(125),
     },
@@ -127,6 +130,7 @@ export const ReservationsFeature: FC = () => {
     reset({
       lotId: '',
       spaceId: '',
+      vehicleType: 'CAR',
       startTime: getFormattedDateTime(5),
       endTime: getFormattedDateTime(125),
     });
@@ -148,6 +152,7 @@ export const ReservationsFeature: FC = () => {
   const onSubmit = (data: ReservationFormValues) => {
     const formattedData = {
       spaceId: data.spaceId,
+      vehicleType: data.vehicleType,
       startTime: new Date(data.startTime).toISOString(),
       endTime: new Date(data.endTime).toISOString(),
     };
@@ -157,7 +162,9 @@ export const ReservationsFeature: FC = () => {
         setIsBookOpen(false);
         reset();
         setError(null);
-        refetch();
+        queryClient.invalidateQueries({ queryKey: ['reservations'] });
+        queryClient.invalidateQueries({ queryKey: ['spaces'] });
+        queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       },
       onError: (err: any) => {
         setError(
@@ -172,7 +179,9 @@ export const ReservationsFeature: FC = () => {
     if (window.confirm('Are you sure you want to cancel this reservation?')) {
       cancelReservationMutation.mutate(id, {
         onSuccess: () => {
-          refetch();
+          queryClient.invalidateQueries({ queryKey: ['reservations'] });
+          queryClient.invalidateQueries({ queryKey: ['spaces'] });
+          queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
         },
       });
     }
@@ -369,6 +378,17 @@ export const ReservationsFeature: FC = () => {
                     Space {space.spaceNumber} ({space.type} - {space.status})
                   </option>
                 ))}
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-neutral-primary">Vehicle Type</label>
+            <Select {...register('vehicleType')} error={errors.vehicleType?.message}>
+              <option value="CAR">Car</option>
+              <option value="BIKE">Bike</option>
+              <option value="SUV">SUV</option>
+              <option value="TRUCK">Truck</option>
+              <option value="EV">EV</option>
             </Select>
           </div>
 

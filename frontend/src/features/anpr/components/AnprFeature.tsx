@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import type { FC } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Tesseract from 'tesseract.js';
 import { client } from '../../../api/client';
 import { Card, CardHeader } from '../../../components/ui/Card';
@@ -49,6 +49,7 @@ interface AnprExitResponse {
 }
 
 export const AnprFeature: FC = () => {
+  const queryClient = useQueryClient();
   const [selectedLotId, setSelectedLotId] = useState('');
   const [plateNumber, setPlateNumber] = useState('');
   const [isCameraActive, setIsCameraActive] = useState(false);
@@ -137,12 +138,22 @@ export const AnprFeature: FC = () => {
       const resp = await client.post('/anpr/entry', data);
       return resp.data;
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['spaces'] });
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+    },
   });
 
   const exitMutation = useMutation({
     mutationFn: async (data: { plateNumber: string }) => {
       const resp = await client.post('/anpr/exit', data);
       return resp.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['spaces'] });
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
     },
   });
 
