@@ -4,6 +4,7 @@ import com.metropolisparking.dto.{ReservationCreateRequest, ReservationResponse}
 import com.metropolisparking.exceptions.{ConflictException, NotFoundException, ValidationException}
 import com.metropolisparking.models.Reservation
 import com.metropolisparking.repositories.{ParkingLotRepository, ReservationRepository, PricingRuleRepository}
+import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.UUID
 
@@ -14,6 +15,8 @@ class ReservationService(
   auditLogService: AuditLogService,
   wsService: WebSocketService
 ) {
+  private val logger = LoggerFactory.getLogger(classOf[ReservationService])
+
   def makeReservation(req: ReservationCreateRequest, userId: UUID): Reservation = {
     val space = lotRepo.findSpaceById(req.spaceId).getOrElse {
       throw NotFoundException(s"Parking space '${req.spaceId}' not found")
@@ -39,8 +42,12 @@ class ReservationService(
     }
 
     val durationMinutes = java.time.Duration.between(startTime, endTime).toMinutes.max(1L)
-    val rule = pricingRuleRepo.findRule(space.lotId, space.`type`)
-    val rate = rule.map(_.rate).getOrElse(BigDecimal("5.00"))
+    val ruleOpt = pricingRuleRepo.findRule(space.lotId, space.`type`)
+    if (ruleOpt.isEmpty) {
+      logger.warn(s"Pricing rule missing for lotId '${space.lotId}' and spaceType '${space.`type`}'. Falling back to default rate 5.00")
+    }
+
+    val rate = ruleOpt.map(_.rate).getOrElse(BigDecimal("5.00"))
     val hours = Math.ceil(durationMinutes.toDouble / 60.0).toLong
     val fee = rate * hours
 

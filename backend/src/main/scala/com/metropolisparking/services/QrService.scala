@@ -110,8 +110,13 @@ class QrService(
           throw NotFoundException("Reserved space not found")
         }
 
+        val userPlate = vehicleService.list()
+          .find(_.ownerId.contains(res.userId))
+          .map(_.plateNumber)
+          .getOrElse(s"RES-${res.id.toString.take(8).toUpperCase}")
+
         val session = sessionService.startSession(
-          SessionStartRequest(plateNumber = "QR-RESERVATION", spaceId = res.spaceId),
+          SessionStartRequest(plateNumber = userPlate, spaceId = res.spaceId),
           Some(res.userId)
         )
 
@@ -121,7 +126,7 @@ class QrService(
           action = "CHECKIN",
           entityId = session.id,
           entityType = "RESERVATION",
-          plateNumber = "QR-RESERVATION",
+          plateNumber = userPlate,
           spaceNumber = space.spaceNumber,
           status = "ACTIVE",
           message = s"Gate opened for reserved space ${space.spaceNumber}"

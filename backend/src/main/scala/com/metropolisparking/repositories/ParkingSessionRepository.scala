@@ -8,8 +8,10 @@ import java.util.UUID
 import scala.jdk.CollectionConverters._
 
 class ParkingSessionRepository(dsl: DSLContext) extends BaseRepository(dsl) {
-  def create(session: ParkingSession): ParkingSession = {
-    dsl.insertInto(PARKING_SESSIONS)
+  private def ctx(txDsl: Option[DSLContext]): DSLContext = txDsl.getOrElse(dsl)
+
+  def create(session: ParkingSession, txDsl: Option[DSLContext] = None): ParkingSession = {
+    ctx(txDsl).insertInto(PARKING_SESSIONS)
       .set(PARKING_SESSIONS.ID, session.id)
       .set(PARKING_SESSIONS.VEHICLE_ID, session.vehicleId)
       .set(PARKING_SESSIONS.SPACE_ID, session.spaceId)
@@ -18,34 +20,34 @@ class ParkingSessionRepository(dsl: DSLContext) extends BaseRepository(dsl) {
     session
   }
 
-  def findActiveByVehicleId(vehicleId: UUID): Option[ParkingSession] = {
+  def findActiveByVehicleId(vehicleId: UUID, txDsl: Option[DSLContext] = None): Option[ParkingSession] = {
     Option(
-      dsl.selectFrom(PARKING_SESSIONS)
+      ctx(txDsl).selectFrom(PARKING_SESSIONS)
         .where(PARKING_SESSIONS.VEHICLE_ID.eq(vehicleId).and(PARKING_SESSIONS.EXIT_TIME.isNull))
         .orderBy(PARKING_SESSIONS.ENTRY_TIME.desc())
         .fetchAny()
     ).map(mapRecord)
   }
 
-  def findActiveBySpaceId(spaceId: UUID): Option[ParkingSession] = {
+  def findActiveBySpaceId(spaceId: UUID, txDsl: Option[DSLContext] = None): Option[ParkingSession] = {
     Option(
-      dsl.selectFrom(PARKING_SESSIONS)
+      ctx(txDsl).selectFrom(PARKING_SESSIONS)
         .where(PARKING_SESSIONS.SPACE_ID.eq(spaceId).and(PARKING_SESSIONS.EXIT_TIME.isNull))
         .orderBy(PARKING_SESSIONS.ENTRY_TIME.desc())
         .fetchAny()
     ).map(mapRecord)
   }
 
-  def findById(id: UUID): Option[ParkingSession] = {
+  def findById(id: UUID, txDsl: Option[DSLContext] = None): Option[ParkingSession] = {
     Option(
-      dsl.selectFrom(PARKING_SESSIONS)
+      ctx(txDsl).selectFrom(PARKING_SESSIONS)
         .where(PARKING_SESSIONS.ID.eq(id))
         .fetchAny()
     ).map(mapRecord)
   }
 
-  def update(session: ParkingSession): ParkingSession = {
-    dsl.update(PARKING_SESSIONS)
+  def update(session: ParkingSession, txDsl: Option[DSLContext] = None): ParkingSession = {
+    ctx(txDsl).update(PARKING_SESSIONS)
       .set(PARKING_SESSIONS.EXIT_TIME, session.exitTime.map(t => OffsetDateTime.ofInstant(t, ZoneOffset.UTC)).orNull)
       .set(PARKING_SESSIONS.DURATION_MINUTES, session.durationMinutes.map(java.lang.Integer.valueOf).orNull)
       .set(PARKING_SESSIONS.FEE, session.fee.map(_.bigDecimal).orNull)

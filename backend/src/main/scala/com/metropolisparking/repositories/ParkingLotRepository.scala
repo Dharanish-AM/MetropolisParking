@@ -96,16 +96,18 @@ class ParkingLotRepository(dsl: DSLContext) extends BaseRepository(dsl) {
     }.toList
   }
 
-  def findSpaceById(id: UUID): Option[ParkingSpace] = {
+  private def ctx(txDsl: Option[DSLContext]): DSLContext = txDsl.getOrElse(dsl)
+
+  def findSpaceById(id: UUID, txDsl: Option[DSLContext] = None): Option[ParkingSpace] = {
     Option(
-      dsl.selectFrom(PARKING_SPACES)
+      ctx(txDsl).selectFrom(PARKING_SPACES)
         .where(PARKING_SPACES.ID.eq(id).and(PARKING_SPACES.DELETED_AT.isNull))
         .fetchAny()
     ).map(r => ParkingSpace(r.getId, r.getLotId, r.getLevelId, r.getSpaceNumber, r.getType, r.getStatus))
   }
 
-  def updateSpace(space: ParkingSpace): ParkingSpace = {
-    dsl.update(PARKING_SPACES)
+  def updateSpace(space: ParkingSpace, txDsl: Option[DSLContext] = None): ParkingSpace = {
+    ctx(txDsl).update(PARKING_SPACES)
       .set(PARKING_SPACES.STATUS, space.status)
       .set(PARKING_SPACES.SPACE_NUMBER, space.spaceNumber)
       .set(PARKING_SPACES.TYPE, space.`type`)
