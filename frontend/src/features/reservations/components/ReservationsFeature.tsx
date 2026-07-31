@@ -71,7 +71,6 @@ export const ReservationsFeature: FC = () => {
   const {
     data: reservations,
     isLoading,
-    refetch,
   } = useQuery<ReservationItem[]>({
     queryKey: ['reservations'],
     queryFn: async () => {
