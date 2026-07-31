@@ -33,7 +33,16 @@ export const handlers = [
     );
   }),
 
-  http.get(`${BASE}/me`, () => {
+  http.get(`${BASE}/me`, ({ request }) => {
+    const auth = request.headers.get('Authorization') ?? '';
+    if (auth.includes('mock-jwt-customer-token')) {
+      return HttpResponse.json({
+        id: 'customer-id-123',
+        name: 'Customer User',
+        email: 'customer@metropolisparking.com',
+        role: 'CUSTOMER',
+      });
+    }
     return HttpResponse.json({
       id: 'admin-id-123',
       name: 'Admin User',

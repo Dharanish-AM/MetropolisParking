@@ -7,8 +7,10 @@ import java.time.{OffsetDateTime, ZoneOffset}
 import scala.jdk.CollectionConverters._
 
 class AuditLogRepository(dsl: DSLContext) extends BaseRepository(dsl) {
-  def create(log: AuditLog): AuditLog = {
-    dsl.insertInto(AUDIT_LOGS)
+  private def ctx(txDsl: Option[DSLContext]): DSLContext = txDsl.getOrElse(dsl)
+
+  def create(log: AuditLog, txDsl: Option[DSLContext] = None): AuditLog = {
+    ctx(txDsl).insertInto(AUDIT_LOGS)
       .set(AUDIT_LOGS.ID, log.id)
       .set(AUDIT_LOGS.USER_ID, log.userId.orNull)
       .set(AUDIT_LOGS.ACTION, log.action)

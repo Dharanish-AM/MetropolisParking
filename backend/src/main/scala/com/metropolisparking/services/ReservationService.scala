@@ -4,6 +4,7 @@ import com.metropolisparking.dto.{ReservationCreateRequest, ReservationResponse}
 import com.metropolisparking.exceptions.{ConflictException, NotFoundException, ValidationException}
 import com.metropolisparking.models.Reservation
 import com.metropolisparking.repositories.{ParkingLotRepository, ReservationRepository, PricingRuleRepository}
+import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.UUID
 
@@ -14,15 +15,10 @@ class ReservationService(
   auditLogService: AuditLogService,
   wsService: WebSocketService
 ) {
+  private val logger = LoggerFactory.getLogger(classOf[ReservationService])
+
   def makeReservation(req: ReservationCreateRequest, userId: UUID): Reservation = {
-    val space = lotRepo.findSpaceById(req.spaceId).getOrElse {
-      throw NotFoundException(s"Parking space '${req.spaceId}' not found")
-    }
-
-    if (space.status.equalsIgnoreCase("OUT_OF_SERVICE") || space.status.equalsIgnoreCase("MAINTENANCE")) {
-      throw ConflictException(s"Parking space '${space.spaceNumber}' is currently ${space.status} and cannot be reserved")
-    }
-
+    // Parse and validate times before acquiring any DB locks
     val startTime = try { Instant.parse(req.startTime) } catch { case _: Throwable => throw ValidationException("Invalid start time format") }
     val endTime = try { Instant.parse(req.endTime) } catch { case _: Throwable => throw ValidationException("Invalid end time format") }
 
@@ -34,41 +30,63 @@ class ReservationService(
       throw ValidationException("Reservation end time must be after the start time")
     }
 
-    if (resRepo.hasOverlapping(req.spaceId, startTime, endTime)) {
-      throw ConflictException(s"Space '${space.spaceNumber}' is already reserved during the requested period")
+    val vehicleType = req.vehicleType.toUpperCase
+
+    resRepo.transaction { txDsl =>
+      // SELECT FOR UPDATE prevents two concurrent requests from reserving the same space
+      // in the same time slot — the second request blocks until the first commits.
+      val space = lotRepo.findSpaceByIdForUpdate(req.spaceId, txDsl).getOrElse {
+        throw NotFoundException(s"Parking space '${req.spaceId}' not found")
+      }
+
+      if (space.status.equalsIgnoreCase("OUT_OF_SERVICE") || space.status.equalsIgnoreCase("MAINTENANCE")) {
+        throw ConflictException(s"Parking space '${space.spaceNumber}' is currently ${space.status} and cannot be reserved")
+      }
+
+      if (resRepo.hasOverlappingTx(req.spaceId, startTime, endTime, txDsl)) {
+        throw ConflictException(s"Space '${space.spaceNumber}' is already reserved during the requested period")
+      }
+
+      val durationMinutes = java.time.Duration.between(startTime, endTime).toMinutes.max(1L)
+      // B12 fix: use vehicleType from the request, not the space type
+      // B13 fix: branch on rule type so FLAT and DAILY rates are applied correctly
+      val ruleOpt = pricingRuleRepo.findRule(space.lotId, vehicleType)
+      if (ruleOpt.isEmpty) {
+        logger.warn(s"Pricing rule missing for lotId '${space.lotId}' and vehicleType '$vehicleType'. Falling back to default rate 10.00")
+      }
+      val rate = ruleOpt.map(_.rate).getOrElse(BigDecimal("10.00"))
+      val ruleType = ruleOpt.map(_.ruleType.toUpperCase).getOrElse("HOURLY")
+      val fee = ruleType match {
+        case "FLAT"  => rate
+        case "DAILY" => rate * Math.ceil(durationMinutes.toDouble / 1440.0).toLong
+        case _       => rate * Math.ceil(durationMinutes.toDouble / 60.0).toLong
+      }
+
+      val res = Reservation(
+        id = UUID.randomUUID(),
+        userId = userId,
+        spaceId = req.spaceId,
+        startTime = startTime,
+        endTime = endTime,
+        status = "CONFIRMED",
+        fee = fee,
+        createdAt = now,
+        updatedAt = now
+      )
+
+      resRepo.create(res, Some(txDsl))
+
+      auditLogService.logAction(
+        Some(userId),
+        "RESERVATION_CREATED",
+        "reservations",
+        Some(res.id),
+        Some(s"User reserved space ${space.spaceNumber} from $startTime to $endTime. Fee: $fee")
+      )
+
+      wsService.broadcast("""{"event":"dashboard_updated"}""")
+      res
     }
-
-    val durationMinutes = java.time.Duration.between(startTime, endTime).toMinutes.max(1L)
-    val rule = pricingRuleRepo.findRule(space.lotId, space.`type`)
-    val rate = rule.map(_.rate).getOrElse(BigDecimal("5.00"))
-    val hours = Math.ceil(durationMinutes.toDouble / 60.0).toLong
-    val fee = rate * hours
-
-    val res = Reservation(
-      id = UUID.randomUUID(),
-      userId = userId,
-      spaceId = req.spaceId,
-      startTime = startTime,
-      endTime = endTime,
-      status = "CONFIRMED",
-      fee = fee,
-      createdAt = now,
-      updatedAt = now
-    )
-
-    resRepo.create(res)
-
-    auditLogService.logAction(
-      Some(userId),
-      "RESERVATION_CREATED",
-      "reservations",
-      Some(res.id),
-      Some(s"User reserved space ${space.spaceNumber} from $startTime to $endTime. Fee: $fee")
-    )
-
-    wsService.broadcast("""{"event":"dashboard_updated"}""")
-
-    res
   }
 
   def listReservations(userId: UUID, role: String): List[ReservationResponse] = {
@@ -110,17 +128,25 @@ class ReservationService(
       throw ConflictException(s"Cannot cancel a reservation that is already ${res.status.toLowerCase}")
     }
 
-    val updated = res.copy(status = "CANCELLED")
-    resRepo.update(updated)
+    resRepo.transaction { txDsl =>
+      resRepo.update(res.copy(status = "CANCELLED"), Some(txDsl))
 
-    auditLogService.logAction(
-      Some(userId),
-      "RESERVATION_CANCELLED",
-      "reservations",
-      Some(id),
-      Some(s"Reservation for space ID ${res.spaceId} cancelled")
-    )
+      // B14 fix: release the space back to AVAILABLE so it can be booked by others
+      lotRepo.findSpaceByIdForUpdate(res.spaceId, txDsl).foreach { space =>
+        if (space.status.equalsIgnoreCase("RESERVED")) {
+          lotRepo.updateSpace(space.copy(status = "AVAILABLE"), Some(txDsl))
+        }
+      }
 
-    wsService.broadcast("""{"event":"dashboard_updated"}""")
+      auditLogService.logAction(
+        Some(userId),
+        "RESERVATION_CANCELLED",
+        "reservations",
+        Some(id),
+        Some(s"Reservation for space ID ${res.spaceId} cancelled")
+      )
+
+      wsService.broadcast("""{"event":"dashboard_updated"}""")
+    }
   }
 }

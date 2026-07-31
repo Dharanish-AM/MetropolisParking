@@ -13,10 +13,10 @@ class RbacMiddleware(securityModule: SecurityModule) {
         val token = header.substring(7)
         securityModule.verifyToken(token) match {
           case Success(claims) => provide(claims)
-          case Failure(_)      => throw AuthenticationException("Invalid or expired authentication token")
+          case Failure(_)      => failWith(AuthenticationException("Invalid or expired authentication token"))
         }
       case _ =>
-        throw AuthenticationException("Missing or invalid Authorization header")
+        failWith(AuthenticationException("Missing or invalid Authorization header"))
     }
   }
 
@@ -25,7 +25,7 @@ class RbacMiddleware(securityModule: SecurityModule) {
       if (allowedRoles.contains(claims.role)) {
         provide(claims)
       } else {
-        throw AuthorizationException("Insufficient permissions to access this resource")
+        failWith(AuthorizationException("Insufficient permissions to access this resource"))
       }
     }
   }

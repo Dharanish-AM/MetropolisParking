@@ -8,8 +8,10 @@ import java.util.UUID
 import scala.jdk.CollectionConverters._
 
 class ReservationRepository(dsl: DSLContext) extends BaseRepository(dsl) {
-  def create(res: Reservation): Reservation = {
-    dsl.insertInto(RESERVATIONS)
+  private def ctx(txDsl: Option[DSLContext]): DSLContext = txDsl.getOrElse(dsl)
+
+  def create(res: Reservation, txDsl: Option[DSLContext] = None): Reservation = {
+    ctx(txDsl).insertInto(RESERVATIONS)
       .set(RESERVATIONS.ID, res.id)
       .set(RESERVATIONS.USER_ID, res.userId)
       .set(RESERVATIONS.SPACE_ID, res.spaceId)
@@ -23,8 +25,8 @@ class ReservationRepository(dsl: DSLContext) extends BaseRepository(dsl) {
     res
   }
 
-  def update(res: Reservation): Unit = {
-    dsl.update(RESERVATIONS)
+  def update(res: Reservation, txDsl: Option[DSLContext] = None): Unit = {
+    ctx(txDsl).update(RESERVATIONS)
       .set(RESERVATIONS.STATUS, res.status)
       .set(RESERVATIONS.UPDATED_AT, OffsetDateTime.ofInstant(Instant.now(), ZoneOffset.UTC))
       .where(RESERVATIONS.ID.eq(res.id))
@@ -67,6 +69,19 @@ class ReservationRepository(dsl: DSLContext) extends BaseRepository(dsl) {
     val end = OffsetDateTime.ofInstant(endTime, ZoneOffset.UTC)
     dsl.fetchExists(
       dsl.select(RESERVATIONS.ID)
+        .from(RESERVATIONS)
+        .where(RESERVATIONS.SPACE_ID.eq(spaceId))
+        .and(RESERVATIONS.STATUS.in("CONFIRMED", "PENDING"))
+        .and(RESERVATIONS.START_TIME.lt(end))
+        .and(RESERVATIONS.END_TIME.gt(start))
+    )
+  }
+
+  def hasOverlappingTx(spaceId: UUID, startTime: Instant, endTime: Instant, txDsl: DSLContext): Boolean = {
+    val start = OffsetDateTime.ofInstant(startTime, ZoneOffset.UTC)
+    val end = OffsetDateTime.ofInstant(endTime, ZoneOffset.UTC)
+    txDsl.fetchExists(
+      txDsl.select(RESERVATIONS.ID)
         .from(RESERVATIONS)
         .where(RESERVATIONS.SPACE_ID.eq(spaceId))
         .and(RESERVATIONS.STATUS.in("CONFIRMED", "PENDING"))

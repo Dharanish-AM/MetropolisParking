@@ -25,46 +25,53 @@ test.describe('ANPR / LPR Simulator User Flow', () => {
 
   test('allows license plate entry simulation', async ({ page }) => {
     await page.goto('/anpr-simulator');
-    await page.waitForTimeout(1000);
 
-    const plateInput = page.getByPlaceholder(/mh12ab1234/i).first();
-    if ((await plateInput.count()) > 0) {
-      const testPlate = `E2E-${Math.floor(1000 + Math.random() * 9000)}`;
-      await plateInput.fill(testPlate);
+    const lotSelect = page.locator('select').first();
+    await expect(lotSelect).toBeVisible({ timeout: 8000 });
+    await lotSelect.selectOption({ index: 1 });
 
-      const entryButton = page.getByRole('button', { name: /simulate entry/i });
-      if ((await entryButton.count()) > 0) {
-        await entryButton.click();
-        await expect(page.getByText(/session started|entry confirmed|space/i).first()).toBeVisible({
-          timeout: 10000,
-        });
-      }
-    }
+    const plateInput = page.getByPlaceholder(/mh-12-ab-1234/i).first();
+    await expect(plateInput).toBeVisible({ timeout: 5000 });
+
+    const testPlate = `E2EENTR${Date.now().toString().slice(-4)}`;
+    await plateInput.fill(testPlate);
+
+    const entryButton = page.getByRole('button', { name: /simulate entry/i });
+    await expect(entryButton).toBeVisible({ timeout: 5000 });
+    await entryButton.click();
+
+    await expect(page.getByText(/entry gate opened|parking space/i).first()).toBeVisible({
+      timeout: 10000,
+    });
   });
 
   test('allows license plate exit simulation and payment calculation', async ({ page }) => {
     await page.goto('/anpr-simulator');
-    await page.waitForTimeout(1000);
 
-    const testPlate = `E2E-${Math.floor(1000 + Math.random() * 9000)}`;
+    const lotSelect = page.locator('select').first();
+    await expect(lotSelect).toBeVisible({ timeout: 8000 });
+    await lotSelect.selectOption({ index: 1 });
 
-    const plateInput = page.getByPlaceholder(/mh12ab1234/i).first();
-    if ((await plateInput.count()) > 0) {
-      await plateInput.fill(testPlate);
+    const plateInput = page.getByPlaceholder(/mh-12-ab-1234/i).first();
+    await expect(plateInput).toBeVisible({ timeout: 5000 });
 
-      const entryButton = page.getByRole('button', { name: /simulate entry/i });
-      if ((await entryButton.count()) > 0) {
-        await entryButton.click();
-        await page.waitForTimeout(1000);
+    const testPlate = `E2EEXITX${Date.now().toString().slice(-4)}`;
+    await plateInput.fill(testPlate);
 
-        const exitButton = page.getByRole('button', { name: /simulate exit/i });
-        if ((await exitButton.count()) > 0) {
-          await exitButton.click();
-          await expect(page.getByText(/fee|payment settled|exit confirmed/i).first()).toBeVisible({
-            timeout: 10000,
-          });
-        }
-      }
-    }
+    const entryButton = page.getByRole('button', { name: /simulate entry/i });
+    await expect(entryButton).toBeVisible({ timeout: 5000 });
+    await entryButton.click();
+
+    await expect(page.getByText(/entry gate opened|parking space/i).first()).toBeVisible({
+      timeout: 10000,
+    });
+
+    const exitButton = page.getByRole('button', { name: /simulate exit/i });
+    await expect(exitButton).toBeVisible({ timeout: 5000 });
+    await exitButton.click();
+
+    await expect(page.getByText(/exit gate bill|bill summary/i).first()).toBeVisible({
+      timeout: 10000,
+    });
   });
 });

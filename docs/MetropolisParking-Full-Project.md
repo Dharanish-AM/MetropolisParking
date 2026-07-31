@@ -6,13 +6,13 @@
 |---|---|
 | **Version** | 1.0.0 |
 | **Backend** | Scala 2.13 (Akka HTTP, Layered Monolith) |
-| **Frontend** | React 18 + TypeScript (SPA, Component-Driven) |
+| **Frontend** | React 19 + TypeScript (SPA, Component-Driven) |
 | **Architecture** | Layered Monolith Backend, Feature-Modular Frontend (Designed for Future Microservice Evolution) |
 
 This document covers the complete MetropolisParking system: the Scala backend service (Part I) and the React frontend application (Part II) that together form the end-to-end parking management platform.
 
 > [!NOTE]
-> For a detailed enterprise engineering design document featuring a full C4 architectural model, database ERD, sequence diagrams, and scalability plans, please refer to the [Enterprise Architecture & Design Document](file:///c:/Github Repositories/MetropolisParking/docs/MetropolisParking-Enterprise-Design.md).
+> For a detailed enterprise engineering design document featuring a full C4 architectural model, database ERD, sequence diagrams, and scalability plans, please refer to the [Enterprise Architecture & Design Document](./MetropolisParking-Enterprise-Design.md).
 
 ---
 

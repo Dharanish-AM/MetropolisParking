@@ -183,7 +183,7 @@ Traditional parking facilities suffer from:
 ## Architecture & Tech Stack
 
 > [!NOTE]
-> For a detailed, enterprise-grade deep dive with comprehensive C4 models, ER diagrams, lifecycles, and deployment strategies, see the [Enterprise Architecture & Design Document](file:///c:/Github Repositories/MetropolisParking/docs/MetropolisParking-Enterprise-Design.md).
+> For a detailed, enterprise-grade deep dive with comprehensive C4 models, ER diagrams, lifecycles, and deployment strategies, see the [Enterprise Architecture & Design Document](./docs/MetropolisParking-Enterprise-Design.md).
 
 ### System Architecture
 

@@ -81,7 +81,8 @@ BEGIN
             lower(replace(customer_names[i], ' ', '.')) || '@gmail.com',
             '$2a$12$7sTWE4JCB8Ih10RZO/18Z.DNh1wpw3KMCidd3yf5zwE/K3zUsJFmC',
             customer_role_id
-        );
+        )
+        ON CONFLICT (email) DO NOTHING;
     END LOOP;
 
     SELECT array_agg(id) INTO cust_ids FROM users WHERE role_id = customer_role_id;

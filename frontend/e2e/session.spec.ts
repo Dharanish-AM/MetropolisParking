@@ -36,11 +36,20 @@ test.describe('Sessions', () => {
     await expect(page.getByPlaceholder('e.g. MH12AB1234')).toBeVisible({ timeout: 5000 });
   });
 
-  test('shows validation state for invalid plate number', async ({ page }) => {
+  test('shows validation error message for short plate number', async ({ page }) => {
     await page.goto('/sessions');
     await page.getByRole('button', { name: 'Start Session' }).first().click();
 
-    await page.getByPlaceholder('e.g. MH12AB1234').fill('AB');
-    await expect(page.getByRole('button', { name: 'Start', exact: true })).toBeDisabled();
+    const plateInput = page.getByPlaceholder('e.g. MH12AB1234');
+    await expect(plateInput).toBeVisible({ timeout: 5000 });
+
+    await plateInput.fill('AB');
+    await plateInput.blur();
+
+    // Verify the validation error text appears — proves plate validation fires,
+    // not just that some other field makes the button disabled
+    await expect(
+      page.getByText(/alphanumeric.*4 to 15|4 to 15.*characters/i)
+    ).toBeVisible({ timeout: 5000 });
   });
 });

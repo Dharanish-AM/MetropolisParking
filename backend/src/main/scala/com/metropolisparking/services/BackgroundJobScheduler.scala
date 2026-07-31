@@ -2,7 +2,7 @@ package com.metropolisparking.services
 
 import akka.actor.ActorSystem
 import org.jooq.DSLContext
-import com.metropolisparking.jooq.Tables.RESERVATIONS
+import com.metropolisparking.jooq.Tables.{PARKING_SPACES, RESERVATIONS}
 import java.time.{Instant, OffsetDateTime, ZoneOffset}
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
@@ -24,6 +24,19 @@ class BackgroundJobScheduler(
 
   private def cleanupExpiredReservations(): Unit = {
     val now = OffsetDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
+
+    // B15 fix: free space rows before marking reservations expired so there is no
+    // window where a reservation is EXPIRED but its space is still RESERVED.
+    dsl.update(PARKING_SPACES)
+      .set(PARKING_SPACES.STATUS, "AVAILABLE")
+      .set(PARKING_SPACES.UPDATED_AT, now)
+      .where(PARKING_SPACES.ID.in(
+        dsl.select(RESERVATIONS.SPACE_ID).from(RESERVATIONS)
+          .where(RESERVATIONS.STATUS.in("PENDING", "CONFIRMED"))
+          .and(RESERVATIONS.END_TIME.lt(now))
+      ))
+      .execute()
+
     val updatedCount = dsl.update(RESERVATIONS)
       .set(RESERVATIONS.STATUS, "EXPIRED")
       .set(RESERVATIONS.UPDATED_AT, now)

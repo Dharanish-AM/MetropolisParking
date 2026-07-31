@@ -8,8 +8,10 @@ import java.util.UUID
 import scala.jdk.CollectionConverters._
 
 class PaymentRepository(dsl: DSLContext) extends BaseRepository(dsl) {
-  def create(payment: Payment): Payment = {
-    dsl.insertInto(PAYMENTS)
+  private def ctx(txDsl: Option[DSLContext]): DSLContext = txDsl.getOrElse(dsl)
+
+  def create(payment: Payment, txDsl: Option[DSLContext] = None): Payment = {
+    ctx(txDsl).insertInto(PAYMENTS)
       .set(PAYMENTS.ID, payment.id)
       .set(PAYMENTS.SESSION_ID, payment.sessionId)
       .set(PAYMENTS.AMOUNT, payment.amount.bigDecimal)
@@ -19,25 +21,25 @@ class PaymentRepository(dsl: DSLContext) extends BaseRepository(dsl) {
     payment
   }
 
-  def findById(id: UUID): Option[Payment] = {
+  def findById(id: UUID, txDsl: Option[DSLContext] = None): Option[Payment] = {
     Option(
-      dsl.selectFrom(PAYMENTS)
+      ctx(txDsl).selectFrom(PAYMENTS)
         .where(PAYMENTS.ID.eq(id))
         .fetchAny()
     ).map(mapRecord)
   }
 
-  def findBySessionId(sessionId: UUID): Option[Payment] = {
+  def findBySessionId(sessionId: UUID, txDsl: Option[DSLContext] = None): Option[Payment] = {
     Option(
-      dsl.selectFrom(PAYMENTS)
+      ctx(txDsl).selectFrom(PAYMENTS)
         .where(PAYMENTS.SESSION_ID.eq(sessionId))
         .orderBy(PAYMENTS.CREATED_AT.desc())
         .fetchAny()
     ).map(mapRecord)
   }
 
-  def update(payment: Payment): Payment = {
-    dsl.update(PAYMENTS)
+  def update(payment: Payment, txDsl: Option[DSLContext] = None): Payment = {
+    ctx(txDsl).update(PAYMENTS)
       .set(PAYMENTS.STATUS, payment.status)
       .set(PAYMENTS.METHOD, payment.method)
       .set(PAYMENTS.UPDATED_AT, OffsetDateTime.now())

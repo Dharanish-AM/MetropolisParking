@@ -31,7 +31,7 @@ case class SessionDetail(
 )
 case class DashboardStats(occupancy: OccupancyStats, financial: FinancialStats, recentSessions: List[SessionDetail])
 
-case class ReservationCreateRequest(spaceId: UUID, startTime: String, endTime: String)
+case class ReservationCreateRequest(spaceId: UUID, startTime: String, endTime: String, vehicleType: String)
 case class ReservationResponse(
   id: UUID,
   userId: UUID,
@@ -103,7 +103,7 @@ object DtoFormats {
   implicit val sessionDetailFormat: RootJsonFormat[SessionDetail] = jsonFormat7(SessionDetail)
   implicit val dashboardStatsFormat: RootJsonFormat[DashboardStats] = jsonFormat3(DashboardStats)
 
-  implicit val reservationCreateRequestFormat: RootJsonFormat[ReservationCreateRequest] = jsonFormat3(ReservationCreateRequest)
+  implicit val reservationCreateRequestFormat: RootJsonFormat[ReservationCreateRequest] = jsonFormat4(ReservationCreateRequest)
   implicit val reservationResponseFormat: RootJsonFormat[ReservationResponse] = jsonFormat9(ReservationResponse)
 
   implicit val anprEntryRequestFormat: RootJsonFormat[AnprEntryRequest] = jsonFormat2(AnprEntryRequest)
