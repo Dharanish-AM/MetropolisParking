@@ -26,8 +26,12 @@ test.describe('ANPR / LPR Simulator User Flow', () => {
   test('allows license plate entry simulation', async ({ page }) => {
     await page.goto('/anpr-simulator');
 
+    const lotSelect = page.locator('select').first();
+    await expect(lotSelect).toBeVisible({ timeout: 8000 });
+    await lotSelect.selectOption({ index: 1 });
+
     const plateInput = page.getByPlaceholder(/mh-12-ab-1234/i).first();
-    await expect(plateInput).toBeVisible({ timeout: 8000 });
+    await expect(plateInput).toBeVisible({ timeout: 5000 });
 
     const testPlate = `E2EENTR${Date.now().toString().slice(-4)}`;
     await plateInput.fill(testPlate);
@@ -36,7 +40,7 @@ test.describe('ANPR / LPR Simulator User Flow', () => {
     await expect(entryButton).toBeVisible({ timeout: 5000 });
     await entryButton.click();
 
-    await expect(page.getByText(/session started|entry confirmed|space/i).first()).toBeVisible({
+    await expect(page.getByText(/entry gate opened|parking space/i).first()).toBeVisible({
       timeout: 10000,
     });
   });
@@ -44,8 +48,12 @@ test.describe('ANPR / LPR Simulator User Flow', () => {
   test('allows license plate exit simulation and payment calculation', async ({ page }) => {
     await page.goto('/anpr-simulator');
 
+    const lotSelect = page.locator('select').first();
+    await expect(lotSelect).toBeVisible({ timeout: 8000 });
+    await lotSelect.selectOption({ index: 1 });
+
     const plateInput = page.getByPlaceholder(/mh-12-ab-1234/i).first();
-    await expect(plateInput).toBeVisible({ timeout: 8000 });
+    await expect(plateInput).toBeVisible({ timeout: 5000 });
 
     const testPlate = `E2EEXITX${Date.now().toString().slice(-4)}`;
     await plateInput.fill(testPlate);
@@ -54,7 +62,7 @@ test.describe('ANPR / LPR Simulator User Flow', () => {
     await expect(entryButton).toBeVisible({ timeout: 5000 });
     await entryButton.click();
 
-    await expect(page.getByText(/session started|entry confirmed|space/i).first()).toBeVisible({
+    await expect(page.getByText(/entry gate opened|parking space/i).first()).toBeVisible({
       timeout: 10000,
     });
 
@@ -62,7 +70,7 @@ test.describe('ANPR / LPR Simulator User Flow', () => {
     await expect(exitButton).toBeVisible({ timeout: 5000 });
     await exitButton.click();
 
-    await expect(page.getByText(/fee|payment settled|exit confirmed/i).first()).toBeVisible({
+    await expect(page.getByText(/exit gate bill|bill summary/i).first()).toBeVisible({
       timeout: 10000,
     });
   });

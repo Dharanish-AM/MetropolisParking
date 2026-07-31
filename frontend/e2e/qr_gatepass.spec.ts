@@ -53,11 +53,11 @@ test.describe('QR Gate Pass Scanner User Flow', () => {
     await expect(tokenInput).toBeVisible({ timeout: 8000 });
     await tokenInput.fill('INVALID-TOKEN-12345');
 
-    const verifyBtn = page.getByRole('button', { name: /verify|scan pass/i });
+    const verifyBtn = page.getByRole('button', { name: /validate.*gate|validate/i });
     await expect(verifyBtn).toBeVisible({ timeout: 5000 });
     await verifyBtn.click();
 
-    await expect(page.getByText(/invalid|error|expired/i).first()).toBeVisible({
+    await expect(page.getByText(/validation error|invalid|failed/i).first()).toBeVisible({
       timeout: 8000,
     });
   });
