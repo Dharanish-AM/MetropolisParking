@@ -25,30 +25,27 @@ test.describe('Vehicle Registry User Flow', () => {
 
   test('vehicle search input filters table', async ({ page }) => {
     await page.goto('/vehicles');
-    await page.waitForTimeout(1000);
 
     const searchInput = page.getByPlaceholder(/search plate/i);
-    if ((await searchInput.count()) > 0) {
-      await searchInput.fill('MH12');
-      await expect(searchInput).toHaveValue('MH12');
-    }
+    await expect(searchInput).toBeVisible({ timeout: 8000 });
+    await searchInput.fill('MH12');
+    await expect(searchInput).toHaveValue('MH12');
   });
 
   test('opens register vehicle modal and validates license plate format', async ({ page }) => {
     await page.goto('/vehicles');
 
     const registerBtn = page.getByRole('button', { name: /register vehicle/i });
-    if ((await registerBtn.count()) > 0) {
-      await registerBtn.click();
+    await expect(registerBtn).toBeVisible({ timeout: 8000 });
+    await registerBtn.click();
 
-      const plateInput = page.getByPlaceholder(/mh12ab1234/i);
-      await expect(plateInput).toBeVisible({ timeout: 5000 });
-      await plateInput.fill('INVALID!');
+    const plateInput = page.getByPlaceholder(/mh12ab1234/i);
+    await expect(plateInput).toBeVisible({ timeout: 5000 });
+    await plateInput.fill('INVALID!');
 
-      const submitBtn = page.getByRole('button', { name: /register/i, exact: true });
-      await submitBtn.click();
+    const submitBtn = page.getByRole('button', { name: /register/i, exact: true });
+    await submitBtn.click();
 
-      await expect(page.getByText(/alphanumeric|4 to 15/i)).toBeVisible({ timeout: 5000 });
-    }
+    await expect(page.getByText(/alphanumeric|4 to 15/i)).toBeVisible({ timeout: 5000 });
   });
 });

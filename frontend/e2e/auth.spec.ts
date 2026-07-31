@@ -60,10 +60,9 @@ test.describe('Authentication & Navigation User Flow', () => {
     await page.goto('/profile');
     await expect(page.getByText(/admin@metropolisparking.com/i)).toBeVisible({ timeout: 8000 });
 
-    const logoutButton = page.getByRole('button', { name: /log out|logout/i });
-    if ((await logoutButton.count()) > 0) {
-      await logoutButton.first().click();
-      await expect(page).toHaveURL('/login', { timeout: 8000 });
-    }
+    const logoutButton = page.getByRole('button', { name: /log out|logout/i }).first();
+    await expect(logoutButton).toBeVisible({ timeout: 5000 });
+    await logoutButton.click();
+    await expect(page).toHaveURL('/login', { timeout: 8000 });
   });
 });
