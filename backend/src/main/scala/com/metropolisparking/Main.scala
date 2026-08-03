@@ -28,6 +28,7 @@ object Main {
       val flyway = Flyway.configure()
         .dataSource(config.db.url, config.db.username, config.db.password)
         .load()
+      flyway.repair()
       flyway.migrate()
       system.log.info("Database migration completed successfully")
     } catch {
