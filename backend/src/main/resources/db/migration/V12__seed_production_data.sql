@@ -67,10 +67,10 @@ BEGIN
     SELECT id INTO customer_role_id FROM roles WHERE name = 'CUSTOMER';
 
     INSERT INTO users (id, name, email, password_hash, role_id) VALUES
-    (gen_random_uuid(), 'Admin User', 'admin@metropolisparking.com', '$2a$12$7sTWE4JCB8Ih10RZO/18Z.DNh1wpw3KMCidd3yf5zwE/K3zUsJFmC', admin_role_id),
-    (gen_random_uuid(), 'Customer User', 'customer@metropolisparking.com', '$2a$12$vErmsOdmHfNQa/Lrap4AkOWkho/J8yCtDRcispz67W7E2qRfgp37.', customer_role_id),
-    (gen_random_uuid(), 'Vikramaditya Sharma', 'vikram.sharma@metropolis.in', '$2a$12$7sTWE4JCB8Ih10RZO/18Z.DNh1wpw3KMCidd3yf5zwE/K3zUsJFmC', admin_role_id),
-    (gen_random_uuid(), 'Ananya Deshmukh', 'ananya.deshmukh@metropolis.in', '$2a$12$7sTWE4JCB8Ih10RZO/18Z.DNh1wpw3KMCidd3yf5zwE/K3zUsJFmC', admin_role_id)
+    (gen_random_uuid(), 'Admin User', 'admin@metropolisparking.com', '$2a$10$lM5RrT7xN7WIK0xSFvGz9.Ti.mEya.AJjVpTPlXhAkz0IYvSdI9jy', admin_role_id),
+    (gen_random_uuid(), 'Customer User', 'customer@metropolisparking.com', '$2a$10$8stReEqYYBpgFJiOIVhsj.hXdKr/XmdVGkKyvBzM948fmBcfGI1ee', customer_role_id),
+    (gen_random_uuid(), 'Vikramaditya Sharma', 'vikram.sharma@metropolis.in', '$2a$10$lM5RrT7xN7WIK0xSFvGz9.Ti.mEya.AJjVpTPlXhAkz0IYvSdI9jy', admin_role_id),
+    (gen_random_uuid(), 'Ananya Deshmukh', 'ananya.deshmukh@metropolis.in', '$2a$10$lM5RrT7xN7WIK0xSFvGz9.Ti.mEya.AJjVpTPlXhAkz0IYvSdI9jy', admin_role_id)
     ON CONFLICT (email) DO NOTHING;
 
     FOR i IN 1..array_length(customer_names, 1) LOOP
@@ -79,7 +79,7 @@ BEGIN
             gen_random_uuid(),
             customer_names[i],
             lower(replace(customer_names[i], ' ', '.')) || '@gmail.com',
-            '$2a$12$7sTWE4JCB8Ih10RZO/18Z.DNh1wpw3KMCidd3yf5zwE/K3zUsJFmC',
+            '$2a$10$8stReEqYYBpgFJiOIVhsj.hXdKr/XmdVGkKyvBzM948fmBcfGI1ee',
             customer_role_id
         )
         ON CONFLICT (email) DO NOTHING;

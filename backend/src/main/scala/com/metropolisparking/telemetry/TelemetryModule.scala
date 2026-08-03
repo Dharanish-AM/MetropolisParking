@@ -38,14 +38,13 @@ object TelemetryModule {
     .addSpanProcessor(BatchSpanProcessor.builder(otlpExporter).build())
     .build()
 
-  private val prometheusServer = PrometheusHttpServer.builder()
-    .setPort(prometheusPort)
-    .build()
+  private val prometheusServerOpt = Try(PrometheusHttpServer.builder().setPort(prometheusPort).build()).toOption
 
-  private val meterProvider = SdkMeterProvider.builder()
-    .setResource(resource)
-    .registerMetricReader(prometheusServer)
-    .build()
+  private val meterProviderBuilder = SdkMeterProvider.builder().setResource(resource)
+  private val meterProvider = {
+    prometheusServerOpt.foreach(meterProviderBuilder.registerMetricReader)
+    meterProviderBuilder.build()
+  }
 
   val openTelemetry: OpenTelemetry = OpenTelemetrySdk.builder()
     .setTracerProvider(tracerProvider)
