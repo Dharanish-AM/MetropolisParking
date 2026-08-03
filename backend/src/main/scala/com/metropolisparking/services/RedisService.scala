@@ -1,5 +1,9 @@
 package com.metropolisparking.services
 
+import com.metropolisparking.telemetry.TelemetryModule
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.trace.StatusCode
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.JedisPoolConfig
 import org.slf4j.LoggerFactory
@@ -16,7 +20,44 @@ class RedisService(host: String = "localhost", port: Int = 6379) {
     new JedisPool(config, host, port, 2000)
   }.toOption
 
-  def get(key: String): Option[String] = {
+  private def traceOp[T](operation: String, key: String)(block: => T): T = {
+    val span = TelemetryModule.tracer
+      .spanBuilder(s"Redis $operation")
+      .setAttribute(AttributeKey.stringKey("db.system"), "redis")
+      .setAttribute(AttributeKey.stringKey("db.operation"), operation)
+      .setAttribute(AttributeKey.stringKey("redis.key"), key)
+      .startSpan()
+
+    val startTime = System.currentTimeMillis()
+    try {
+      val result = block
+      span.setStatus(StatusCode.OK)
+      val duration = System.currentTimeMillis() - startTime
+      val attrs = Attributes.of(
+        AttributeKey.stringKey("operation"), operation,
+        AttributeKey.stringKey("status"), "success"
+      )
+      TelemetryModule.redisOpDuration.record(duration.toDouble, attrs)
+      TelemetryModule.redisOpsTotal.add(1L, attrs)
+      result
+    } catch {
+      case ex: Throwable =>
+        span.setStatus(StatusCode.ERROR, ex.getMessage)
+        span.recordException(ex)
+        val duration = System.currentTimeMillis() - startTime
+        val attrs = Attributes.of(
+          AttributeKey.stringKey("operation"), operation,
+          AttributeKey.stringKey("status"), "error"
+        )
+        TelemetryModule.redisOpDuration.record(duration.toDouble, attrs)
+        TelemetryModule.redisOpsTotal.add(1L, attrs)
+        throw ex
+    } finally {
+      span.end()
+    }
+  }
+
+  def get(key: String): Option[String] = traceOp("GET", key) {
     pool.flatMap { p =>
       Try {
         val jedis = p.getResource
@@ -29,7 +70,7 @@ class RedisService(host: String = "localhost", port: Int = 6379) {
     }
   }
 
-  def setEx(key: String, seconds: Int, value: String): Boolean = {
+  def setEx(key: String, seconds: Int, value: String): Boolean = traceOp("SETEX", key) {
     pool.exists { p =>
       Try {
         val jedis = p.getResource
@@ -43,7 +84,7 @@ class RedisService(host: String = "localhost", port: Int = 6379) {
     }
   }
 
-  def del(key: String): Unit = {
+  def del(key: String): Unit = traceOp("DEL", key) {
     pool.foreach { p =>
       Try {
         val jedis = p.getResource
@@ -56,7 +97,7 @@ class RedisService(host: String = "localhost", port: Int = 6379) {
     }
   }
 
-  def isHealthy: Boolean = {
+  def isHealthy: Boolean = traceOp("PING", "health") {
     pool.exists { p =>
       Try {
         val jedis = p.getResource

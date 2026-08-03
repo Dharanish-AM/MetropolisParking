@@ -27,6 +27,56 @@ services:
       timeout: 3s
       retries: 5
 
+  jaeger:
+    image: jaegertracing/all-in-one:1.53
+    container_name: metropolis-jaeger
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+
+  prometheus:
+    image: prom/prometheus:v2.50.0
+    container_name: metropolis-prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  loki:
+    image: grafana/loki:2.9.4
+    container_name: metropolis-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/loki-config.yaml:/etc/loki/loki-config.yaml
+    command: -config.file=/etc/loki/loki-config.yaml
+
+  promtail:
+    image: grafana/promtail:2.9.4
+    container_name: metropolis-promtail
+    volumes:
+      - ./promtail/promtail-config.yaml:/etc/promtail/promtail-config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/promtail-config.yaml
+
+  grafana:
+    image: grafana/grafana:10.3.3
+    container_name: metropolis-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+      - jaeger
+      - loki
+
   backend:
     build:
       context: ./backend
@@ -37,6 +87,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      jaeger:
+        condition: service_started
     environment:
       DB_URL: jdbc:postgresql://db:5432/metropolis_parking
       DB_USERNAME: postgres
@@ -44,8 +96,11 @@ services:
       JWT_SECRET: super-secret-key-change-in-production
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      PROMETHEUS_PORT: 9464
     ports:
       - "8080:8080"
+      - "9464:9464"
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
       interval: 10s

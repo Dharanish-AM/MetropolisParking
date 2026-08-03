@@ -6,6 +6,8 @@ scalaVersion := "2.13.12"
 
 val AkkaVersion = "2.6.20"
 val AkkaHttpVersion = "10.2.10"
+val OTelVersion = "1.35.0"
+val OTelAlphaVersion = "1.35.0-alpha"
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion,
@@ -24,6 +26,11 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.4.14",
   "org.slf4j" % "slf4j-api" % "2.0.9",
   "redis.clients" % "jedis" % "5.1.0",
+  "io.opentelemetry" % "opentelemetry-api" % OTelVersion,
+  "io.opentelemetry" % "opentelemetry-sdk" % OTelVersion,
+  "io.opentelemetry" % "opentelemetry-exporter-otlp" % OTelVersion,
+  "io.opentelemetry" % "opentelemetry-exporter-prometheus" % OTelAlphaVersion,
+  "io.opentelemetry.instrumentation" % "opentelemetry-runtime-telemetry-java17" % "2.1.0-alpha",
   "org.scalatest" %% "scalatest" % "3.2.18" % Test,
   "com.typesafe.akka" %% "akka-http-testkit" % AkkaHttpVersion % Test,
   "com.typesafe.akka" %% "akka-actor-testkit-typed" % AkkaVersion % Test
