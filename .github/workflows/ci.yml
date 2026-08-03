@@ -143,6 +143,12 @@ jobs:
         run: npx playwright install --with-deps chromium
         working-directory: frontend
 
+      - name: Pull Docker images with retry
+        run: |
+          for i in 1 2 3; do
+            docker compose pull && break || (echo "Pull failed, retrying in 5s..." && sleep 5)
+          done
+
       - name: Start full stack
         run: docker compose up -d --build
 

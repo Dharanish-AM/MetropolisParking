@@ -13,10 +13,11 @@ trait TestDbSpec extends BeforeAndAfterAll { this: AnyFunSpec =>
   val dslContext: DSLContext = DbConnection.createDslContext(dataSource)
 
   override def beforeAll(): Unit = {
-    Flyway.configure()
+    val flyway = Flyway.configure()
       .dataSource(config.db.url, config.db.username, config.db.password)
       .load()
-      .migrate()
+    flyway.repair()
+    flyway.migrate()
   }
 
   override def afterAll(): Unit = {
