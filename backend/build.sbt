@@ -37,6 +37,7 @@ libraryDependencies ++= Seq(
 )
 
 Compile / mainClass := Some("com.metropolisparking.Main")
+Test / parallelExecution := false
 
 import sbtassembly.MergeStrategy
 

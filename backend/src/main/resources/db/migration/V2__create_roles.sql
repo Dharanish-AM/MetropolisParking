@@ -40,5 +40,5 @@ WHERE r.name = 'CUSTOMER' AND p.name IN ('manage_vehicles');
 
 INSERT INTO users (name, email, password_hash, role_id)
 VALUES 
-('Admin User', 'admin@metropolisparking.com', '$2a$12$7sTWE4JCB8Ih10RZO/18Z.DNh1wpw3KMCidd3yf5zwE/K3zUsJFmC', (SELECT id FROM roles WHERE name = 'ADMIN')),
-('Customer User', 'customer@metropolisparking.com', '$2a$12$vErmsOdmHfNQa/Lrap4AkOWkho/J8yCtDRcispz67W7E2qRfgp37.', (SELECT id FROM roles WHERE name = 'CUSTOMER'));
+('Admin User', 'admin@metropolisparking.com', '$2a$10$lM5RrT7xN7WIK0xSFvGz9.Ti.mEya.AJjVpTPlXhAkz0IYvSdI9jy', (SELECT id FROM roles WHERE name = 'ADMIN')),
+('Customer User', 'customer@metropolisparking.com', '$2a$10$8stReEqYYBpgFJiOIVhsj.hXdKr/XmdVGkKyvBzM948fmBcfGI1ee', (SELECT id FROM roles WHERE name = 'CUSTOMER'));

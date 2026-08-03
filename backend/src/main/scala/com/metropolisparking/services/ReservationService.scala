@@ -17,6 +17,8 @@ class ReservationService(
 ) {
   private val logger = LoggerFactory.getLogger(classOf[ReservationService])
 
+  private def broadcast(eventJson: String): Unit = Option(wsService).foreach(_.broadcast(eventJson))
+
   def makeReservation(req: ReservationCreateRequest, userId: UUID): Reservation = {
     // Parse and validate times before acquiring any DB locks
     val startTime = try { Instant.parse(req.startTime) } catch { case _: Throwable => throw ValidationException("Invalid start time format") }
@@ -84,7 +86,7 @@ class ReservationService(
         Some(s"User reserved space ${space.spaceNumber} from $startTime to $endTime. Fee: $fee")
       )
 
-      wsService.broadcast("""{"event":"dashboard_updated"}""")
+      broadcast("""{"event":"dashboard_updated"}""")
       res
     }
   }
@@ -146,7 +148,7 @@ class ReservationService(
         Some(s"Reservation for space ID ${res.spaceId} cancelled")
       )
 
-      wsService.broadcast("""{"event":"dashboard_updated"}""")
+      broadcast("""{"event":"dashboard_updated"}""")
     }
   }
 }

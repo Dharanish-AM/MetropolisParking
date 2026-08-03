@@ -51,6 +51,112 @@ export const handlers = [
     });
   }),
 
+  http.get(`${BASE}/parking-lots`, () => {
+    return HttpResponse.json([
+      {
+        id: 'lot-1',
+        name: 'Downtown Central',
+        location: '123 Main St',
+        totalSpaces: 50,
+        availableSpaces: 20,
+      },
+      {
+        id: 'lot-2',
+        name: 'Westside Plaza',
+        location: '456 West Ave',
+        totalSpaces: 30,
+        availableSpaces: 10,
+      },
+    ]);
+  }),
+
+  http.post(`${BASE}/parking-lots`, async ({ request }) => {
+    const body = (await request.json()) as { name: string; location: string };
+    return HttpResponse.json(
+      { id: 'lot-3', name: body.name, location: body.location },
+      { status: 201 }
+    );
+  }),
+
+  http.get(`${BASE}/parking-lots/:id/levels`, () => {
+    return HttpResponse.json([
+      { id: 'lvl-1', lotId: 'lot-1', levelNumber: 1 },
+      { id: 'lvl-2', lotId: 'lot-1', levelNumber: 2 },
+    ]);
+  }),
+
+  http.get(`${BASE}/spaces`, () => {
+    return HttpResponse.json([
+      {
+        id: 'space-111',
+        lotId: 'lot-1',
+        levelId: 'lvl-1',
+        spaceNumber: 'A-101',
+        type: 'CAR',
+        status: 'AVAILABLE',
+      },
+      {
+        id: 'space-222',
+        lotId: 'lot-1',
+        levelId: 'lvl-1',
+        spaceNumber: 'A-102',
+        type: 'CAR',
+        status: 'OCCUPIED',
+      },
+    ]);
+  }),
+
+  http.post(`${BASE}/spaces`, async ({ request }) => {
+    const body = (await request.json()) as {
+      lotId: string;
+      levelId: string;
+      spaceNumber: string;
+      type: string;
+    };
+    return HttpResponse.json({ id: 'space-333', ...body, status: 'AVAILABLE' }, { status: 201 });
+  }),
+
+  http.get(`${BASE}/vehicles`, () => {
+    return HttpResponse.json([
+      { id: 'veh-1', plateNumber: 'MH12AB1234', type: 'CAR', ownerId: 'customer-id-123' },
+      { id: 'veh-2', plateNumber: 'KA01CD5678', type: 'SUV', ownerId: 'admin-id-123' },
+    ]);
+  }),
+
+  http.post(`${BASE}/vehicles`, async ({ request }) => {
+    const body = (await request.json()) as { plateNumber: string; type: string };
+    if (body.plateNumber === 'DUP123') {
+      return HttpResponse.json(
+        {
+          code: 'CONFLICT',
+          message: 'Vehicle already registered',
+          timestamp: new Date().toISOString(),
+        },
+        { status: 409 }
+      );
+    }
+    return HttpResponse.json(
+      { id: 'veh-3', plateNumber: body.plateNumber, type: body.type, ownerId: 'customer-id-123' },
+      { status: 201 }
+    );
+  }),
+
+  http.get(`${BASE}/payments`, () => {
+    return HttpResponse.json([
+      { id: 'pay-1', sessionId: 'sess-1', amount: 15.0, method: 'CARD', status: 'SETTLED' },
+      { id: 'pay-2', sessionId: 'sess-2', amount: 25.0, method: 'CASH', status: 'PENDING' },
+      { id: 'pay-3', sessionId: 'sess-3', amount: 10.0, method: 'UPI', status: 'PENDING' },
+    ]);
+  }),
+
+  http.post(`${BASE}/payments/:id/settle`, ({ params }) => {
+    return HttpResponse.json({ id: params.id, amount: 25.0, method: 'CARD', status: 'SETTLED' });
+  }),
+
+  http.post(`${BASE}/payments/:id`, ({ params }) => {
+    return HttpResponse.json({ id: params.id, amount: 25.0, method: 'CARD', status: 'SETTLED' });
+  }),
+
   http.get(`${BASE}/sessions`, () => {
     return HttpResponse.json([
       {
@@ -62,6 +168,27 @@ export const handlers = [
         status: 'ACTIVE',
       },
     ]);
+  }),
+
+  http.post(`${BASE}/sessions/start`, async ({ request }) => {
+    const body = (await request.json()) as { plateNumber: string; spaceId: string };
+    return HttpResponse.json({
+      id: 'session-222',
+      plateNumber: body.plateNumber,
+      spaceId: body.spaceId,
+      entryTime: new Date().toISOString(),
+      status: 'ACTIVE',
+    });
+  }),
+
+  http.post(`${BASE}/sessions/end`, () => {
+    return HttpResponse.json({
+      id: 'session-111',
+      exitTime: new Date().toISOString(),
+      durationMinutes: 45,
+      fee: 5.0,
+      status: 'COMPLETED',
+    });
   }),
 
   http.get(`${BASE}/reservations`, () => {
@@ -78,6 +205,62 @@ export const handlers = [
         fee: 10.0,
       },
     ]);
+  }),
+
+  http.post(`${BASE}/reservations`, async ({ request }) => {
+    const body = (await request.json()) as {
+      spaceId: string;
+      startTime: string;
+      endTime: string;
+      vehicleType: string;
+    };
+    return HttpResponse.json({
+      id: 'res-222',
+      spaceId: body.spaceId,
+      startTime: body.startTime,
+      endTime: body.endTime,
+      status: 'CONFIRMED',
+      fee: 15.0,
+    });
+  }),
+
+  http.delete(`${BASE}/reservations/:id`, () => {
+    return HttpResponse.json({ message: 'Reservation cancelled successfully' });
+  }),
+
+  http.post(`${BASE}/anpr/entry`, () => {
+    return HttpResponse.json({
+      sessionId: 'session-anpr-1',
+      plateNumber: 'ANPR123',
+      spaceNumber: 'A-101',
+      levelNumber: 1,
+      entryTime: new Date().toISOString(),
+    });
+  }),
+
+  http.post(`${BASE}/anpr/exit`, () => {
+    return HttpResponse.json({
+      sessionId: 'session-anpr-1',
+      plateNumber: 'ANPR123',
+      durationMinutes: 60,
+      fee: 10.0,
+      paymentStatus: 'SETTLED',
+    });
+  }),
+
+  http.get(`${BASE}/dashboard`, () => {
+    return HttpResponse.json({
+      occupancy: { totalSpaces: 80, occupiedSpaces: 50, availableSpaces: 30, occupancyRate: 62.5 },
+      financial: { totalRevenue: 1250.0, revenueByMethod: { CARD: 800, CASH: 450 } },
+      recentSessions: [],
+    });
+  }),
+
+  http.get(`${BASE}/qr/generate`, () => {
+    return HttpResponse.json({
+      qrToken: 'mock-qr-jwt-token',
+      payload: 'SESSION:MH12AB1234:A-101:session-111',
+    });
   }),
 
   http.post(`${BASE}/qr/scan`, async ({ request }) => {
@@ -100,6 +283,29 @@ export const handlers = [
         timestamp: new Date().toISOString(),
       },
       { status: 400 }
+    );
+  }),
+];
+
+export const errorHandlers = [
+  http.get(`${BASE}/*`, () => {
+    return HttpResponse.json(
+      {
+        code: 'INTERNAL_ERROR',
+        message: 'Internal Server Error',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    );
+  }),
+  http.post(`${BASE}/*`, () => {
+    return HttpResponse.json(
+      {
+        code: 'INTERNAL_ERROR',
+        message: 'Internal Server Error',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
     );
   }),
 ];
