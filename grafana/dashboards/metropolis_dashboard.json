@@ -40,7 +40,7 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(http_server_duration_ms_bucket[1m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_duration_ms_bucket[1m])) by (le)) or histogram_quantile(0.95, sum(rate(http_server_duration_ms_milliseconds_bucket[1m])) by (le)) or (sum(rate(http_server_duration_ms_sum[1m])) / sum(rate(http_server_duration_ms_count[1m])))",
           "legendFormat": "p95 latency",
           "range": true,
           "refId": "A"
@@ -51,7 +51,7 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.99, sum(rate(http_server_duration_ms_bucket[1m])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(rate(http_server_duration_ms_bucket[1m])) by (le)) or histogram_quantile(0.99, sum(rate(http_server_duration_ms_milliseconds_bucket[1m])) by (le))",
           "legendFormat": "p99 latency",
           "range": true,
           "refId": "B"
@@ -160,8 +160,8 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(db_query_duration_ms_bucket[1m])) by (le, operation))",
-          "legendFormat": "{{operation}} p95",
+          "expr": "histogram_quantile(0.95, sum(rate(db_query_duration_ms_bucket[1m])) by (le, operation)) or (sum(rate(db_query_duration_ms_sum[1m])) by (operation) / sum(rate(db_query_duration_ms_count[1m])) by (operation))",
+          "legendFormat": "{{operation}} latency",
           "range": true,
           "refId": "A"
         }
@@ -189,8 +189,8 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
-          "expr": "rate(jvm_gc_pause_seconds_sum[1m])",
-          "legendFormat": "GC Pause Duration (s/s)",
+          "expr": "rate(jvm_gc_pause_seconds_sum[1m]) or rate(jvm_gc_duration_seconds_sum[1m]) or rate(jvm_gc_pause_milliseconds_sum[1m])",
+          "legendFormat": "GC Pause Duration",
           "range": true,
           "refId": "A"
         }
@@ -251,6 +251,17 @@
           "legendFormat": "Redis {{operation}} ops/s",
           "range": true,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "editorMode": "code",
+          "expr": "(sum(rate(redis_op_duration_ms_sum[1m])) by (operation) / sum(rate(redis_op_duration_ms_count[1m])) by (operation))",
+          "legendFormat": "Redis {{operation}} avg ms",
+          "range": true,
+          "refId": "B"
         }
       ]
     },
