@@ -147,7 +147,7 @@
         "y": 8
       },
       "id": 4,
-      "title": "jOOQ Database Query Latency (ms)",
+      "title": "jOOQ Database Query Latency & Operations",
       "type": "timeseries",
       "datasource": {
         "type": "prometheus",
@@ -160,8 +160,8 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(db_query_duration_ms_bucket[1m])) by (le, operation)) or (sum(rate(db_query_duration_ms_sum[1m])) by (operation) / sum(rate(db_query_duration_ms_count[1m])) by (operation))",
-          "legendFormat": "{{operation}} latency",
+          "expr": "histogram_quantile(0.95, sum(rate(db_query_duration_ms_bucket[1m])) by (le, operation)) or histogram_quantile(0.95, sum(rate(db_query_duration_ms_milliseconds_bucket[1m])) by (le, operation)) or (sum(rate(db_query_duration_ms_milliseconds_sum[1m])) by (operation) / sum(rate(db_query_duration_ms_milliseconds_count[1m])) by (operation)) or (sum(rate(db_query_duration_ms_sum[1m])) by (operation) / sum(rate(db_query_duration_ms_count[1m])) by (operation)) or sum(rate(db_queries_total[1m])) by (operation)",
+          "legendFormat": "DB {{operation}}",
           "range": true,
           "refId": "A"
         }
