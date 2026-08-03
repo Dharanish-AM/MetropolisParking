@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: Metropolis Dashboards
+    orgId: 1
+    folder: Metropolis
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards

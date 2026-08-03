@@ -7,7 +7,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
 import com.metropolisparking.config.AppConfig
 import com.metropolisparking.exceptions.GlobalErrorHandler
-import com.metropolisparking.middleware.{LoggingMiddleware, RbacMiddleware}
+import com.metropolisparking.middleware.{CorsMiddleware, LoggingMiddleware, RbacMiddleware, TelemetryMiddleware}
 import com.metropolisparking.repositories._
 import com.metropolisparking.routes._
 import com.metropolisparking.security.SecurityModule
@@ -116,8 +116,10 @@ object Main {
 
     val finalRoute = handleExceptions(GlobalErrorHandler.exceptionHandler) {
       handleRejections(GlobalErrorHandler.rejectionHandler) {
-        LoggingMiddleware.correlationIdDirective {
-          com.metropolisparking.middleware.CorsMiddleware.corsHandler(combinedRoutes)
+        TelemetryMiddleware.traceRequests {
+          LoggingMiddleware.correlationIdDirective {
+            CorsMiddleware.corsHandler(combinedRoutes)
+          }
         }
       }
     }

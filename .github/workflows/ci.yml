@@ -167,6 +167,22 @@ jobs:
           docker compose logs
           exit 1
 
+      - name: Verify Observability Services Health
+        run: |
+          echo "Verifying Prometheus metrics endpoint on backend:9464..."
+          curl -s http://localhost:9464/metrics | grep -q "http_server" || (echo "Prometheus metrics endpoint check failed" && exit 1)
+          
+          echo "Verifying Jaeger UI on localhost:16686..."
+          curl -s http://localhost:16686/ | grep -i -q "Jaeger" || (echo "Jaeger check failed" && exit 1)
+          
+          echo "Verifying Loki API on localhost:3100..."
+          curl -s http://localhost:3100/ready | grep -q "ready" || (echo "Loki check failed" && exit 1)
+
+          echo "Verifying Grafana on localhost:3000..."
+          curl -s http://localhost:3000/api/health | grep -q "ok" || (echo "Grafana check failed" && exit 1)
+          
+          echo "All observability stack healthchecks passed!"
+
       - name: Run E2E tests
         run: npx playwright test
         working-directory: frontend
