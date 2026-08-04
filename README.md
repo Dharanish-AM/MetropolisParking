@@ -127,8 +127,8 @@ Traditional parking facilities suffer from:
 - **Containerized Orchestration**: Production-ready `docker-compose.yml` coordinating 9 containers: backend, frontend, database, Redis, Prometheus, Grafana, Loki, Promtail, and Jaeger.
 - **Full Observability Stack**: Prometheus metrics collection (`:9090`), Grafana dashboards (`:3000`), Loki log aggregation (`:3100`), and Jaeger distributed tracing (`:16686`).
 - **Flyway Database Migrations**: Automated version-controlled database schema migrations running on startup.
-- **CI/CD Pipeline**: GitHub Actions workflow running code compilation, unit tests, integration tests, and docker image build checks.
-- **~80% Test Coverage**: 19 ScalaTest backend specs (82 tests), 13 Vitest frontend specs (24 tests), 10 Playwright E2E specs (32+ scenarios), and k6 load benchmarking (50 VUs, 0% error rate).
+- **CI/CD Pipeline**: Enterprise GitHub Actions workflow featuring automated code quality & security checks (`oxlint`, `prettier`, `npm audit`), backend compilation & fat JAR assembly, frontend TypeScript check & Vitest suite, container build verification, full Docker Compose stack E2E execution with telemetry health checks, and a status gatekeeper.
+- **~80% Test Coverage**: 19 ScalaTest backend specs (82 tests across services, routes, security & validation), 13 Vitest frontend specs (24 tests), 10 Playwright E2E specs (32+ scenarios), and k6 load benchmarking (50 VUs, 0% error rate).
 
 ---
 
@@ -482,9 +482,9 @@ The repository maintains approximately **~80% combined test coverage** across ba
 
 | Suite | Runner | Tests | Status |
 |---|---|---|---|
-| Backend Services (5 specs) | ScalaTest + Mockito | 45 unit tests | ✅ All passing |
-| Backend Routes (9 specs) | ScalaTest + Akka HTTP TestKit | 37 integration tests | ✅ All passing |
-| Frontend Components (9 specs) | Vitest + RTL + MSW | 24 component tests | ✅ All passing |
+| Backend Services & Security (9 specs) | ScalaTest + Mockito | 45 unit tests | ✅ All passing |
+| Backend Routes & Middleware (10 specs) | ScalaTest + Akka HTTP TestKit | 37 integration tests | ✅ All passing |
+| Frontend Components (13 specs) | Vitest + RTL + MSW | 24 component tests | ✅ All passing |
 | Playwright E2E (10 specs) | Playwright (Chromium) | 32+ scenarios | ✅ All passing |
 | k6 Load Benchmark | k6 (50 VUs, 60s) | 7,772 requests | ✅ 0% error rate |
 
@@ -501,9 +501,9 @@ cd backend
 sbt test
 ```
 
-**Service Specs**: `AnprServiceSpec`, `PaymentServiceSpec`, `QrServiceSpec`, `ReservationServiceSpec`, `VehicleServiceSpec`
+**Service & Core Specs**: `AnprServiceSpec`, `AuthServiceSpec`, `ParkingSessionServiceSpec`, `PaymentServiceSpec`, `QrServiceSpec`, `ReservationServiceSpec`, `VehicleServiceSpec`, `SecurityModuleSpec`, `ValidatorSpec`
 
-**Route Specs**: `AnprRoutesSpec`, `ParkingLotRoutesSpec`, `ParkingSessionRoutesSpec`, `ParkingSpaceRoutesSpec`, `PaymentRoutesSpec`, `QrRoutesSpec`, `RbacMiddlewareSpec`, `ReservationRoutesSpec`, `VehicleRoutesSpec`
+**Route Specs**: `AnprRoutesSpec`, `AuthRoutesSpec`, `ParkingLotRoutesSpec`, `ParkingSessionRoutesSpec`, `ParkingSpaceRoutesSpec`, `PaymentRoutesSpec`, `QrRoutesSpec`, `RbacMiddlewareSpec`, `ReservationRoutesSpec`, `VehicleRoutesSpec`
 
 ### Frontend Unit & Integration Tests
 
@@ -516,7 +516,7 @@ cd frontend
 npm run test
 ```
 
-**Test Specs**: `AuthContext`, `ProtectedRoute`, `AdminDashboard`, `CustomerDashboard`, `ParkingLots`, `SessionsFeature`, `ReservationsFeature`, `PaymentsFeature`, `VehiclesFeature`
+**Test Specs**: `AdminDashboard`, `AnprSimulator`, `AuthContext`, `CustomerDashboard`, `Login`, `Navbar`, `ParkingLots`, `PaymentsFeature`, `ProtectedRoute`, `QrScannerPage`, `ReservationsFeature`, `SessionsFeature`, `VehiclesFeature`
 
 ### Playwright E2E Suite
 
