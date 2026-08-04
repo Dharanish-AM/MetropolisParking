@@ -153,10 +153,17 @@ jobs:
     name: Container Build Verification
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    needs: [backend, frontend]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Download Backend JAR Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-jar
+          path: backend/target/scala-2.13/
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
