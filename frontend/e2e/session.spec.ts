@@ -48,8 +48,8 @@ test.describe('Sessions', () => {
 
     // Verify the validation error text appears — proves plate validation fires,
     // not just that some other field makes the button disabled
-    await expect(
-      page.getByText(/alphanumeric.*4 to 15|4 to 15.*characters/i)
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/alphanumeric.*4 to 15|4 to 15.*characters/i)).toBeVisible({
+      timeout: 5000,
+    });
   });
 });

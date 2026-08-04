@@ -72,7 +72,8 @@ export async function createReservation(
     headers: { Authorization: `Bearer ${token}` },
     data: { spaceId, startTime, endTime, vehicleType },
   });
-  if (!res.ok()) throw new Error(`Create reservation failed (${res.status()}): ${await res.text()}`);
+  if (!res.ok())
+    throw new Error(`Create reservation failed (${res.status()}): ${await res.text()}`);
   return res.json();
 }
 

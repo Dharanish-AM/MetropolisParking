@@ -48,9 +48,7 @@ test.describe('Pre-Booking Reservations User Flow', () => {
   test('digital gate pass qr button opens qr pass modal', async ({ page }) => {
     await page.goto('/reservations');
 
-    const qrPassButton = page
-      .getByRole('button', { name: /^pass$/i })
-      .first();
+    const qrPassButton = page.getByRole('button', { name: /^pass$/i }).first();
     await expect(qrPassButton).toBeVisible({ timeout: 10000 });
     await qrPassButton.click();
     await expect(page.getByText(/gate pass|scan at gate/i).first()).toBeVisible({

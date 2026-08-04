@@ -68,10 +68,7 @@ export const ReservationsFeature: FC = () => {
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [qrLoading, setQrLoading] = useState<boolean>(false);
 
-  const {
-    data: reservations,
-    isLoading,
-  } = useQuery<ReservationItem[]>({
+  const { data: reservations, isLoading } = useQuery<ReservationItem[]>({
     queryKey: ['reservations'],
     queryFn: async () => {
       const resp = await client.get('/reservations');

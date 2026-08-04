@@ -1,5 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getSpaces, createSpace, updateSpaceStatus, deleteSpace, getSpaceDetails } from '../../api/endpoints/spaces';
+import {
+  getSpaces,
+  createSpace,
+  updateSpaceStatus,
+  deleteSpace,
+  getSpaceDetails,
+} from '../../api/endpoints/spaces';
 
 export const useSpaces = () => {
   return useQuery({
@@ -46,4 +52,3 @@ export const useSpaceDetails = (spaceId: string | null) => {
     enabled: !!spaceId,
   });
 };
-

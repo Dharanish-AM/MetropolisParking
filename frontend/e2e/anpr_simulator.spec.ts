@@ -1,7 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
+import { apiLogin, createLot, createLevel, createSpace, startSession } from './helpers/api';
 
 const ADMIN_EMAIL = 'admin@metropolisparking.com';
 const ADMIN_PASSWORD = 'admin123';
+
+let lotName: string;
+const EXIT_PLATE = 'MH12AB1234';
 
 async function loginAsAdmin(page: Page) {
   await page.goto('/login');
@@ -12,6 +16,16 @@ async function loginAsAdmin(page: Page) {
 }
 
 test.describe('ANPR / LPR Simulator User Flow', () => {
+  test.beforeAll(async ({ request }) => {
+    const token = await apiLogin(request, ADMIN_EMAIL, ADMIN_PASSWORD);
+    lotName = `ANPR E2E Lot ${Date.now()}`;
+    const lot = await createLot(request, token, lotName, 'ANPR Zone');
+    const level = await createLevel(request, token, lot.id, 1);
+    await createSpace(request, token, lot.id, level.id, 'ANPR-ENTRY-01');
+    const space2 = await createSpace(request, token, lot.id, level.id, 'ANPR-EXIT-01');
+    await startSession(request, token, EXIT_PLATE, space2.id);
+  });
+
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
   });
@@ -26,13 +40,13 @@ test.describe('ANPR / LPR Simulator User Flow', () => {
   test('allows license plate entry simulation', async ({ page }) => {
     await page.goto('/anpr-simulator');
 
-    const lotSelect = page.locator('select').first();
+    const lotSelect = page.getByTestId('lot-select');
     await expect(lotSelect).toBeVisible({ timeout: 8000 });
     await page.waitForFunction(
       el => (el as HTMLSelectElement).options.length > 1,
       await lotSelect.elementHandle()
     );
-    await lotSelect.selectOption({ label: 'Payment E2E Lot' });
+    await lotSelect.selectOption({ label: lotName });
 
     const plateInput = page.getByPlaceholder(/mh-12-ab-1234/i).first();
     await expect(plateInput).toBeVisible({ timeout: 5000 });
@@ -50,17 +64,17 @@ test.describe('ANPR / LPR Simulator User Flow', () => {
   test('allows license plate exit simulation and payment calculation', async ({ page }) => {
     await page.goto('/anpr-simulator');
 
-    const lotSelect = page.locator('select').first();
+    const lotSelect = page.getByTestId('lot-select');
     await expect(lotSelect).toBeVisible({ timeout: 8000 });
     await page.waitForFunction(
       el => (el as HTMLSelectElement).options.length > 1,
       await lotSelect.elementHandle()
     );
-    await lotSelect.selectOption({ label: 'Payment E2E Lot' });
+    await lotSelect.selectOption({ label: lotName });
 
     const plateInput = page.getByPlaceholder(/mh-12-ab-1234/i).first();
     await expect(plateInput).toBeVisible({ timeout: 5000 });
-    await plateInput.fill('MH12AB1234');
+    await plateInput.fill(EXIT_PLATE);
 
     const exitButton = page.getByRole('button', { name: /simulate exit/i });
     await expect(exitButton).toBeVisible({ timeout: 5000 });

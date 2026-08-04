@@ -31,4 +31,3 @@ export const getSpaceDetails = async (spaceId: string) => {
   const res = await client.get(`/spaces/${spaceId}/details`);
   return res.data;
 };
-
