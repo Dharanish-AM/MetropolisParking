@@ -31,3 +31,12 @@ You are tasked with building the **MetropolisParking** system from scratch. Refe
 - PostgreSQL as database.
 - Flyway for schema migrations named sequentially (e.g., `V1__create_users.sql`).
 - Docker Compose configuration orchestrating backend, frontend, database, and migrations.
+
+## 5. PowerShell Command Chaining
+- NEVER use `&&` to chain commands in PowerShell — it is a syntax error. Always use `;` instead.
+- Example: `git add .; git commit -m "msg"; git push origin develop` NOT `git add . && git commit -m "msg"`.
+
+## 6. psql Dollar-Sign Escaping in PowerShell
+- Inside PowerShell `docker exec ... psql -c "..."`, literal `$` characters (e.g. BCrypt hashes like `$2a$10$...`) are expanded as empty shell variables.
+- Always backtick-escape every `$`: `` `$2a`$10`$... ``
+- Preferred alternative: write the SQL to a `.sql` file and pipe it via stdin to avoid escaping complexity.
