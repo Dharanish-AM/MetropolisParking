@@ -106,9 +106,7 @@ export const CustomerDashboard: FC = () => {
   const spaceMap = new Map<string, string>((spaces || []).map((s: any) => [s.id, s.spaceNumber]));
 
   const activeStays = (sessions || [])
-    .filter(
-      (s: any) => s.status === 'ACTIVE' && !s.exitTime && myVehicleIds.includes(s.vehicleId)
-    )
+    .filter((s: any) => s.status === 'ACTIVE' && !s.exitTime && myVehicleIds.includes(s.vehicleId))
     .map((s: any) => {
       const details = vehicleDetailsMap.get(s.vehicleId);
       return {

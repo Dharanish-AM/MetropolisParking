@@ -127,8 +127,7 @@ export const SessionsFeature: FC = () => {
       plate.toLowerCase().includes(searchTerm.toLowerCase()) ||
       spaceNum.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const isSessionActive =
-      !session.exitTime && session.status === 'ACTIVE';
+    const isSessionActive = !session.exitTime && session.status === 'ACTIVE';
 
     if (filter === 'active') {
       return matchesPlate && isSessionActive;

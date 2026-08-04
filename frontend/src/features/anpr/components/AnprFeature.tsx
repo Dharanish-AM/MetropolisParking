@@ -364,7 +364,11 @@ export const AnprFeature: FC = () => {
                 <label className="text-xs font-bold text-neutral-secondary uppercase tracking-wider">
                   Select Camera / iVCam Device
                 </label>
-                <Select value={selectedDeviceId} onChange={e => switchCamera(e.target.value)}>
+                <Select
+                  data-testid="camera-select"
+                  value={selectedDeviceId}
+                  onChange={e => switchCamera(e.target.value)}
+                >
                   {cameraDevices.map(d => (
                     <option key={d.deviceId} value={d.deviceId}>
                       {d.label}
@@ -453,7 +457,11 @@ export const AnprFeature: FC = () => {
           <div className="p-6 space-y-6">
             <div className="space-y-2">
               <label className="text-sm font-bold text-neutral-primary">Select Parking Lot</label>
-              <Select value={selectedLotId} onChange={e => setSelectedLotId(e.target.value)}>
+              <Select
+                data-testid="lot-select"
+                value={selectedLotId}
+                onChange={e => setSelectedLotId(e.target.value)}
+              >
                 <option value="">Select lot...</option>
                 {lots?.map(lot => (
                   <option key={lot.id} value={lot.id}>
