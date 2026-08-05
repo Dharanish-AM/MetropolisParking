@@ -18,11 +18,15 @@ import {
 import { Badge } from '../../../components/ui/Badge';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { Modal } from '../../../components/ui/Modal';
+import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { useVehicles, useCreateVehicle } from '../../vehicles/hooks';
 import { useSpaces } from '../../spaces/hooks';
 import { useSessions, useStartSession, useEndSession } from '../../sessions/hooks';
-import { Car, Plus, Square, Clock, History, CheckCircle2, AlertCircle, MapPin } from 'lucide-react';
+import { Car, Plus, Square, Clock, History, AlertCircle, MapPin } from 'lucide-react';
+import { useToast } from '../../../context/ToastContext';
+import { vehicleSchema } from '../../../schemas/vehicle';
+import type { VehicleFormValues } from '../../../schemas/vehicle';
 
 interface ParkingSpace {
   id: string;
@@ -33,20 +37,6 @@ interface ParkingSpace {
   levelId: string;
 }
 
-const vehicleSchema = z.object({
-  plateNumber: z
-    .string()
-    .min(1, 'Plate number is required')
-    .transform(val => val.toUpperCase().replace(/\s/g, ''))
-    .refine(val => /^[A-Z0-9-]{4,15}$/.test(val), {
-      message:
-        'Plate number must be alphanumeric (optionally with hyphens) and 4 to 15 characters long.',
-    }),
-  type: z.enum(['CAR', 'BIKE', 'SUV', 'TRUCK', 'EV']),
-});
-
-type VehicleFormValues = z.infer<typeof vehicleSchema>;
-
 const checkInSchema = z.object({
   plateNumber: z.string().min(1, 'Please select a vehicle'),
   spaceId: z.string().min(1, 'Please select a space'),
@@ -56,13 +46,11 @@ type CheckInFormValues = z.infer<typeof checkInSchema>;
 
 export const CustomerDashboard: FC = () => {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isCheckInOpen, setIsCheckInOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notification, setNotification] = useState<{
-    message: string;
-    type: 'success' | 'error';
-  } | null>(null);
+  const [checkoutTarget, setCheckoutTarget] = useState<string | null>(null);
 
   const { data: vehicles, isLoading: isVehiclesLoading, refetch: refetchVehicles } = useVehicles();
   const { data: spaces } = useSpaces();
@@ -144,7 +132,7 @@ export const CustomerDashboard: FC = () => {
           setIsRegisterOpen(false);
           resetVehicle();
           setError(null);
-          setNotification({ message: 'Vehicle registered successfully.', type: 'success' });
+          showToast('Vehicle registered successfully.', 'success');
           refetchVehicles();
         },
         onError: (err: any) => {
@@ -167,37 +155,34 @@ export const CustomerDashboard: FC = () => {
         onSuccess: () => {
           setIsCheckInOpen(false);
           resetCheckIn();
-          setNotification({ message: 'Vehicle checked in successfully.', type: 'success' });
+          showToast('Vehicle checked in successfully.', 'success');
           refetchSessions();
         },
         onError: (err: any) => {
-          setNotification({
-            message: err.response?.data?.message || 'Failed to check in.',
-            type: 'error',
-          });
+          showToast(err.response?.data?.message || 'Failed to check in.', 'error');
         },
       }
     );
   };
 
-  const handleCheckOut = (plateNumber: string) => {
-    if (!window.confirm(`Check out vehicle ${plateNumber}?`)) return;
+  const handleConfirmCheckOut = () => {
+    if (!checkoutTarget) return;
+    const plateNumber = checkoutTarget;
     checkOutMutation.mutate(
       { plateNumber },
       {
         onSuccess: (res: any) => {
           const feeMsg = res.fee ? ` (Fee: $${res.fee})` : '';
-          setNotification({
-            message: `Checked out successfully${feeMsg}. Please settle payments at the booth if required.`,
-            type: 'success',
-          });
+          showToast(
+            `Checked out successfully${feeMsg}. Please settle payments at the booth if required.`,
+            'success'
+          );
           refetchSessions();
+          setCheckoutTarget(null);
         },
         onError: (err: any) => {
-          setNotification({
-            message: err.response?.data?.message || 'Failed to check out.',
-            type: 'error',
-          });
+          showToast(err.response?.data?.message || 'Failed to check out.', 'error');
+          setCheckoutTarget(null);
         },
       }
     );
@@ -205,29 +190,6 @@ export const CustomerDashboard: FC = () => {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {notification && (
-        <div
-          className={`p-4 rounded-xl border flex items-center gap-3 animate-fade-in ${
-            notification.type === 'success'
-              ? 'bg-green-50 border-green-100 text-green-800'
-              : 'bg-red-50 border-red-100 text-red-800'
-          }`}
-        >
-          {notification.type === 'success' ? (
-            <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
-          ) : (
-            <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
-          )}
-          <div className="text-sm font-semibold">{notification.message}</div>
-          <button
-            onClick={() => setNotification(null)}
-            className="ml-auto text-xs font-bold hover:underline cursor-pointer"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
-
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-neutral-primary">
@@ -321,7 +283,7 @@ export const CustomerDashboard: FC = () => {
                       <TableCell className="text-right">
                         <Button
                           variant="secondary"
-                          onClick={() => handleCheckOut(session.plateNumber!)}
+                          onClick={() => setCheckoutTarget(session.plateNumber!)}
                           className="px-2.5 py-1.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-100 font-bold inline-flex items-center gap-1 cursor-pointer"
                         >
                           <Square className="w-3 h-3 fill-red-600 text-red-600" />
@@ -544,6 +506,17 @@ export const CustomerDashboard: FC = () => {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        isOpen={checkoutTarget !== null}
+        title="Check Out Vehicle"
+        message={`Check out vehicle ${checkoutTarget}?`}
+        confirmLabel="Check Out"
+        variant="primary"
+        isLoading={checkOutMutation.status === 'pending'}
+        onConfirm={handleConfirmCheckOut}
+        onCancel={() => setCheckoutTarget(null)}
+      />
     </div>
   );
 };

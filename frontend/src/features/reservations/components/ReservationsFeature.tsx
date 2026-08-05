@@ -22,7 +22,9 @@ import {
 import { Badge } from '../../../components/ui/Badge';
 import { Modal } from '../../../components/ui/Modal';
 import { Skeleton } from '../../../components/ui/Skeleton';
+import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
 import { Calendar, Plus, XCircle, Info, AlertTriangle, QrCode } from 'lucide-react';
+import { useToast } from '../../../context/ToastContext';
 
 const reservationSchema = z.object({
   lotId: z.string().min(1, 'Parking lot is required'),
@@ -61,12 +63,14 @@ interface ParkingSpace {
 
 export const ReservationsFeature: FC = () => {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
   const [isBookOpen, setIsBookOpen] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<ReservationItem | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [qrReservationId, setQrReservationId] = useState<string | null>(null);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [qrLoading, setQrLoading] = useState<boolean>(false);
+  const [cancelTargetId, setCancelTargetId] = useState<string | null>(null);
 
   const { data: reservations, isLoading } = useQuery<ReservationItem[]>({
     queryKey: ['reservations'],
@@ -171,16 +175,21 @@ export const ReservationsFeature: FC = () => {
     });
   };
 
-  const handleCancel = (id: string) => {
-    if (window.confirm('Are you sure you want to cancel this reservation?')) {
-      cancelReservationMutation.mutate(id, {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ['reservations'] });
-          queryClient.invalidateQueries({ queryKey: ['spaces'] });
-          queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-        },
-      });
-    }
+  const handleConfirmCancel = () => {
+    if (!cancelTargetId) return;
+    cancelReservationMutation.mutate(cancelTargetId, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['reservations'] });
+        queryClient.invalidateQueries({ queryKey: ['spaces'] });
+        queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+        showToast('Reservation cancelled successfully.', 'success');
+        setCancelTargetId(null);
+      },
+      onError: (err: any) => {
+        showToast(err.response?.data?.message || 'Failed to cancel reservation.', 'error');
+        setCancelTargetId(null);
+      },
+    });
   };
 
   const handleOpenPass = async (resId: string) => {
@@ -311,7 +320,7 @@ export const ReservationsFeature: FC = () => {
                           <Button
                             variant="secondary"
                             size="sm"
-                            onClick={() => handleCancel(res.id)}
+                            onClick={() => setCancelTargetId(res.id)}
                             className="px-2.5 py-1 text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
                           >
                             <XCircle className="w-3.5 h-3.5 mr-1" />
@@ -548,6 +557,18 @@ export const ReservationsFeature: FC = () => {
           </div>
         </div>
       </Modal>
+
+      <ConfirmDialog
+        isOpen={cancelTargetId !== null}
+        title="Cancel Reservation"
+        message="Are you sure you want to cancel this reservation? This action cannot be undone."
+        confirmLabel="Cancel Reservation"
+        cancelLabel="Keep Reservation"
+        variant="danger"
+        isLoading={cancelReservationMutation.isPending}
+        onConfirm={handleConfirmCancel}
+        onCancel={() => setCancelTargetId(null)}
+      />
     </div>
   );
 };

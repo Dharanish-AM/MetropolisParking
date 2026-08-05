@@ -269,7 +269,7 @@ export const QrScannerFeature: FC = () => {
         <div className="flex bg-white p-1 rounded-xl border border-neutral-border shadow-xs self-start md:self-auto">
           <button
             onClick={() => setActiveTab('scan')}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 ${
               activeTab === 'scan'
                 ? 'bg-brand-primary text-white shadow-xs'
                 : 'text-neutral-secondary hover:text-neutral-primary'
@@ -280,7 +280,7 @@ export const QrScannerFeature: FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('passes')}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 ${
               activeTab === 'passes'
                 ? 'bg-brand-primary text-white shadow-xs'
                 : 'text-neutral-secondary hover:text-neutral-primary'
@@ -340,7 +340,7 @@ export const QrScannerFeature: FC = () => {
             )}
 
             {cameraError && (
-              <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 text-amber-800 text-xs">
+              <div className="mb-6 p-4 bg-status-reserved/10 border border-status-reserved/20 rounded-xl flex items-start gap-3 text-status-reserved text-xs">
                 <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 <span>{cameraError}</span>
               </div>
@@ -400,18 +400,18 @@ export const QrScannerFeature: FC = () => {
 
           <div className="bg-white rounded-2xl p-6 border border-neutral-border shadow-xs flex flex-col justify-center">
             {scanResult ? (
-              <div className="border border-emerald-200 bg-emerald-50/50 rounded-2xl p-6 text-center space-y-4 animate-scale-up">
-                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+              <div className="border border-status-available/20 bg-status-available/10 rounded-2xl p-6 text-center space-y-4 animate-scale-up">
+                <div className="w-16 h-16 bg-status-available/20 text-status-available rounded-full flex items-center justify-center mx-auto">
                   <CheckCircle2 className="w-10 h-10" />
                 </div>
                 <div>
-                  <span className="inline-block px-3 py-1 bg-emerald-600 text-white text-xs font-black uppercase tracking-wider rounded-full mb-2">
+                  <span className="inline-block px-3 py-1 bg-status-available text-white text-xs font-black uppercase tracking-wider rounded-full mb-2">
                     {scanResult.action} SUCCESSFUL
                   </span>
                   <h3 className="text-xl font-bold text-neutral-primary">{scanResult.message}</h3>
                 </div>
 
-                <div className="bg-white rounded-xl p-4 border border-emerald-100 text-left grid grid-cols-2 gap-3 text-xs">
+                <div className="bg-white rounded-xl p-4 border border-status-available/20 text-left grid grid-cols-2 gap-3 text-xs">
                   <div>
                     <span className="text-neutral-secondary block font-semibold">Entity Type</span>
                     <span className="font-bold text-neutral-primary">{scanResult.entityType}</span>
@@ -428,7 +428,7 @@ export const QrScannerFeature: FC = () => {
                   </div>
                   <div>
                     <span className="text-neutral-secondary block font-semibold">Status</span>
-                    <span className="font-bold text-emerald-600">{scanResult.status}</span>
+                    <span className="font-bold text-status-available">{scanResult.status}</span>
                   </div>
                 </div>
               </div>
@@ -469,7 +469,7 @@ export const QrScannerFeature: FC = () => {
                         <span className="text-xs font-extrabold uppercase text-brand-primary tracking-wider">
                           {pass.type}
                         </span>
-                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span className="w-2 h-2 rounded-full bg-status-available"></span>
                       </div>
                       <h4 className="font-bold text-neutral-primary text-sm">{pass.title}</h4>
                       <p className="text-xs text-neutral-secondary mt-0.5">{pass.subtitle}</p>
@@ -529,7 +529,7 @@ export const QrScannerFeature: FC = () => {
                       </div>
                       <div>
                         <span className="text-neutral-secondary block font-semibold">Status</span>
-                        <span className="font-bold text-emerald-600">
+                        <span className="font-bold text-status-available">
                           {currentPass.details.status || 'ACTIVE'}
                         </span>
                       </div>

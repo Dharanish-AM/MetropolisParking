@@ -16,7 +16,10 @@ export const Profile: FC = () => {
     <div className="min-h-screen bg-neutral-bg text-neutral-primary flex flex-col font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in">
+      <main
+        id="main-content"
+        className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in"
+      >
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight">My Profile</h1>
           <p className="text-neutral-secondary text-sm font-medium mt-1">

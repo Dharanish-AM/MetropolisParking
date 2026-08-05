@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import type { FC } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -27,16 +26,9 @@ import { useDashboardStats } from '../hooks';
 import { useLots } from '../../lots/hooks';
 import { useSpaces } from '../../spaces/hooks';
 import { useStartSession, useEndSession } from '../../sessions/hooks';
-import {
-  Activity,
-  DollarSign,
-  Plus,
-  Key,
-  CheckCircle2,
-  AlertCircle,
-  TrendingUp,
-  MapPin,
-} from 'lucide-react';
+import { useToast } from '../../../context/ToastContext';
+import { plateNumberSchema } from '../../../schemas/vehicle';
+import { Activity, DollarSign, Plus, Key, TrendingUp, MapPin } from 'lucide-react';
 
 interface RecentSession {
   id: string;
@@ -64,14 +56,7 @@ interface ParkingLot {
 }
 
 const checkInSchema = z.object({
-  plateNumber: z
-    .string()
-    .min(1, 'Plate number is required')
-    .transform(val => val.toUpperCase().replace(/\s/g, ''))
-    .refine(val => /^[A-Z0-9-]{4,15}$/.test(val), {
-      message:
-        'Plate number must be alphanumeric (optionally with hyphens) and 4 to 15 characters long.',
-    }),
+  plateNumber: plateNumberSchema,
   spaceId: z.string().min(1, 'Please select a space'),
 });
 
@@ -84,10 +69,7 @@ const checkOutSchema = z.object({
 type CheckOutFormValues = z.infer<typeof checkOutSchema>;
 
 export const AdminDashboard: FC = () => {
-  const [notification, setNotification] = useState<{
-    message: string;
-    type: 'success' | 'error';
-  } | null>(null);
+  const { showToast } = useToast();
 
   const {
     register: registerCheckIn,
@@ -129,14 +111,11 @@ export const AdminDashboard: FC = () => {
       },
       {
         onSuccess: () => {
-          setNotification({ message: 'Vehicle checked in successfully', type: 'success' });
+          showToast('Vehicle checked in successfully', 'success');
           resetCheckIn();
         },
         onError: (err: any) => {
-          setNotification({
-            message: err.response?.data?.message || 'Failed to check in',
-            type: 'error',
-          });
+          showToast(err.response?.data?.message || 'Failed to check in', 'error');
         },
       }
     );
@@ -150,17 +129,11 @@ export const AdminDashboard: FC = () => {
       {
         onSuccess: (res: any) => {
           const feeMsg = res.fee ? ` (Fee: $${res.fee})` : '';
-          setNotification({
-            message: `Vehicle checked out successfully${feeMsg}`,
-            type: 'success',
-          });
+          showToast(`Vehicle checked out successfully${feeMsg}`, 'success');
           resetCheckOut();
         },
         onError: (err: any) => {
-          setNotification({
-            message: err.response?.data?.message || 'Failed to check out',
-            type: 'error',
-          });
+          showToast(err.response?.data?.message || 'Failed to check out', 'error');
         },
       }
     );
@@ -170,29 +143,6 @@ export const AdminDashboard: FC = () => {
 
   return (
     <div className="space-y-8">
-      {notification && (
-        <div
-          className={`p-4 rounded-xl border flex items-center gap-3 animate-fade-in ${
-            notification.type === 'success'
-              ? 'bg-green-50 border-green-100 text-green-800'
-              : 'bg-red-50 border-red-100 text-red-800'
-          }`}
-        >
-          {notification.type === 'success' ? (
-            <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
-          ) : (
-            <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
-          )}
-          <div className="text-sm font-semibold">{notification.message}</div>
-          <button
-            onClick={() => setNotification(null)}
-            className="ml-auto text-xs font-bold hover:underline cursor-pointer"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
-
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="space-y-4">
           <div className="flex justify-between items-center text-neutral-secondary">

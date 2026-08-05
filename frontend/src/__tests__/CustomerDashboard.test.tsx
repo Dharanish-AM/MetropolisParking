@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { describe, it, expect, vi } from 'vitest';
 import { CustomerDashboard } from '../features/dashboard/components/CustomerDashboard';
 import { AuthContext } from '../features/auth/context/AuthContext';
+import { ToastProvider } from '../context/ToastContext';
 
 const mockAuthValue = {
   user: { id: 'cust-1', name: 'John Doe', email: 'john@example.com', role: 'CUSTOMER' as const },
@@ -22,7 +23,9 @@ const renderWithQueryClient = (component: React.ReactNode) => {
   return render(
     <AuthContext.Provider value={mockAuthValue}>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>{component}</BrowserRouter>
+        <ToastProvider>
+          <BrowserRouter>{component}</BrowserRouter>
+        </ToastProvider>
       </QueryClientProvider>
     </AuthContext.Provider>
   );

@@ -1,6 +1,8 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './features/auth/context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
@@ -34,89 +36,99 @@ function App() {
   useWebSocket();
 
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/unauthorized" element={<Unauthorized />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/parking-lots"
-              element={
-                <ProtectedRoute allowedRoles={['ADMIN']}>
-                  <ParkingLots />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/vehicles"
-              element={
-                <ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
-                  <Vehicles />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/sessions"
-              element={
-                <ProtectedRoute allowedRoles={['ADMIN']}>
-                  <Sessions />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/anpr-simulator"
-              element={
-                <ProtectedRoute allowedRoles={['ADMIN']}>
-                  <AnprSimulator />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/qr-scanner"
-              element={
-                <ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
-                  <QrScannerPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/reservations"
-              element={
-                <ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
-                  <Reservations />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/payments"
-              element={
-                <ProtectedRoute allowedRoles={['ADMIN']}>
-                  <Payments />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
-    </AuthProvider>
+    <ErrorBoundary>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2.5 focus:bg-brand-primary focus:text-white focus:rounded-xl focus:text-sm focus:font-semibold"
+      >
+        Skip to main content
+      </a>
+      <ToastProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/unauthorized" element={<Unauthorized />} />
+                <Route
+                  path="/"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/parking-lots"
+                  element={
+                    <ProtectedRoute allowedRoles={['ADMIN']}>
+                      <ParkingLots />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/vehicles"
+                  element={
+                    <ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
+                      <Vehicles />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/sessions"
+                  element={
+                    <ProtectedRoute allowedRoles={['ADMIN']}>
+                      <Sessions />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/anpr-simulator"
+                  element={
+                    <ProtectedRoute allowedRoles={['ADMIN']}>
+                      <AnprSimulator />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/qr-scanner"
+                  element={
+                    <ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
+                      <QrScannerPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/reservations"
+                  element={
+                    <ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
+                      <Reservations />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/payments"
+                  element={
+                    <ProtectedRoute allowedRoles={['ADMIN']}>
+                      <Payments />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </AuthProvider>
+      </ToastProvider>
+    </ErrorBoundary>
   );
 }
 

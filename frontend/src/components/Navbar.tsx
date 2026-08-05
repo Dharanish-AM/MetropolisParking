@@ -84,7 +84,7 @@ export const Navbar: FC = () => {
                         : 'text-neutral-secondary hover:text-brand-primary hover:bg-brand-primary/5'
                     }`}
                   >
-                    <Icon className="w-3.5 h-3.5 lg:w-4 lg:h-4 stroke-[1.75]" />
+                    <Icon className="w-3.5 h-3.5 lg:w-4 lg:h-4 stroke-[1.75]" aria-hidden="true" />
                     <span>{item.label}</span>
                   </Link>
                 );
@@ -123,14 +123,21 @@ export const Navbar: FC = () => {
                 className="p-1.5 lg:p-2 border border-neutral-border rounded-xl text-neutral-secondary hover:text-red-600 hover:border-red-100 hover:bg-red-50/50 transition-all duration-150 cursor-pointer"
                 title="Log Out"
               >
-                <LogOut className="w-4 h-4 lg:w-4.5 lg:h-4.5 stroke-[1.75]" />
+                <LogOut className="w-4 h-4 lg:w-4.5 lg:h-4.5 stroke-[1.75]" aria-hidden="true" />
               </button>
 
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={mobileMenuOpen}
+                aria-controls="mobile-nav-menu"
                 className="md:hidden p-1.5 border border-neutral-border rounded-xl text-neutral-primary"
               >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {mobileMenuOpen ? (
+                  <X className="w-5 h-5" aria-hidden="true" />
+                ) : (
+                  <Menu className="w-5 h-5" aria-hidden="true" />
+                )}
               </button>
             </>
           ) : (
@@ -145,7 +152,10 @@ export const Navbar: FC = () => {
       </div>
 
       {user && mobileMenuOpen && (
-        <div className="md:hidden border-t border-neutral-border bg-white px-4 py-3 space-y-1 animate-fade-in">
+        <div
+          id="mobile-nav-menu"
+          className="md:hidden border-t border-neutral-border bg-white px-4 py-3 space-y-1 animate-fade-in"
+        >
           {filteredNavItems.map(item => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -160,7 +170,7 @@ export const Navbar: FC = () => {
                     : 'text-neutral-secondary hover:bg-neutral-border/20'
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-4 h-4" aria-hidden="true" />
                 <span>{item.label}</span>
               </Link>
             );
@@ -174,7 +184,7 @@ export const Navbar: FC = () => {
                 : 'text-neutral-secondary hover:bg-neutral-border/20'
             }`}
           >
-            <User className="w-4 h-4" />
+            <User className="w-4 h-4" aria-hidden="true" />
             <span>Profile</span>
           </Link>
         </div>

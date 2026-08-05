@@ -2,15 +2,15 @@
 
 > **Enterprise-Grade Smart Parking Management & Real-Time Analytics Platform**
 
-MetropolisParking is a full-stack, production-ready smart parking management system built with **Scala 2.13 + Akka HTTP** on the backend and **React 18 + Vite + TypeScript** on the frontend. It features automated vehicle tracking, real-time occupancy broadcasting via WebSockets, multi-tier dynamic pricing, ANPR/LPR camera scanning, QR code entry passes, spot advance reservations, full observability (Prometheus + Grafana + Loki + Jaeger), and interactive OpenAPI documentation.
+MetropolisParking is a full-stack, production-ready smart parking management system built with **Scala 2.13 + Akka HTTP** on the backend and **React 19 + Vite + TypeScript** on the frontend. It features automated vehicle tracking, real-time occupancy broadcasting via WebSockets, multi-tier dynamic pricing, ANPR/LPR camera scanning, QR code entry passes, spot advance reservations, full observability (Prometheus + Grafana + Loki + Jaeger), and interactive OpenAPI documentation.
 
 ---
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Scala](https://img.shields.io/badge/Scala-2.13-red.svg?logo=scala)](https://www.scala-lang.org/)
 [![Akka HTTP](https://img.shields.io/badge/Akka%20HTTP-10.2-orange.svg?logo=akka)](https://akka.io/)
-[![React](https://img.shields.io/badge/React-18-61DAFB.svg?logo=react)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg?logo=typescript)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB.svg?logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue.svg?logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-v4-38B2AC.svg?logo=tailwind-css)](https://tailwindcss.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791.svg?logo=postgresql)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker)](https://www.docker.com/)
@@ -194,7 +194,7 @@ Traditional parking facilities suffer from:
 
 ```mermaid
 flowchart TD
-    subgraph Clients["Frontend Layer (React 18 + Vite + TS)"]
+    subgraph Clients["Frontend Layer (React 19 + Vite + TS)"]
         UI["SPA Web Interface"]
         OCR["ANPR / Camera Scanner"]
         QRScanner["QR Pass Scanner"]

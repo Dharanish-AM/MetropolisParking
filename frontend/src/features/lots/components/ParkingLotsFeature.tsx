@@ -9,6 +9,8 @@ import { Input } from '../../../components/ui/Input';
 import { Badge } from '../../../components/ui/Badge';
 import { Card } from '../../../components/ui/Card';
 import { Skeleton } from '../../../components/ui/Skeleton';
+import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
+import { useToast } from '../../../context/ToastContext';
 import { LotForm } from './LotForm';
 import type { LotFormValues } from './LotForm';
 import { SpaceForm } from '../../spaces/components/SpaceForm';
@@ -22,17 +24,7 @@ import {
   useDeleteSpace,
   useSpaceDetails,
 } from '../../spaces/hooks';
-import {
-  Building2,
-  Layers,
-  CheckCircle2,
-  AlertCircle,
-  Car,
-  Zap,
-  Plus,
-  Trash2,
-  Bike,
-} from 'lucide-react';
+import { Building2, Layers, Car, Zap, Plus, Trash2, Bike } from 'lucide-react';
 
 interface ParkingSpace {
   id: string;
@@ -63,18 +55,17 @@ type LevelFormValues = z.infer<typeof levelSchema>;
 
 export const ParkingLotsFeature: FC = () => {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const isAdmin = user?.role === 'ADMIN';
   const [selectedLotId, setSelectedLotId] = useState<string>('');
   const [selectedLevelId, setSelectedLevelId] = useState<string>('ALL');
   const [selectedSpace, setSelectedSpace] = useState<ParkingSpace | null>(null);
-  const [notification, setNotification] = useState<{
-    message: string;
-    type: 'success' | 'error';
-  } | null>(null);
 
   const [isAddLotOpen, setIsAddLotOpen] = useState(false);
   const [isAddLevelOpen, setIsAddLevelOpen] = useState(false);
   const [isAddSpaceOpen, setIsAddSpaceOpen] = useState(false);
+  const [isDeleteLotConfirmOpen, setIsDeleteLotConfirmOpen] = useState(false);
+  const [isDeleteSpaceConfirmOpen, setIsDeleteSpaceConfirmOpen] = useState(false);
 
   const { data: lots, isLoading: loadingLots } = useLots();
 
@@ -135,15 +126,12 @@ export const ParkingLotsFeature: FC = () => {
       },
       {
         onSuccess: (res: any) => {
-          setNotification({ message: 'Parking lot created successfully', type: 'success' });
+          showToast('Parking lot created successfully', 'success');
           setIsAddLotOpen(false);
           setSelectedLotId(res.id);
         },
         onError: (err: any) => {
-          setNotification({
-            message: err.response?.data?.message || 'Failed to create lot',
-            type: 'error',
-          });
+          showToast(err.response?.data?.message || 'Failed to create lot', 'error');
         },
       }
     );
@@ -152,22 +140,19 @@ export const ParkingLotsFeature: FC = () => {
   const handleAddLevelSubmit = (data: LevelFormValues) => {
     createLevelMutation.mutate(data.levelNumber, {
       onSuccess: () => {
-        setNotification({ message: 'Level created successfully', type: 'success' });
+        showToast('Level created successfully', 'success');
         setIsAddLevelOpen(false);
         resetLevel();
       },
       onError: (err: any) => {
-        setNotification({
-          message: err.response?.data?.message || 'Failed to create level',
-          type: 'error',
-        });
+        showToast(err.response?.data?.message || 'Failed to create level', 'error');
       },
     });
   };
 
   const handleAddSpaceSubmit = (data: SpaceFormValues) => {
     if (!activeLotId || selectedLevelId === 'ALL') {
-      setNotification({ message: 'Please select a specific level to add a space', type: 'error' });
+      showToast('Please select a specific level to add a space', 'error');
       return;
     }
     createSpaceMutation.mutate(
@@ -179,14 +164,11 @@ export const ParkingLotsFeature: FC = () => {
       },
       {
         onSuccess: () => {
-          setNotification({ message: 'Space created successfully', type: 'success' });
+          showToast('Space created successfully', 'success');
           setIsAddSpaceOpen(false);
         },
         onError: (err: any) => {
-          setNotification({
-            message: err.response?.data?.message || 'Failed to create space',
-            type: 'error',
-          });
+          showToast(err.response?.data?.message || 'Failed to create space', 'error');
         },
       }
     );
@@ -221,29 +203,7 @@ export const ParkingLotsFeature: FC = () => {
                 <Button
                   variant="danger"
                   size="sm"
-                  onClick={() => {
-                    if (
-                      confirm(
-                        'Are you sure you want to delete this parking lot and all associated levels/spaces?'
-                      )
-                    ) {
-                      deleteLotMutation.mutate(activeLotId, {
-                        onSuccess: () => {
-                          setNotification({
-                            message: 'Parking lot deleted successfully',
-                            type: 'success',
-                          });
-                          setSelectedLotId('');
-                        },
-                        onError: (err: any) => {
-                          setNotification({
-                            message: err.response?.data?.message || 'Failed to delete lot',
-                            type: 'error',
-                          });
-                        },
-                      });
-                    }
-                  }}
+                  onClick={() => setIsDeleteLotConfirmOpen(true)}
                   isLoading={deleteLotMutation.status === 'pending'}
                 >
                   <Trash2 className="w-4 h-4" /> Delete Lot
@@ -257,29 +217,6 @@ export const ParkingLotsFeature: FC = () => {
           </span>
         </div>
       </div>
-
-      {notification && (
-        <div
-          className={`p-4 rounded-xl border flex items-center gap-3 animate-fade-in ${
-            notification.type === 'success'
-              ? 'bg-green-50 border-green-100 text-green-800'
-              : 'bg-red-50 border-red-100 text-red-800'
-          }`}
-        >
-          {notification.type === 'success' ? (
-            <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
-          ) : (
-            <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
-          )}
-          <div className="text-sm font-semibold">{notification.message}</div>
-          <button
-            onClick={() => setNotification(null)}
-            className="ml-auto text-xs font-bold hover:underline cursor-pointer"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
 
       <section className="space-y-4">
         <div className="flex items-center gap-2 overflow-x-auto pb-2">
@@ -495,17 +432,14 @@ export const ParkingLotsFeature: FC = () => {
                         { spaceId: selectedSpace.id, status: statusOption },
                         {
                           onSuccess: () => {
-                            setNotification({
-                              message: 'Space status updated successfully',
-                              type: 'success',
-                            });
+                            showToast('Space status updated successfully', 'success');
                             setSelectedSpace(null);
                           },
                           onError: (err: any) => {
-                            setNotification({
-                              message: err.response?.data?.message || 'Failed to update status',
-                              type: 'error',
-                            });
+                            showToast(
+                              err.response?.data?.message || 'Failed to update status',
+                              'error'
+                            );
                           },
                         }
                       )
@@ -627,25 +561,7 @@ export const ParkingLotsFeature: FC = () => {
               {isAdmin && (
                 <Button
                   variant="danger"
-                  onClick={() => {
-                    if (confirm('Are you sure you want to delete this parking space?')) {
-                      deleteSpaceMutation.mutate(selectedSpace.id, {
-                        onSuccess: () => {
-                          setNotification({
-                            message: 'Space deleted successfully',
-                            type: 'success',
-                          });
-                          setSelectedSpace(null);
-                        },
-                        onError: (err: any) => {
-                          setNotification({
-                            message: err.response?.data?.message || 'Failed to delete space',
-                            type: 'error',
-                          });
-                        },
-                      });
-                    }
-                  }}
+                  onClick={() => setIsDeleteSpaceConfirmOpen(true)}
                   isLoading={deleteSpaceMutation.status === 'pending'}
                 >
                   Delete Space
@@ -658,6 +574,53 @@ export const ParkingLotsFeature: FC = () => {
           </div>
         )}
       </Modal>
+
+      <ConfirmDialog
+        isOpen={isDeleteLotConfirmOpen}
+        title="Delete Parking Lot"
+        message="Are you sure you want to delete this parking lot and all associated levels/spaces?"
+        confirmLabel="Delete Lot"
+        variant="danger"
+        isLoading={deleteLotMutation.status === 'pending'}
+        onConfirm={() => {
+          deleteLotMutation.mutate(activeLotId, {
+            onSuccess: () => {
+              showToast('Parking lot deleted successfully', 'success');
+              setSelectedLotId('');
+              setIsDeleteLotConfirmOpen(false);
+            },
+            onError: (err: any) => {
+              showToast(err.response?.data?.message || 'Failed to delete lot', 'error');
+              setIsDeleteLotConfirmOpen(false);
+            },
+          });
+        }}
+        onCancel={() => setIsDeleteLotConfirmOpen(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={isDeleteSpaceConfirmOpen}
+        title="Delete Parking Space"
+        message="Are you sure you want to delete this parking space?"
+        confirmLabel="Delete Space"
+        variant="danger"
+        isLoading={deleteSpaceMutation.status === 'pending'}
+        onConfirm={() => {
+          if (!selectedSpace) return;
+          deleteSpaceMutation.mutate(selectedSpace.id, {
+            onSuccess: () => {
+              showToast('Space deleted successfully', 'success');
+              setSelectedSpace(null);
+              setIsDeleteSpaceConfirmOpen(false);
+            },
+            onError: (err: any) => {
+              showToast(err.response?.data?.message || 'Failed to delete space', 'error');
+              setIsDeleteSpaceConfirmOpen(false);
+            },
+          });
+        }}
+        onCancel={() => setIsDeleteSpaceConfirmOpen(false)}
+      />
     </div>
   );
 };

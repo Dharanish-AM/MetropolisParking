@@ -381,7 +381,7 @@ export const AnprFeature: FC = () => {
                 </p>
               </div>
             ) : (
-              <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-100 rounded-xl text-amber-700 text-xs">
+              <div className="flex items-start gap-2 p-3 bg-status-reserved/10 border border-status-reserved/20 rounded-xl text-status-reserved text-xs">
                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>
                   No cameras detected. Start iVCam on your iPhone or grant browser permissions
@@ -496,14 +496,14 @@ export const AnprFeature: FC = () => {
               <Button
                 onClick={handleEntry}
                 isLoading={entryMutation.isPending}
-                className="w-full bg-emerald-600 hover:bg-emerald-700"
+                className="w-full bg-status-available hover:bg-status-available/90"
               >
                 Simulate Entry
               </Button>
               <Button
                 onClick={handleExit}
                 isLoading={exitMutation.isPending}
-                className="w-full bg-rose-600 hover:bg-rose-700"
+                className="w-full bg-status-occupied hover:bg-status-occupied/90"
               >
                 Simulate Exit
               </Button>
@@ -514,7 +514,7 @@ export const AnprFeature: FC = () => {
 
       <div className="lg:col-span-7 space-y-6">
         {ocrError && (
-          <div className="p-4 bg-amber-50 border border-amber-100 rounded-2xl text-amber-700 text-sm flex gap-3 items-start animate-shake">
+          <div className="p-4 bg-status-reserved/10 border border-status-reserved/20 rounded-2xl text-status-reserved text-sm flex gap-3 items-start animate-shake">
             <AlertTriangle className="w-5 h-5 shrink-0" />
             <div>
               <span className="font-bold">OCR Warning: </span>
@@ -534,46 +534,46 @@ export const AnprFeature: FC = () => {
         )}
 
         {entryResult && (
-          <div className="bg-emerald-50/50 border border-emerald-100 rounded-3xl p-8 space-y-6 animate-scale-up">
+          <div className="bg-status-available/10 border border-status-available/20 rounded-3xl p-8 space-y-6 animate-scale-up">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-600">
+              <div className="w-12 h-12 rounded-2xl bg-status-available/20 flex items-center justify-center text-status-available">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-emerald-900">Entry Gate Opened</h3>
-                <p className="text-emerald-700 text-xs mt-0.5">
+                <h3 className="text-xl font-bold text-status-available">Entry Gate Opened</h3>
+                <p className="text-status-available text-xs mt-0.5">
                   Vehicle registered and space allocated
                 </p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white border border-emerald-100/50 rounded-2xl p-4">
-                <span className="text-[10px] text-emerald-800/60 uppercase font-bold tracking-wider">
+              <div className="bg-white border border-status-available/10 rounded-2xl p-4">
+                <span className="text-[10px] text-status-available/60 uppercase font-bold tracking-wider">
                   Assigned Level
                 </span>
-                <p className="text-2xl font-extrabold text-emerald-950 mt-1">
+                <p className="text-2xl font-extrabold text-status-available mt-1">
                   Level {entryResult.levelNumber}
                 </p>
               </div>
-              <div className="bg-white border border-emerald-100/50 rounded-2xl p-4">
-                <span className="text-[10px] text-emerald-800/60 uppercase font-bold tracking-wider">
+              <div className="bg-white border border-status-available/10 rounded-2xl p-4">
+                <span className="text-[10px] text-status-available/60 uppercase font-bold tracking-wider">
                   Parking Space
                 </span>
-                <p className="text-2xl font-extrabold text-emerald-950 mt-1">
+                <p className="text-2xl font-extrabold text-status-available mt-1">
                   Space {entryResult.spaceNumber}
                 </p>
               </div>
             </div>
-            <div className="bg-white border border-emerald-100/50 rounded-2xl p-6 space-y-4">
-              <div className="flex justify-between items-center text-sm border-b border-emerald-50 pb-3">
-                <span className="text-emerald-800/60 font-medium">Scanned Plate</span>
-                <span className="font-mono font-extrabold text-emerald-950 bg-emerald-100/50 px-2 py-0.5 rounded-lg">
+            <div className="bg-white border border-status-available/10 rounded-2xl p-6 space-y-4">
+              <div className="flex justify-between items-center text-sm border-b border-status-available/10 pb-3">
+                <span className="text-status-available/60 font-medium">Scanned Plate</span>
+                <span className="font-mono font-extrabold text-status-available bg-status-available/10 px-2 py-0.5 rounded-lg">
                   {entryResult.plateNumber}
                 </span>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-emerald-800/60 font-medium">Check-In Time</span>
-                <span className="font-semibold text-emerald-950">
+                <span className="text-status-available/60 font-medium">Check-In Time</span>
+                <span className="font-semibold text-status-available">
                   {new Date(entryResult.entryTime).toLocaleString()}
                 </span>
               </div>
