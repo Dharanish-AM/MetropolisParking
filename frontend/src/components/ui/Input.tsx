@@ -15,7 +15,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const inputFont = mono ? 'font-mono' : 'font-sans';
     const borderClass = error
       ? 'border-status-occupied focus:ring-status-occupied/20 focus:border-status-occupied'
-      : 'border-neutral-border focus:ring-brand-primary/20 focus:border-brand-primary';
+      : 'border-input-border focus:ring-brand-primary/20 focus:border-brand-primary';
 
     return (
       <div className="w-full space-y-1.5">
