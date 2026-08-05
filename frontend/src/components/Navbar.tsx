@@ -78,7 +78,7 @@ export const Navbar: FC = () => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs lg:text-sm font-semibold transition-all duration-150 flex-shrink-0 ${
+                    className={`whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs lg:text-sm font-semibold transition-all duration-150 flex-shrink-0 ${
                       isActive
                         ? 'bg-brand-primary/10 text-brand-primary font-bold'
                         : 'text-neutral-secondary hover:text-brand-primary hover:bg-brand-primary/5'
@@ -98,14 +98,14 @@ export const Navbar: FC = () => {
             <>
               <Link
                 to="/profile"
-                className={`flex items-center gap-2 px-2.5 py-1 rounded-xl border transition-all duration-150 ${
+                className={`flex items-center gap-2 px-2.5 py-1 rounded-md border transition-all duration-150 ${
                   location.pathname === '/profile'
                     ? 'border-brand-primary/40 bg-brand-primary/5'
-                    : 'border-neutral-border hover:border-brand-primary/30 hover:bg-neutral-border/10'
+                    : 'border-neutral-border hover:border-brand-primary/30 hover:bg-neutral-subtle'
                 }`}
                 title="View Profile"
               >
-                <div className="w-7 h-7 rounded-lg bg-brand-primary/10 text-brand-primary flex items-center justify-center font-bold text-xs">
+                <div className="w-7 h-7 rounded-md bg-brand-primary/10 text-brand-primary flex items-center justify-center font-bold text-xs">
                   {user.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="hidden sm:flex flex-col items-start leading-tight">
@@ -120,7 +120,7 @@ export const Navbar: FC = () => {
 
               <button
                 onClick={logout}
-                className="p-1.5 lg:p-2 border border-neutral-border rounded-xl text-neutral-secondary hover:text-red-600 hover:border-red-100 hover:bg-red-50/50 transition-all duration-150 cursor-pointer"
+                className="p-1.5 lg:p-2 border border-neutral-border rounded-md text-neutral-secondary hover:text-status-occupied hover:border-status-occupied/30 hover:bg-status-occupied/10 transition-all duration-150 cursor-pointer"
                 title="Log Out"
               >
                 <LogOut className="w-4 h-4 lg:w-4.5 lg:h-4.5 stroke-[1.75]" aria-hidden="true" />
@@ -131,7 +131,7 @@ export const Navbar: FC = () => {
                 aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
                 aria-expanded={mobileMenuOpen}
                 aria-controls="mobile-nav-menu"
-                className="md:hidden p-1.5 border border-neutral-border rounded-xl text-neutral-primary"
+                className="md:hidden p-1.5 border border-neutral-border rounded-md text-neutral-primary"
               >
                 {mobileMenuOpen ? (
                   <X className="w-5 h-5" aria-hidden="true" />
@@ -143,7 +143,7 @@ export const Navbar: FC = () => {
           ) : (
             <Link
               to="/login"
-              className="px-4 py-2 bg-brand-lavender hover:bg-brand-primary/10 text-brand-primary rounded-xl text-sm font-bold transition-all duration-150"
+              className="px-4 py-2 bg-brand-black hover:bg-neutral-800 text-white rounded-md text-sm font-bold transition-all duration-150 shadow-xs"
             >
               Log in / Sign up
             </Link>
