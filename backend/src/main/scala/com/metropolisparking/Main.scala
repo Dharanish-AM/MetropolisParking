@@ -44,6 +44,7 @@ object Main {
 
     val dataSource = DbConnection.createDataSource(config.db)
     val dslContext = DbConnection.createDslContext(dataSource)
+    new DatabaseSeederService(dslContext).ensureSeeded()
     val securityModule = new SecurityModule(config.jwt.secret)
     val rbacMiddleware = new RbacMiddleware(securityModule)
 

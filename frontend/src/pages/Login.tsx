@@ -32,27 +32,30 @@ export const Login: FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-bg flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <main
+      id="main-content"
+      className="min-h-screen bg-neutral-bg flex flex-col justify-center py-12 sm:px-6 lg:px-8"
+    >
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <MetropolisLogo size="lg" className="justify-center mb-6" />
-        <h2 className="text-3xl font-extrabold text-neutral-primary tracking-tight">
+        <h1 className="text-3xl font-extrabold text-neutral-primary tracking-tight">
           Welcome to Metropolis
-        </h2>
+        </h1>
         <p className="mt-2 text-sm text-neutral-secondary">
           Enter your credentials to access the Metropolis parking network.
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 border border-neutral-border sm:rounded-2xl sm:px-10">
+        <div className="bg-white py-8 px-4 border border-neutral-border sm:rounded-xl sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit} noValidate>
             {error && (
               <div
                 role="alert"
                 aria-live="assertive"
-                className="rounded-xl bg-red-50 p-4 border border-red-100"
+                className="rounded-md bg-status-occupied/10 p-4 border border-status-occupied/20"
               >
-                <div className="text-sm font-medium text-red-800">{error}</div>
+                <div className="text-sm font-medium text-status-occupied">{error}</div>
               </div>
             )}
 
@@ -80,13 +83,13 @@ export const Login: FC = () => {
               required
             />
 
-            <Button type="submit" isLoading={loading} className="w-full">
+            <Button type="submit" variant="black" isLoading={loading} className="w-full">
               {loading ? 'Signing in...' : 'Continue'}
               {!loading && <ArrowRight className="w-4 h-4 stroke-[2]" aria-hidden="true" />}
             </Button>
           </form>
         </div>
       </div>
-    </div>
+    </main>
   );
 };

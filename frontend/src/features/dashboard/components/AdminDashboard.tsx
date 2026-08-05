@@ -143,6 +143,17 @@ export const AdminDashboard: FC = () => {
 
   return (
     <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-neutral-primary">
+            Admin Dashboard
+          </h1>
+          <p className="text-sm text-neutral-secondary">
+            Real-time occupancy rates, revenues, and quick vehicle check-in/out workflows.
+          </p>
+        </div>
+      </div>
+
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="space-y-4">
           <div className="flex justify-between items-center text-neutral-secondary">
