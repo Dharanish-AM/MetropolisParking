@@ -20,7 +20,6 @@ class ReservationService(
   private def broadcast(eventJson: String): Unit = Option(wsService).foreach(_.broadcast(eventJson))
 
   def makeReservation(req: ReservationCreateRequest, userId: UUID): Reservation = {
-    // Parse and validate times before acquiring any DB locks
     val startTime = try { Instant.parse(req.startTime) } catch { case _: Throwable => throw ValidationException("Invalid start time format") }
     val endTime = try { Instant.parse(req.endTime) } catch { case _: Throwable => throw ValidationException("Invalid end time format") }
 
@@ -35,8 +34,6 @@ class ReservationService(
     val vehicleType = req.vehicleType.toUpperCase
 
     resRepo.transaction { txDsl =>
-      // SELECT FOR UPDATE prevents two concurrent requests from reserving the same space
-      // in the same time slot — the second request blocks until the first commits.
       val space = lotRepo.findSpaceByIdForUpdate(req.spaceId, txDsl).getOrElse {
         throw NotFoundException(s"Parking space '${req.spaceId}' not found")
       }
@@ -50,8 +47,6 @@ class ReservationService(
       }
 
       val durationMinutes = java.time.Duration.between(startTime, endTime).toMinutes.max(1L)
-      // B12 fix: use vehicleType from the request, not the space type
-      // B13 fix: branch on rule type so FLAT and DAILY rates are applied correctly
       val ruleOpt = pricingRuleRepo.findRule(space.lotId, vehicleType)
       if (ruleOpt.isEmpty) {
         logger.warn(s"Pricing rule missing for lotId '${space.lotId}' and vehicleType '$vehicleType'. Falling back to default rate 10.00")
@@ -133,7 +128,6 @@ class ReservationService(
     resRepo.transaction { txDsl =>
       resRepo.update(res.copy(status = "CANCELLED"), Some(txDsl))
 
-      // B14 fix: release the space back to AVAILABLE so it can be booked by others
       lotRepo.findSpaceByIdForUpdate(res.spaceId, txDsl).foreach { space =>
         if (space.status.equalsIgnoreCase("RESERVED")) {
           lotRepo.updateSpace(space.copy(status = "AVAILABLE"), Some(txDsl))

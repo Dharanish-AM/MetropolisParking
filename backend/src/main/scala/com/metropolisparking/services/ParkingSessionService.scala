@@ -25,8 +25,6 @@ class ParkingSessionService(
     }
 
     sessionRepo.transaction { txDsl =>
-      // SELECT FOR UPDATE locks the space row — concurrent requests for the same space
-      // will block here until the first transaction commits, preventing double-booking.
       val space = lotRepo.findSpaceByIdForUpdate(req.spaceId, txDsl).getOrElse {
         throw NotFoundException(s"Parking space '${req.spaceId}' not found")
       }

@@ -25,8 +25,6 @@ class BackgroundJobScheduler(
   private def cleanupExpiredReservations(): Unit = {
     val now = OffsetDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
 
-    // B15 fix: free space rows before marking reservations expired so there is no
-    // window where a reservation is EXPIRED but its space is still RESERVED.
     dsl.update(PARKING_SPACES)
       .set(PARKING_SPACES.STATUS, "AVAILABLE")
       .set(PARKING_SPACES.UPDATED_AT, now)

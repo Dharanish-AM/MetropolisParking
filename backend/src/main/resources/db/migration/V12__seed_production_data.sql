@@ -131,6 +131,7 @@ BEGIN
         (gen_random_uuid(), 'HOURLY', 60.00, 'CAR', lot_ids[i]),
         (gen_random_uuid(), 'HOURLY', 80.00, 'SUV', lot_ids[i]),
         (gen_random_uuid(), 'HOURLY', 30.00, 'BIKE', lot_ids[i]),
+        (gen_random_uuid(), 'HOURLY', 30.00, 'MOTORCYCLE', lot_ids[i]),
         (gen_random_uuid(), 'HOURLY', 50.00, 'EV', lot_ids[i]),
         (gen_random_uuid(), 'HOURLY', 120.00, 'TRUCK', lot_ids[i]),
         (gen_random_uuid(), 'DAILY', 450.00, 'CAR', lot_ids[i]),

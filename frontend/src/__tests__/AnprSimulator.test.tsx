@@ -5,6 +5,8 @@ import { AnprSimulator } from '../pages/AnprSimulator';
 import { AuthContext } from '../features/auth/context/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
+import { ToastProvider } from '../context/ToastContext';
+
 const mockAdminAuth = {
   user: {
     id: 'admin-id-123',
@@ -42,11 +44,13 @@ describe('AnprSimulator Component', () => {
   it('renders ANPR camera simulator page with title and sections', () => {
     render(
       <QueryClientProvider client={queryClient}>
-        <AuthContext.Provider value={mockAdminAuth}>
-          <BrowserRouter>
-            <AnprSimulator />
-          </BrowserRouter>
-        </AuthContext.Provider>
+        <ToastProvider>
+          <AuthContext.Provider value={mockAdminAuth}>
+            <BrowserRouter>
+              <AnprSimulator />
+            </BrowserRouter>
+          </AuthContext.Provider>
+        </ToastProvider>
       </QueryClientProvider>
     );
 

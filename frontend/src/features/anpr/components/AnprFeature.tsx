@@ -21,6 +21,8 @@ import {
   Video,
 } from 'lucide-react';
 
+import { useToast } from '../../../context/ToastContext';
+
 interface ParkingLot {
   id: string;
   name: string;
@@ -50,6 +52,7 @@ interface AnprExitResponse {
 
 export const AnprFeature: FC = () => {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
   const [selectedLotId, setSelectedLotId] = useState('');
   const [plateNumber, setPlateNumber] = useState('');
   const [isCameraActive, setIsCameraActive] = useState(false);
@@ -321,9 +324,18 @@ export const AnprFeature: FC = () => {
     entryMutation.mutate(
       { plateNumber, lotId: selectedLotId },
       {
-        onSuccess: (data: AnprEntryResponse) => setEntryResult(data),
-        onError: (err: any) =>
-          setError(err.response?.data?.message || 'Failed to process gate entry.'),
+        onSuccess: (data: AnprEntryResponse) => {
+          setEntryResult(data);
+          showToast(
+            `Vehicle ${data.plateNumber} checked in (Space ${data.spaceNumber})`,
+            'success'
+          );
+        },
+        onError: (err: any) => {
+          const errMsg = err.response?.data?.message || 'Failed to process gate entry.';
+          setError(errMsg);
+          showToast(errMsg, 'error');
+        },
       }
     );
   };
@@ -339,11 +351,19 @@ export const AnprFeature: FC = () => {
     exitMutation.mutate(
       { plateNumber },
       {
-        onSuccess: (data: AnprExitResponse) => setExitResult(data),
-        onError: (err: any) =>
-          setError(
-            err.response?.data?.message || 'No active session found for this license plate.'
-          ),
+        onSuccess: (data: AnprExitResponse) => {
+          setExitResult(data);
+          showToast(
+            `Vehicle ${data.plateNumber} checked out. Fee: $${data.fee.toFixed(2)}`,
+            'success'
+          );
+        },
+        onError: (err: any) => {
+          const errMsg =
+            err.response?.data?.message || 'No active session found for this license plate.';
+          setError(errMsg);
+          showToast(errMsg, 'error');
+        },
       }
     );
   };
