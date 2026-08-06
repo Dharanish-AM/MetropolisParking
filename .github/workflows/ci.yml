@@ -14,8 +14,8 @@ jobs:
         image: postgres:16-alpine
         env:
           POSTGRES_DB: metropolis_parking
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: metropolis
+          POSTGRES_PASSWORD: metropolis_password
         ports:
           - 5432:5432
         options: >-
@@ -38,15 +38,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'sbt'
-      - uses: sbt/setup-sbt@v1
       - name: Run Backend ScalaTest
-        env:
-          DB_URL: jdbc:postgresql://localhost:5432/metropolis_parking
-          DB_USER: postgres
-          DB_PASSWORD: postgres
-          REDIS_HOST: localhost
-          REDIS_PORT: 6379
         run: |
           cd backend
           sbt test
