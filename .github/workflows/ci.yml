@@ -38,6 +38,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: 'sbt'
+      - uses: sbt/setup-sbt@v1
       - name: Run Backend ScalaTest
         run: |
           cd backend
