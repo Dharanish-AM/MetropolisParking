@@ -31,7 +31,7 @@ class ParkingSessionService(
         throw NotFoundException(s"Parking space '${req.spaceId}' not found")
       }
 
-      if (!space.status.equalsIgnoreCase("AVAILABLE")) {
+      if (!space.status.equalsIgnoreCase("AVAILABLE") && !space.status.equalsIgnoreCase("RESERVED")) {
         throw ConflictException(s"Parking space '${space.spaceNumber}' is currently ${space.status}")
       }
 

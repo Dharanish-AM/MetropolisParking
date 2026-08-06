@@ -74,6 +74,44 @@ class QrServiceSpec extends AnyFunSpec with Matchers with TestDbSpec {
       scan.entityType shouldBe "RESERVATION"
     }
 
+    it("scans a valid RESERVATION pass when space status is RESERVED") {
+      val lot = TestFixtures.aLot(dslContext)
+      val level = TestFixtures.aLevel(dslContext, lot.id)
+      val space = TestFixtures.aSpace(dslContext, lot.id, level.id, status = "RESERVED")
+      val reservation = TestFixtures.aReservation(dslContext, space.id)
+
+      val gen = qrService.generatePass("RESERVATION", reservation.id)
+      val scan = qrService.scanPass(gen.qrToken)
+
+      scan.action shouldBe "CHECKIN"
+      scan.entityType shouldBe "RESERVATION"
+    }
+
+    it("returns ALREADY_COMPLETED when scanning a completed RESERVATION pass") {
+      val lot = TestFixtures.aLot(dslContext)
+      val level = TestFixtures.aLevel(dslContext, lot.id)
+      val space = TestFixtures.aSpace(dslContext, lot.id, level.id)
+      val reservation = TestFixtures.aReservation(dslContext, space.id, status = "COMPLETED")
+
+      val gen = qrService.generatePass("RESERVATION", reservation.id)
+      val scan = qrService.scanPass(gen.qrToken)
+
+      scan.action shouldBe "ALREADY_COMPLETED"
+      scan.entityType shouldBe "RESERVATION"
+    }
+
+    it("throws ValidationException when scanning a RESERVATION pass for OUT_OF_SERVICE space") {
+      val lot = TestFixtures.aLot(dslContext)
+      val level = TestFixtures.aLevel(dslContext, lot.id)
+      val space = TestFixtures.aSpace(dslContext, lot.id, level.id, status = "OUT_OF_SERVICE")
+      val reservation = TestFixtures.aReservation(dslContext, space.id)
+
+      val gen = qrService.generatePass("RESERVATION", reservation.id)
+      intercept[ValidationException] {
+        qrService.scanPass(gen.qrToken)
+      }
+    }
+
     it("throws ValidationException for tampered QR token") {
       intercept[ValidationException] {
         qrService.scanPass("invalid.tampered.token")

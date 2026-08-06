@@ -115,22 +115,54 @@ class QrService(
           .map(_.plateNumber)
           .getOrElse(s"RES-${res.id.toString.take(8).toUpperCase}")
 
-        val session = sessionService.startSession(
-          SessionStartRequest(plateNumber = userPlate, spaceId = res.spaceId),
-          Some(res.userId)
-        )
+        if (res.status.equalsIgnoreCase("COMPLETED")) {
+          QrScanResponse(
+            action = "ALREADY_COMPLETED",
+            entityId = entityId,
+            entityType = "RESERVATION",
+            plateNumber = userPlate,
+            spaceNumber = space.spaceNumber,
+            status = "COMPLETED",
+            message = s"Reservation for space ${space.spaceNumber} has already been checked in"
+          )
+        } else if (res.status.equalsIgnoreCase("CANCELLED") || res.status.equalsIgnoreCase("EXPIRED")) {
+          throw ValidationException(s"Reservation for space '${space.spaceNumber}' is ${res.status.toLowerCase}")
+        } else {
+          val activeSessions = sessionRepo.list(activeOnly = true)
+          val existingSession = activeSessions.find(_.spaceId == res.spaceId)
 
-        resRepo.update(res.copy(status = "COMPLETED"))
+          if (existingSession.isDefined) {
+            resRepo.update(res.copy(status = "COMPLETED"))
+            QrScanResponse(
+              action = "ALREADY_COMPLETED",
+              entityId = existingSession.get.id,
+              entityType = "RESERVATION",
+              plateNumber = userPlate,
+              spaceNumber = space.spaceNumber,
+              status = "ACTIVE",
+              message = s"Reservation checked in for space ${space.spaceNumber} (Active session)"
+            )
+          } else if (space.status.equalsIgnoreCase("OUT_OF_SERVICE") || space.status.equalsIgnoreCase("MAINTENANCE")) {
+            throw ValidationException(s"Parking space '${space.spaceNumber}' is currently out of service")
+          } else {
+            val session = sessionService.startSession(
+              SessionStartRequest(plateNumber = userPlate, spaceId = res.spaceId),
+              Some(res.userId)
+            )
 
-        QrScanResponse(
-          action = "CHECKIN",
-          entityId = session.id,
-          entityType = "RESERVATION",
-          plateNumber = userPlate,
-          spaceNumber = space.spaceNumber,
-          status = "ACTIVE",
-          message = s"Gate opened for reserved space ${space.spaceNumber}"
-        )
+            resRepo.update(res.copy(status = "COMPLETED"))
+
+            QrScanResponse(
+              action = "CHECKIN",
+              entityId = session.id,
+              entityType = "RESERVATION",
+              plateNumber = userPlate,
+              spaceNumber = space.spaceNumber,
+              status = "ACTIVE",
+              message = s"Gate opened for reserved space ${space.spaceNumber}"
+            )
+          }
+        }
 
       case _ =>
         throw ValidationException(s"Unsupported entity type '$entityType'")
