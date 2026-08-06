@@ -3,17 +3,16 @@ DECLARE
     admin_role_id UUID;
     customer_role_id UUID;
     
-    lot_bkc_id UUID := gen_random_uuid();
-    lot_ubcity_id UUID := gen_random_uuid();
-    lot_cp_id UUID := gen_random_uuid();
-    lot_hitec_id UUID := gen_random_uuid();
-    lot_express_id UUID := gen_random_uuid();
-    lot_phoenix_id UUID := gen_random_uuid();
-    lot_sec18_id UUID := gen_random_uuid();
-    lot_cyberhub_id UUID := gen_random_uuid();
+    lot_bkc_id UUID := '11111111-1111-4111-8111-111111111111';
+    lot_ubcity_id UUID := '22222222-2222-4222-8222-222222222222';
+    lot_cp_id UUID := '33333333-3333-4333-8333-333333333333';
+    lot_hitec_id UUID := '44444444-4444-4444-8444-444444444444';
+    lot_express_id UUID := '55555555-5555-4555-8555-555555555555';
+    lot_phoenix_id UUID := '66666666-6666-4666-8666-666666666666';
+    lot_sec18_id UUID := '77777777-7777-4777-8777-777777777777';
+    lot_cyberhub_id UUID := '88888888-8888-4888-8888-888888888888';
 
     lvl_rec RECORD;
-
     cust_ids UUID[];
     lot_ids UUID[];
     space_ids UUID[];
@@ -42,6 +41,7 @@ DECLARE
     act_name TEXT;
     ent_type TEXT;
     det_txt TEXT;
+    curr_session_cnt INT;
 
     states TEXT[] := ARRAY['MH', 'KA', 'DL', 'TS', 'TN', 'HR', 'UP'];
     methods TEXT[] := ARRAY['UPI', 'CREDIT_CARD', 'DEBIT_CARD', 'CASH', 'WALLET'];
@@ -163,8 +163,9 @@ BEGIN
 
     SELECT array_agg(id) INTO space_ids FROM parking_spaces;
     SELECT array_agg(id) INTO vehicle_ids FROM vehicles;
+    SELECT count(*) INTO curr_session_cnt FROM parking_sessions;
 
-    IF array_length(space_ids, 1) > 0 AND array_length(vehicle_ids, 1) > 0 THEN
+    IF curr_session_cnt < 10 AND array_length(space_ids, 1) > 0 AND array_length(vehicle_ids, 1) > 0 THEN
         FOR i IN 1..500 LOOP
             sess_id := gen_random_uuid();
             e_time := CURRENT_TIMESTAMP - (INTERVAL '1 day' * (1 + (i % 28))) - (INTERVAL '1 minute' * ((i * 19) % 1440));
@@ -232,7 +233,7 @@ BEGIN
 
     SELECT array_agg(id) INTO space_ids FROM parking_spaces WHERE status != 'OUT_OF_SERVICE';
 
-    IF array_length(space_ids, 1) > 0 AND array_length(cust_ids, 1) > 0 THEN
+    IF (SELECT count(*) FROM reservations) < 10 AND array_length(space_ids, 1) > 0 AND array_length(cust_ids, 1) > 0 THEN
         FOR i IN 1..100 LOOP
             e_time := CURRENT_TIMESTAMP + (INTERVAL '1 hour' * (i % 72)) - (INTERVAL '1 day' * (i % 5));
             x_time := e_time + INTERVAL '2 hours';
@@ -254,7 +255,9 @@ BEGIN
             )
             ON CONFLICT (id) DO NOTHING;
         END LOOP;
+    END IF;
 
+    IF (SELECT count(*) FROM audit_logs) < 10 AND array_length(space_ids, 1) > 0 AND array_length(cust_ids, 1) > 0 THEN
         FOR i IN 1..600 LOOP
             e_time := CURRENT_TIMESTAMP - (INTERVAL '1 hour' * (i % 240));
             act_name := CASE 
