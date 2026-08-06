@@ -12,6 +12,8 @@ DECLARE
     lot_sec18_id UUID := gen_random_uuid();
     lot_cyberhub_id UUID := gen_random_uuid();
 
+    lvl_rec RECORD;
+
     cust_ids UUID[];
     lot_ids UUID[];
     space_ids UUID[];
