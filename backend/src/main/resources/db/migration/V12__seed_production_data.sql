@@ -204,8 +204,10 @@ BEGIN
             ON CONFLICT (id) DO NOTHING;
         END LOOP;
 
+        UPDATE parking_spaces SET status = 'AVAILABLE', updated_at = CURRENT_TIMESTAMP;
+
         FOR i IN 1..array_length(space_ids, 1) LOOP
-            IF i % 10 <= 4 THEN
+            IF i % 20 < 7 THEN
                 sess_id := gen_random_uuid();
                 e_time := CURRENT_TIMESTAMP - (INTERVAL '1 minute' * (15 + (i * 7) % 300));
 
@@ -224,9 +226,9 @@ BEGIN
                 ON CONFLICT (id) DO NOTHING;
 
                 UPDATE parking_spaces SET status = 'OCCUPIED', updated_at = CURRENT_TIMESTAMP WHERE id = space_ids[i];
-            ELSIF i % 10 = 5 THEN
+            ELSIF i % 20 IN (7, 8) THEN
                 UPDATE parking_spaces SET status = 'RESERVED', updated_at = CURRENT_TIMESTAMP WHERE id = space_ids[i];
-            ELSIF i % 10 IN (6, 7) THEN
+            ELSIF i % 20 = 9 THEN
                 UPDATE parking_spaces SET status = 'OUT_OF_SERVICE', updated_at = CURRENT_TIMESTAMP WHERE id = space_ids[i];
             END IF;
         END LOOP;
