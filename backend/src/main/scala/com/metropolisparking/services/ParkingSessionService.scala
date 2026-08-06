@@ -15,10 +15,14 @@ class ParkingSessionService(
   pricingRuleRepo: PricingRuleRepository,
   paymentRepo: PaymentRepository,
   auditLogService: AuditLogService,
-  wsService: WebSocketService = null
+  wsService: WebSocketService = null,
+  dashboardService: Option[DashboardService] = None
 ) {
   private val logger = LoggerFactory.getLogger(classOf[ParkingSessionService])
-  private def broadcast(eventJson: String): Unit = Option(wsService).foreach(_.broadcast(eventJson))
+  private def broadcast(eventJson: String): Unit = {
+    Option(wsService).foreach(_.broadcast(eventJson))
+    dashboardService.foreach(_.invalidateCache())
+  }
   def startSession(req: SessionStartRequest, userId: Option[UUID]): ParkingSession = {
     val vehicle = vehicleService.getByPlateNumber(req.plateNumber).getOrElse {
       vehicleService.register(VehicleCreateRequest(req.plateNumber, "CAR", None), userId)

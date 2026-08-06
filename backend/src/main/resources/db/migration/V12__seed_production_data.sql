@@ -164,7 +164,7 @@ BEGIN
 
     SELECT array_agg(id) INTO space_ids FROM parking_spaces;
     SELECT array_agg(id) INTO vehicle_ids FROM vehicles;
-    SELECT count(*) INTO curr_session_cnt FROM parking_sessions;
+    SELECT count(*) INTO curr_session_cnt FROM payments;
 
     IF curr_session_cnt < 10 AND array_length(space_ids, 1) > 0 AND array_length(vehicle_ids, 1) > 0 THEN
         FOR i IN 1..500 LOOP

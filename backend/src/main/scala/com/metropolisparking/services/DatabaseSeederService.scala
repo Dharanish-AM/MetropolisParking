@@ -17,9 +17,18 @@ class DatabaseSeederService(dslContext: DSLContext) {
         if (seedStream != null) {
           val sql = Source.fromInputStream(seedStream)("UTF-8").mkString
           dslContext.execute(sql)
-          logger.info("Database auto-seeding completed successfully")
-        } else {
-          logger.warn("V12__seed_production_data.sql resource not found for auto-seeding")
+          logger.info("Database V12 auto-seeding completed successfully")
+        }
+      }
+
+      val paymentCount = dslContext.fetchCount(DSL.table(DSL.name("payments")))
+      if (paymentCount == 0) {
+        logger.info("No payment records found. Triggering V13 dashboard reseed initialization...")
+        val seedStream = getClass.getResourceAsStream("/db/migration/V13__reseed_dashboard_data.sql")
+        if (seedStream != null) {
+          val sql = Source.fromInputStream(seedStream)("UTF-8").mkString
+          dslContext.execute(sql)
+          logger.info("Database V13 auto-seeding completed successfully")
         }
       }
     } catch {

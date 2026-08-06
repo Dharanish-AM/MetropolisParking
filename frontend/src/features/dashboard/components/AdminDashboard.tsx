@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import { type FC, useMemo } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,7 +25,7 @@ import { Skeleton } from '../../../components/ui/Skeleton';
 import { useDashboardStats } from '../hooks';
 import { useLots } from '../../lots/hooks';
 import { useSpaces } from '../../spaces/hooks';
-import { useStartSession, useEndSession } from '../../sessions/hooks';
+import { useStartSession, useEndSession, useSessions } from '../../sessions/hooks';
 import { useToast } from '../../../context/ToastContext';
 import { plateNumberSchema } from '../../../schemas/vehicle';
 import { Activity, DollarSign, Plus, Key, TrendingUp, MapPin } from 'lucide-react';
@@ -99,6 +99,7 @@ export const AdminDashboard: FC = () => {
   const { data: stats, isLoading } = useDashboardStats();
   const { data: lots } = useLots();
   const { data: spaces } = useSpaces();
+  const { data: activeSessions } = useSessions(true);
 
   const checkInMutation = useStartSession();
   const checkOutMutation = useEndSession();
@@ -139,7 +140,22 @@ export const AdminDashboard: FC = () => {
     );
   };
 
-  const activeSpaces = (spaces as ParkingSpace[])?.filter(s => s.status === 'OCCUPIED') || [];
+  const activePlateOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    (stats?.recentSessions as RecentSession[])?.forEach(s => {
+      if (s.status === 'ACTIVE' && s.plateNumber && s.plateNumber !== 'UNKNOWN') {
+        map.set(s.plateNumber, `${s.plateNumber} (Space: ${s.spaceNumber})`);
+      }
+    });
+    (activeSessions as any[])?.forEach(s => {
+      const plate = s.plateNumber || s.vehicle?.plateNumber;
+      if (plate && plate !== 'UNKNOWN') {
+        const spaceStr = s.spaceNumber ? ` (Space: ${s.spaceNumber})` : '';
+        map.set(plate, `${plate}${spaceStr}`);
+      }
+    });
+    return Array.from(map.entries()).map(([plate, label]) => ({ plate, label }));
+  }, [stats?.recentSessions, activeSessions]);
 
   return (
     <div className="space-y-8">
@@ -349,16 +365,11 @@ export const AdminDashboard: FC = () => {
                   {...registerCheckOut('plateNumber')}
                 >
                   <option value="">Select parked vehicle</option>
-                  {activeSpaces.map(space => {
-                    const session = (stats?.recentSessions as RecentSession[])?.find(
-                      s => s.spaceNumber === space.spaceNumber && s.status === 'ACTIVE'
-                    );
-                    return session ? (
-                      <option key={session.id} value={session.plateNumber}>
-                        {session.plateNumber} (Space: {space.spaceNumber})
-                      </option>
-                    ) : null;
-                  })}
+                  {activePlateOptions.map(opt => (
+                    <option key={opt.plate} value={opt.plate}>
+                      {opt.label}
+                    </option>
+                  ))}
                 </Select>
                 <Button
                   type="submit"
