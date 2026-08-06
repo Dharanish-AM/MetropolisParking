@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import type { FC, ReactNode } from 'react';
 import { X } from 'lucide-react';
 
@@ -69,7 +70,7 @@ export const Modal: FC<ModalProps> = ({ isOpen, onClose, title, children, size =
     xl: 'max-w-4xl',
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in">
       <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
       <div
@@ -97,6 +98,7 @@ export const Modal: FC<ModalProps> = ({ isOpen, onClose, title, children, size =
         </div>
         <div className="px-6 py-5 overflow-y-auto max-h-[80vh]">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

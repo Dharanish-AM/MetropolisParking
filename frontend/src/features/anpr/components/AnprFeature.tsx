@@ -444,7 +444,9 @@ export const AnprFeature: FC = () => {
             )}
           </div>
         </Card>
+      </div>
 
+      <div className="lg:col-span-7 space-y-6">
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
@@ -510,9 +512,7 @@ export const AnprFeature: FC = () => {
             </div>
           </div>
         </Card>
-      </div>
 
-      <div className="lg:col-span-7 space-y-6">
         {ocrError && (
           <div className="p-4 bg-status-reserved/10 border border-status-reserved/20 rounded-2xl text-status-reserved text-sm flex gap-3 items-start animate-shake">
             <AlertTriangle className="w-5 h-5 shrink-0" />

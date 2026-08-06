@@ -400,18 +400,48 @@ export const QrScannerFeature: FC = () => {
 
           <div className="bg-white rounded-2xl p-6 border border-neutral-border shadow-xs flex flex-col justify-center">
             {scanResult ? (
-              <div className="border border-status-available/20 bg-status-available/10 rounded-2xl p-6 text-center space-y-4 animate-scale-up">
-                <div className="w-16 h-16 bg-status-available/20 text-status-available rounded-full flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-10 h-10" />
+              <div
+                className={`border rounded-2xl p-6 text-center space-y-4 animate-scale-up ${
+                  scanResult.action === 'ALREADY_COMPLETED'
+                    ? 'border-status-reserved/30 bg-status-reserved/10'
+                    : 'border-status-available/20 bg-status-available/10'
+                }`}
+              >
+                <div
+                  className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto ${
+                    scanResult.action === 'ALREADY_COMPLETED'
+                      ? 'bg-status-reserved/20 text-status-reserved'
+                      : 'bg-status-available/20 text-status-available'
+                  }`}
+                >
+                  {scanResult.action === 'ALREADY_COMPLETED' ? (
+                    <AlertCircle className="w-10 h-10" />
+                  ) : (
+                    <CheckCircle2 className="w-10 h-10" />
+                  )}
                 </div>
                 <div>
-                  <span className="inline-block px-3 py-1 bg-status-available text-white text-xs font-black uppercase tracking-wider rounded-full mb-2">
-                    {scanResult.action} SUCCESSFUL
+                  <span
+                    className={`inline-block px-3 py-1 text-white text-xs font-black uppercase tracking-wider rounded-full mb-2 ${
+                      scanResult.action === 'ALREADY_COMPLETED'
+                        ? 'bg-status-reserved'
+                        : 'bg-status-available'
+                    }`}
+                  >
+                    {scanResult.action === 'ALREADY_COMPLETED'
+                      ? 'ALREADY COMPLETED'
+                      : `${scanResult.action.replace('_', ' ')} SUCCESSFUL`}
                   </span>
                   <h3 className="text-xl font-bold text-neutral-primary">{scanResult.message}</h3>
                 </div>
 
-                <div className="bg-white rounded-xl p-4 border border-status-available/20 text-left grid grid-cols-2 gap-3 text-xs">
+                <div
+                  className={`bg-white rounded-xl p-4 border text-left grid grid-cols-2 gap-3 text-xs ${
+                    scanResult.action === 'ALREADY_COMPLETED'
+                      ? 'border-status-reserved/20'
+                      : 'border-status-available/20'
+                  }`}
+                >
                   <div>
                     <span className="text-neutral-secondary block font-semibold">Entity Type</span>
                     <span className="font-bold text-neutral-primary">{scanResult.entityType}</span>
@@ -428,7 +458,17 @@ export const QrScannerFeature: FC = () => {
                   </div>
                   <div>
                     <span className="text-neutral-secondary block font-semibold">Status</span>
-                    <span className="font-bold text-status-available">{scanResult.status}</span>
+                    <span
+                      className={`font-bold ${
+                        scanResult.status === 'COMPLETED'
+                          ? 'text-neutral-secondary'
+                          : scanResult.status === 'ACTIVE'
+                          ? 'text-status-available'
+                          : 'text-status-reserved'
+                      }`}
+                    >
+                      {scanResult.status}
+                    </span>
                   </div>
                 </div>
               </div>

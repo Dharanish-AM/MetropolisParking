@@ -40,3 +40,11 @@ You are tasked with building the **MetropolisParking** system from scratch. Refe
 - Inside PowerShell `docker exec ... psql -c "..."`, literal `$` characters (e.g. BCrypt hashes like `$2a$10$...`) are expanded as empty shell variables.
 - Always backtick-escape every `$`: `` `$2a`$10`$... ``
 - Preferred alternative: write the SQL to a `.sql` file and pipe it via stdin to avoid escaping complexity.
+
+## 7. Container Rebuild & Restart Rule
+- For every code or configuration change, restart the container and rebuild using Docker Compose (e.g. `docker compose up --build`).
+
+## 8. Frontend Modal & Stacking Context Rule
+- Always use React Portals (`createPortal(..., document.body)`) for dialogs and modals to ensure fixed overlays escape container CSS animations/transforms and properly cover sticky headers across the viewport.
+
+

@@ -93,4 +93,46 @@ describe('QrScannerPage Component', () => {
       expect(screen.getByText(/Gate opened for reserved space A-101/i)).toBeInTheDocument();
     });
   });
+
+  it('renders ALREADY COMPLETED badge formatted correctly', async () => {
+    const { server } = await import('../test/mocks/server');
+    const { http, HttpResponse } = await import('msw');
+
+    server.use(
+      http.post('http://localhost:8080/qr/scan', () => {
+        return HttpResponse.json({
+          action: 'ALREADY_COMPLETED',
+          entityId: 'res-111',
+          entityType: 'RESERVATION',
+          plateNumber: 'TN12LS1407',
+          spaceNumber: 'L2-022',
+          status: 'COMPLETED',
+          message: 'Reservation for space L2-022 has already been checked in',
+        });
+      })
+    );
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <AuthContext.Provider value={mockAdminAuth}>
+          <BrowserRouter>
+            <QrScannerPage />
+          </BrowserRouter>
+        </AuthContext.Provider>
+      </QueryClientProvider>
+    );
+
+    const textarea = screen.getByPlaceholderText(/Paste JWT QR Token payload here.../i);
+    const submitBtn = screen.getByRole('button', { name: /Validate & Open Gate/i });
+
+    fireEvent.change(textarea, {
+      target: { value: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.completed-token' },
+    });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText('ALREADY COMPLETED')).toBeInTheDocument();
+      expect(screen.getByText(/Reservation for space L2-022 has already been checked in/i)).toBeInTheDocument();
+    });
+  });
 });
