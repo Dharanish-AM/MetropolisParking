@@ -463,8 +463,8 @@ export const QrScannerFeature: FC = () => {
                         scanResult.status === 'COMPLETED'
                           ? 'text-neutral-secondary'
                           : scanResult.status === 'ACTIVE'
-                          ? 'text-status-available'
-                          : 'text-status-reserved'
+                            ? 'text-status-available'
+                            : 'text-status-reserved'
                       }`}
                     >
                       {scanResult.status}

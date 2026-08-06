@@ -132,7 +132,9 @@ describe('QrScannerPage Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText('ALREADY COMPLETED')).toBeInTheDocument();
-      expect(screen.getByText(/Reservation for space L2-022 has already been checked in/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Reservation for space L2-022 has already been checked in/i)
+      ).toBeInTheDocument();
     });
   });
 });
