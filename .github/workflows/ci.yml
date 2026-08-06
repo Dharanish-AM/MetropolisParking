@@ -1,21 +1,65 @@
-name: MetropolisParking CI
+name: CI Pipeline
 
 on:
   push:
-    branches: [ develop, main ]
+    branches: [main, develop]
   pull_request:
-    branches: [ develop, main ]
+    branches: [main, develop]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  backend-test:
-    runs-on: ubuntu-latest
+  lint-and-security:
+    name: Code Quality & Security
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Frontend Linting (oxlint)
+        run: npm run lint
+        working-directory: frontend
+
+      - name: Frontend Format Check (prettier)
+        run: npm run format:check
+        working-directory: frontend
+
+      - name: Frontend Security Audit
+        run: npm audit --audit-level=high
+        working-directory: frontend
+        continue-on-error: true
+
+      - name: Validate Docker Compose Configuration
+        run: docker compose config -q
+
+  backend:
+    name: Backend — Compile, Test & Assemble
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
     services:
       postgres:
         image: postgres:16-alpine
         env:
           POSTGRES_DB: metropolis_parking
-          POSTGRES_USER: metropolis
-          POSTGRES_PASSWORD: metropolis_password
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
         ports:
           - 5432:5432
         options: >-
@@ -23,36 +67,253 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      - name: Run Backend ScalaTest
-        run: |
-          cd backend
-          sbt test
 
-  frontend-test:
-    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
         with:
-          node-version: 20
-      - name: Install & Run Frontend Unit Tests
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup sbt
+        uses: sbt/setup-sbt@v1
+
+      - name: Cache sbt & Coursier
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.sbt
+            ~/.ivy2/cache
+            ~/.cache/coursier
+          key: sbt-${{ runner.os }}-${{ hashFiles('backend/build.sbt', 'backend/project/*.sbt', 'backend/project/build.properties') }}
+          restore-keys: sbt-${{ runner.os }}-
+
+      - name: Compile Backend
+        run: sbt compile
+        working-directory: backend
+
+      - name: Run Backend Unit & Integration Tests
+        run: sbt test
+        working-directory: backend
+
+      - name: Assemble Fat JAR
+        run: sbt assembly
+        working-directory: backend
+
+      - name: Upload Backend Assembly JAR Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jar
+          path: backend/target/scala-2.13/metropolis-parking-backend-assembly-*.jar
+          retention-days: 1
+
+  frontend:
+    name: Frontend — Type-check, Unit Tests & Build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: TypeScript Type-Check
+        run: npx tsc --noEmit
+        working-directory: frontend
+
+      - name: Run Vitest Unit & Component Tests
+        run: npm test -- --run
+        working-directory: frontend
+
+      - name: Build Frontend Production Artifact
+        run: npm run build
+        working-directory: frontend
+
+      - name: Upload Frontend Dist Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+          retention-days: 1
+
+  docker-build:
+    name: Container Build Verification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    needs: [backend, frontend]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Backend JAR Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-jar
+          path: backend/target/scala-2.13/
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Backend Container Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          tags: metropolis-backend:ci
+
+      - name: Build Frontend Container Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: false
+          tags: metropolis-frontend:ci
+
+  e2e:
+    name: E2E Tests — Full Stack System & Observability
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    needs: [backend, frontend]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Backend JAR Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-jar
+          path: backend/target/scala-2.13/
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: playwright-${{ runner.os }}-
+
+      - name: Install Frontend Dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+        working-directory: frontend
+
+      - name: Pull Docker Images with Retry
         run: |
-          cd frontend
-          npm ci
-          npm run test
-          npm run build
+          for i in 1 2 3; do
+            docker compose pull && break || (echo "Pull failed, retrying in 5s..." && sleep 5)
+          done
+
+      - name: Start Full Docker Compose Stack
+        run: docker compose up -d --build
+
+      - name: Wait for Web Stack Readiness
+        run: |
+          for i in $(seq 1 30); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost || true)
+            if [ "$STATUS" = "200" ]; then
+              echo "Stack ready (HTTP $STATUS after attempt $i)"
+              exit 0
+            fi
+            echo "Attempt $i/30: HTTP $STATUS — waiting 10s..."
+            sleep 10
+          done
+          echo "Stack did not become healthy within 300s"
+          docker compose logs
+          exit 1
+
+      - name: Verify Full Telemetry & Observability Health
+        run: |
+          echo "Verifying Backend OTel Prometheus metrics endpoint (localhost:9464)..."
+          curl -s http://localhost:9464/metrics | grep -q "http_server" || (echo "Prometheus metrics endpoint check failed" && exit 1)
+          
+          echo "Verifying Jaeger Tracing UI (localhost:16686)..."
+          curl -s http://localhost:16686/ | grep -i -q "Jaeger" || (echo "Jaeger check failed" && exit 1)
+          
+          echo "Verifying Loki Log Aggregator API (localhost:3100)..."
+          curl -s http://localhost:3100/ready | grep -q "ready" || (echo "Loki check failed" && exit 1)
+
+          echo "Verifying Grafana Telemetry Dashboard API (localhost:3000)..."
+          curl -s http://localhost:3000/api/health | grep -q "ok" || (echo "Grafana check failed" && exit 1)
+          
+          echo "All observability stack healthchecks passed successfully!"
+
+      - name: Execute Playwright E2E Spec Suite
+        run: npx playwright test
+        working-directory: frontend
+        env:
+          BASE_URL: http://localhost
+
+      - name: Upload Playwright Test Report Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 14
+
+      - name: Dump Stack Container Logs on Failure
+        if: failure()
+        run: docker compose logs --tail=300
+
+      - name: Tear Down Docker Stack
+        if: always()
+        run: docker compose down -v
+
+  ci-status-gate:
+    name: CI Status Gatekeeper
+    runs-on: ubuntu-24.04
+    if: always()
+    needs:
+      - lint-and-security
+      - backend
+      - frontend
+      - docker-build
+      - e2e
+
+    steps:
+      - name: Evaluate Upstream Job Results
+        run: |
+          LINT="${{ needs.lint-and-security.result }}"
+          BACKEND="${{ needs.backend.result }}"
+          FRONTEND="${{ needs.frontend.result }}"
+          DOCKER="${{ needs.docker-build.result }}"
+          E2E="${{ needs.e2e.result }}"
+
+          echo "lint-and-security: $LINT"
+          echo "backend: $BACKEND"
+          echo "frontend: $FRONTEND"
+          echo "docker-build: $DOCKER"
+          echo "e2e: $E2E"
+
+          if [ "$LINT" = "success" ] && [ "$BACKEND" = "success" ] && [ "$FRONTEND" = "success" ] && [ "$DOCKER" = "success" ] && [ "$E2E" = "success" ]; then
+            echo "All CI checks passed successfully!"
+            exit 0
+          else
+            echo "One or more required CI stages failed."
+            exit 1
+          fi
