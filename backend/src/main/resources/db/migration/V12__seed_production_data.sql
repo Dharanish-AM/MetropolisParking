@@ -95,7 +95,8 @@ BEGIN
     (lot_express_id, 'Express Avenue Mall Plaza', 'Royapettah, Chennai, Tamil Nadu'),
     (lot_phoenix_id, 'Phoenix Marketcity Garage', 'Viman Nagar, Pune, Maharashtra'),
     (lot_sec18_id, 'Sector 18 Commercial Complex', 'Sector 18, Noida, Uttar Pradesh'),
-    (lot_cyberhub_id, 'Cyber Hub Transit Tower', 'DLF Cyber City, Phase 2, Gurugram, Haryana');
+    (lot_cyberhub_id, 'Cyber Hub Transit Tower', 'DLF Cyber City, Phase 2, Gurugram, Haryana')
+    ON CONFLICT (id) DO NOTHING;
 
     lot_ids := ARRAY[lot_bkc_id, lot_ubcity_id, lot_cp_id, lot_hitec_id, lot_express_id, lot_phoenix_id, lot_sec18_id, lot_cyberhub_id];
 
@@ -103,7 +104,8 @@ BEGIN
         lvl_cnt := CASE WHEN i = 1 THEN 6 WHEN i = 2 THEN 5 ELSE 4 END;
         FOR j IN 1..lvl_cnt LOOP
             INSERT INTO parking_levels (id, lot_id, level_number)
-            VALUES (gen_random_uuid(), lot_ids[i], j);
+            VALUES (gen_random_uuid(), lot_ids[i], j)
+            ON CONFLICT (lot_id, level_number) DO NOTHING;
         END LOOP;
     END LOOP;
 
@@ -125,7 +127,8 @@ BEGIN
             sp_num := 'L' || lvl_rec.level_number || '-' || lpad(j::text, 3, '0');
 
             INSERT INTO parking_spaces (id, lot_id, level_id, space_number, type, status)
-            VALUES (gen_random_uuid(), lvl_rec.lot_id, lvl_rec.id, sp_num, sp_type, 'AVAILABLE');
+            VALUES (gen_random_uuid(), lvl_rec.lot_id, lvl_rec.id, sp_num, sp_type, 'AVAILABLE')
+            ON CONFLICT (level_id, space_number) DO NOTHING;
         END LOOP;
     END LOOP;
 
@@ -140,7 +143,8 @@ BEGIN
         (gen_random_uuid(), 'PEAK', 90.00, 'CAR', lot_ids[i]),
         (gen_random_uuid(), 'WEEKEND', 75.00, 'CAR', lot_ids[i]),
         (gen_random_uuid(), 'VIP', 150.00, 'CAR', lot_ids[i]),
-        (gen_random_uuid(), 'EV_DISCOUNT', 40.00, 'EV', lot_ids[i]);
+        (gen_random_uuid(), 'EV_DISCOUNT', 40.00, 'EV', lot_ids[i])
+        ON CONFLICT (id) DO NOTHING;
     END LOOP;
 
     FOR i IN 1..300 LOOP
@@ -159,7 +163,8 @@ BEGIN
             p_plate,
             v_type,
             cust_ids[1 + (i % array_length(cust_ids, 1))]
-        );
+        )
+        ON CONFLICT (plate_number) DO NOTHING;
     END LOOP;
 
     SELECT array_agg(id) INTO space_ids FROM parking_spaces;
@@ -183,7 +188,8 @@ BEGIN
             calc_fee,
             e_time,
             x_time
-        );
+        )
+        ON CONFLICT (id) DO NOTHING;
 
         p_method := methods[1 + (i % array_length(methods, 1))];
         p_status := CASE WHEN i % 20 = 0 THEN 'FAILED' WHEN i % 25 = 0 THEN 'REFUNDED' WHEN i % 30 = 0 THEN 'PENDING' ELSE 'SUCCESS' END;
@@ -197,7 +203,8 @@ BEGIN
             p_status,
             x_time,
             x_time
-        );
+        )
+        ON CONFLICT (id) DO NOTHING;
     END LOOP;
 
     FOR i IN 1..array_length(space_ids, 1) LOOP
@@ -216,7 +223,8 @@ BEGIN
                 NULL,
                 e_time,
                 e_time
-            );
+            )
+            ON CONFLICT (id) DO NOTHING;
 
             UPDATE parking_spaces SET status = 'OCCUPIED', updated_at = CURRENT_TIMESTAMP WHERE id = space_ids[i];
         ELSIF i % 10 = 5 THEN
@@ -248,7 +256,8 @@ BEGIN
             calc_fee,
             CURRENT_TIMESTAMP - (INTERVAL '1 day' * (i % 10)),
             CURRENT_TIMESTAMP
-        );
+        )
+        ON CONFLICT (id) DO NOTHING;
     END LOOP;
 
     FOR i IN 1..600 LOOP
@@ -282,6 +291,7 @@ BEGIN
             space_ids[1 + (i % array_length(space_ids, 1))],
             det_txt,
             e_time
-        );
+        )
+        ON CONFLICT (id) DO NOTHING;
     END LOOP;
 END $$;
