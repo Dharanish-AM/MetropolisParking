@@ -15,23 +15,13 @@ import { Badge } from '../../../components/ui/Badge';
 import { Modal } from '../../../components/ui/Modal';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { usePayments, useProcessPayment } from '../hooks';
-import {
-  DollarSign,
-  CheckCircle2,
-  AlertCircle,
-  CreditCard,
-  Landmark,
-  Wallet,
-  CircleDollarSign,
-} from 'lucide-react';
+import { useToast } from '../../../context/ToastContext';
+import { DollarSign, CreditCard, Landmark, Wallet, CircleDollarSign } from 'lucide-react';
 
 export const PaymentsFeature: FC = () => {
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState('CARD');
-  const [notification, setNotification] = useState<{
-    message: string;
-    type: 'success' | 'error';
-  } | null>(null);
+  const { showToast } = useToast();
 
   const { data: payments, isLoading, refetch } = usePayments();
   const processPaymentMutation = useProcessPayment();
@@ -50,14 +40,11 @@ export const PaymentsFeature: FC = () => {
       {
         onSuccess: () => {
           setSelectedPaymentId(null);
-          setNotification({ message: 'Payment processed successfully.', type: 'success' });
+          showToast('Payment processed successfully.', 'success');
           refetch();
         },
         onError: (err: any) => {
-          setNotification({
-            message: err.response?.data?.message || 'Failed to process payment.',
-            type: 'error',
-          });
+          showToast(err.response?.data?.message || 'Failed to process payment.', 'error');
         },
       }
     );
@@ -97,29 +84,6 @@ export const PaymentsFeature: FC = () => {
           Track transactions, monitor settlement states, and process active billing sessions.
         </p>
       </div>
-
-      {notification && (
-        <div
-          className={`p-4 rounded-xl border flex items-center gap-3 animate-fade-in ${
-            notification.type === 'success'
-              ? 'bg-green-50 border-green-100 text-green-800'
-              : 'bg-red-50 border-red-100 text-red-800'
-          }`}
-        >
-          {notification.type === 'success' ? (
-            <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
-          ) : (
-            <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
-          )}
-          <div className="text-sm font-semibold">{notification.message}</div>
-          <button
-            onClick={() => setNotification(null)}
-            className="ml-auto text-xs font-bold hover:underline cursor-pointer"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
 
       <Card className="p-0 overflow-hidden">
         <Table>
@@ -212,7 +176,7 @@ export const PaymentsFeature: FC = () => {
                         Settle Invoice
                       </Button>
                     ) : (
-                      <span className="text-xs text-emerald-600 font-bold pr-3">Settled</span>
+                      <span className="text-xs text-status-available font-bold pr-3">Settled</span>
                     )}
                   </TableCell>
                 </TableRow>

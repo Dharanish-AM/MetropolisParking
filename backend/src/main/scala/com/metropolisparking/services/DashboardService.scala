@@ -55,8 +55,8 @@ class DashboardService(dsl: DSLContext, redisService: Option[RedisService] = Non
         PARKING_SESSIONS.FEE
       )
       .from(PARKING_SESSIONS)
-      .join(VEHICLES).on(PARKING_SESSIONS.VEHICLE_ID.eq(VEHICLES.ID))
-      .join(PARKING_SPACES).on(PARKING_SESSIONS.SPACE_ID.eq(PARKING_SPACES.ID))
+      .leftJoin(VEHICLES).on(PARKING_SESSIONS.VEHICLE_ID.eq(VEHICLES.ID))
+      .leftJoin(PARKING_SPACES).on(PARKING_SESSIONS.SPACE_ID.eq(PARKING_SPACES.ID))
       .orderBy(PARKING_SESSIONS.ENTRY_TIME.desc())
       .limit(10)
       .fetch().asScala.map { r =>
@@ -65,9 +65,9 @@ class DashboardService(dsl: DSLContext, redisService: Option[RedisService] = Non
         val status = if (exitTimeOpt.isDefined) "COMPLETED" else "ACTIVE"
         SessionDetail(
           id = r.get(PARKING_SESSIONS.ID),
-          plateNumber = r.get(VEHICLES.PLATE_NUMBER),
-          spaceNumber = r.get(PARKING_SPACES.SPACE_NUMBER),
-          startTime = r.get(PARKING_SESSIONS.ENTRY_TIME).toInstant.toString,
+          plateNumber = Option(r.get(VEHICLES.PLATE_NUMBER)).getOrElse("UNKNOWN"),
+          spaceNumber = Option(r.get(PARKING_SPACES.SPACE_NUMBER)).getOrElse("N/A"),
+          startTime = Option(r.get(PARKING_SESSIONS.ENTRY_TIME)).map(_.toInstant.toString).getOrElse(java.time.Instant.now().toString),
           endTime = exitTimeOpt,
           fee = feeOpt,
           status = status

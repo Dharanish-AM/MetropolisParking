@@ -44,6 +44,7 @@ object Main {
 
     val dataSource = DbConnection.createDataSource(config.db)
     val dslContext = DbConnection.createDslContext(dataSource)
+    new DatabaseSeederService(dslContext).ensureSeeded()
     val securityModule = new SecurityModule(config.jwt.secret)
     val rbacMiddleware = new RbacMiddleware(securityModule)
 
@@ -69,9 +70,10 @@ object Main {
       wsService = wsService
     )
     val vehicleService = new VehicleService(vehicleRepo, auditLogService)
-    val sessionService = new ParkingSessionService(sessionRepo, lotRepo, vehicleService, pricingRuleRepo, paymentRepo, auditLogService, wsService)
-    val paymentService = new PaymentService(paymentRepo, auditLogService)
     val dashboardService = new DashboardService(dslContext, redisService)
+    dashboardService.invalidateCache()
+    val sessionService = new ParkingSessionService(sessionRepo, lotRepo, vehicleService, pricingRuleRepo, paymentRepo, auditLogService, wsService, Some(dashboardService))
+    val paymentService = new PaymentService(paymentRepo, auditLogService, Some(dashboardService))
     val reservationService = new ReservationService(reservationRepo, lotRepo, pricingRuleRepo, auditLogService, wsService)
     val anprService = new AnprService(lotRepo, paymentRepo, vehicleService, sessionService, paymentService, wsService)
     val qrService = new QrService(sessionService, reservationService, sessionRepo, reservationRepo, lotRepo, vehicleService, config.jwt.secret)

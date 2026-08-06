@@ -52,7 +52,7 @@ export const LotDetailsDrawer: FC<LotDetailsDrawerProps> = ({ lot, onBack }) => 
           <div className="pt-2">
             <Badge
               variant="AVAILABLE"
-              className="bg-emerald-50 text-emerald-700 border-emerald-100 py-1 px-3"
+              className="bg-status-available/10 text-status-available border-status-available/20 py-1 px-3"
             >
               <Check className="w-3 h-3 mr-1 inline" /> Free cancellation & changes
               <Info className="w-3.5 h-3.5 ml-1 inline opacity-60" />

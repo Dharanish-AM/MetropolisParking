@@ -15,23 +15,25 @@ class ParkingSessionService(
   pricingRuleRepo: PricingRuleRepository,
   paymentRepo: PaymentRepository,
   auditLogService: AuditLogService,
-  wsService: WebSocketService = null
+  wsService: WebSocketService = null,
+  dashboardService: Option[DashboardService] = None
 ) {
   private val logger = LoggerFactory.getLogger(classOf[ParkingSessionService])
-  private def broadcast(eventJson: String): Unit = Option(wsService).foreach(_.broadcast(eventJson))
+  private def broadcast(eventJson: String): Unit = {
+    Option(wsService).foreach(_.broadcast(eventJson))
+    dashboardService.foreach(_.invalidateCache())
+  }
   def startSession(req: SessionStartRequest, userId: Option[UUID]): ParkingSession = {
     val vehicle = vehicleService.getByPlateNumber(req.plateNumber).getOrElse {
       vehicleService.register(VehicleCreateRequest(req.plateNumber, "CAR", None), userId)
     }
 
     sessionRepo.transaction { txDsl =>
-      // SELECT FOR UPDATE locks the space row — concurrent requests for the same space
-      // will block here until the first transaction commits, preventing double-booking.
       val space = lotRepo.findSpaceByIdForUpdate(req.spaceId, txDsl).getOrElse {
         throw NotFoundException(s"Parking space '${req.spaceId}' not found")
       }
 
-      if (!space.status.equalsIgnoreCase("AVAILABLE")) {
+      if (!space.status.equalsIgnoreCase("AVAILABLE") && !space.status.equalsIgnoreCase("RESERVED")) {
         throw ConflictException(s"Parking space '${space.spaceNumber}' is currently ${space.status}")
       }
 

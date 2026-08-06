@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import type { FC } from 'react';
-import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardHeader } from '../../../components/ui/Card';
@@ -21,21 +20,9 @@ import { Skeleton } from '../../../components/ui/Skeleton';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { useVehicles, useCreateVehicle } from '../hooks';
 import type { Vehicle } from '../../../api/endpoints/vehicles';
+import { vehicleSchema } from '../../../schemas/vehicle';
+import type { VehicleFormValues } from '../../../schemas/vehicle';
 import { Car, Plus, Search, Info } from 'lucide-react';
-
-const vehicleSchema = z.object({
-  plateNumber: z
-    .string()
-    .min(1, 'Plate number is required')
-    .transform(val => val.toUpperCase().replace(/\s/g, ''))
-    .refine(val => /^[A-Z0-9-]{4,15}$/.test(val), {
-      message:
-        'Plate number must be alphanumeric (optionally with hyphens) and 4 to 15 characters long.',
-    }),
-  type: z.enum(['CAR', 'BIKE', 'SUV', 'TRUCK', 'EV']),
-});
-
-type VehicleFormValues = z.infer<typeof vehicleSchema>;
 
 export const VehiclesFeature: FC = () => {
   const { user } = useAuth();
@@ -111,9 +98,13 @@ export const VehiclesFeature: FC = () => {
       <Card className="p-0 overflow-hidden">
         <CardHeader className="px-6 py-5 border-b border-neutral-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex-1 max-w-md relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-secondary" />
+            <Search
+              className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-secondary"
+              aria-hidden="true"
+            />
             <input
               type="text"
+              aria-label="Search plate number"
               placeholder="Search plate number..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}

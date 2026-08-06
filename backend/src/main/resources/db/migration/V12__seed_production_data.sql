@@ -3,21 +3,16 @@ DECLARE
     admin_role_id UUID;
     customer_role_id UUID;
     
-    lot_bkc_id UUID := gen_random_uuid();
-    lot_ubcity_id UUID := gen_random_uuid();
-    lot_cp_id UUID := gen_random_uuid();
-    lot_hitec_id UUID := gen_random_uuid();
-    lot_express_id UUID := gen_random_uuid();
-    lot_phoenix_id UUID := gen_random_uuid();
-    lot_sec18_id UUID := gen_random_uuid();
-    lot_cyberhub_id UUID := gen_random_uuid();
+    lot_bkc_id UUID := '11111111-1111-4111-8111-111111111111';
+    lot_ubcity_id UUID := '22222222-2222-4222-8222-222222222222';
+    lot_cp_id UUID := '33333333-3333-4333-8333-333333333333';
+    lot_hitec_id UUID := '44444444-4444-4444-8444-444444444444';
+    lot_express_id UUID := '55555555-5555-4555-8555-555555555555';
+    lot_phoenix_id UUID := '66666666-6666-4666-8666-666666666666';
+    lot_sec18_id UUID := '77777777-7777-4777-8777-777777777777';
+    lot_cyberhub_id UUID := '88888888-8888-4888-8888-888888888888';
 
-    u_rec RECORD;
-    l_rec RECORD;
     lvl_rec RECORD;
-    sp_rec RECORD;
-    v_rec RECORD;
-
     cust_ids UUID[];
     lot_ids UUID[];
     space_ids UUID[];
@@ -46,13 +41,12 @@ DECLARE
     act_name TEXT;
     ent_type TEXT;
     det_txt TEXT;
+    curr_session_cnt INT;
 
     states TEXT[] := ARRAY['MH', 'KA', 'DL', 'TS', 'TN', 'HR', 'UP'];
-    brands TEXT[] := ARRAY['Tata', 'Mahindra', 'Maruti Suzuki', 'Hyundai', 'Toyota', 'Honda', 'BMW', 'Audi', 'Ather', 'Ola', 'TVS', 'Royal Enfield'];
     methods TEXT[] := ARRAY['UPI', 'CREDIT_CARD', 'DEBIT_CARD', 'CASH', 'WALLET'];
     v_types TEXT[] := ARRAY['CAR', 'SUV', 'BIKE', 'EV', 'TRUCK'];
 
-    user_data RECORD;
     customer_names TEXT[] := ARRAY[
         'Aarav Sharma', 'Ananya Iyer', 'Vikramaditya Rao', 'Priya Patel', 'Devendra Singh',
         'Rohan Gupta', 'Kavya Nair', 'Siddharth Verma', 'Sneha Kulkarni', 'Aditya Joshi',
@@ -95,7 +89,8 @@ BEGIN
     (lot_express_id, 'Express Avenue Mall Plaza', 'Royapettah, Chennai, Tamil Nadu'),
     (lot_phoenix_id, 'Phoenix Marketcity Garage', 'Viman Nagar, Pune, Maharashtra'),
     (lot_sec18_id, 'Sector 18 Commercial Complex', 'Sector 18, Noida, Uttar Pradesh'),
-    (lot_cyberhub_id, 'Cyber Hub Transit Tower', 'DLF Cyber City, Phase 2, Gurugram, Haryana');
+    (lot_cyberhub_id, 'Cyber Hub Transit Tower', 'DLF Cyber City, Phase 2, Gurugram, Haryana')
+    ON CONFLICT (id) DO NOTHING;
 
     lot_ids := ARRAY[lot_bkc_id, lot_ubcity_id, lot_cp_id, lot_hitec_id, lot_express_id, lot_phoenix_id, lot_sec18_id, lot_cyberhub_id];
 
@@ -103,7 +98,8 @@ BEGIN
         lvl_cnt := CASE WHEN i = 1 THEN 6 WHEN i = 2 THEN 5 ELSE 4 END;
         FOR j IN 1..lvl_cnt LOOP
             INSERT INTO parking_levels (id, lot_id, level_number)
-            VALUES (gen_random_uuid(), lot_ids[i], j);
+            VALUES (gen_random_uuid(), lot_ids[i], j)
+            ON CONFLICT (lot_id, level_number) DO NOTHING;
         END LOOP;
     END LOOP;
 
@@ -125,7 +121,8 @@ BEGIN
             sp_num := 'L' || lvl_rec.level_number || '-' || lpad(j::text, 3, '0');
 
             INSERT INTO parking_spaces (id, lot_id, level_id, space_number, type, status)
-            VALUES (gen_random_uuid(), lvl_rec.lot_id, lvl_rec.id, sp_num, sp_type, 'AVAILABLE');
+            VALUES (gen_random_uuid(), lvl_rec.lot_id, lvl_rec.id, sp_num, sp_type, 'AVAILABLE')
+            ON CONFLICT (level_id, space_number) DO NOTHING;
         END LOOP;
     END LOOP;
 
@@ -134,13 +131,15 @@ BEGIN
         (gen_random_uuid(), 'HOURLY', 60.00, 'CAR', lot_ids[i]),
         (gen_random_uuid(), 'HOURLY', 80.00, 'SUV', lot_ids[i]),
         (gen_random_uuid(), 'HOURLY', 30.00, 'BIKE', lot_ids[i]),
+        (gen_random_uuid(), 'HOURLY', 30.00, 'MOTORCYCLE', lot_ids[i]),
         (gen_random_uuid(), 'HOURLY', 50.00, 'EV', lot_ids[i]),
         (gen_random_uuid(), 'HOURLY', 120.00, 'TRUCK', lot_ids[i]),
         (gen_random_uuid(), 'DAILY', 450.00, 'CAR', lot_ids[i]),
         (gen_random_uuid(), 'PEAK', 90.00, 'CAR', lot_ids[i]),
         (gen_random_uuid(), 'WEEKEND', 75.00, 'CAR', lot_ids[i]),
         (gen_random_uuid(), 'VIP', 150.00, 'CAR', lot_ids[i]),
-        (gen_random_uuid(), 'EV_DISCOUNT', 40.00, 'EV', lot_ids[i]);
+        (gen_random_uuid(), 'EV_DISCOUNT', 40.00, 'EV', lot_ids[i])
+        ON CONFLICT (id) DO NOTHING;
     END LOOP;
 
     FOR i IN 1..300 LOOP
@@ -159,129 +158,142 @@ BEGIN
             p_plate,
             v_type,
             cust_ids[1 + (i % array_length(cust_ids, 1))]
-        );
+        )
+        ON CONFLICT (plate_number) DO NOTHING;
     END LOOP;
 
     SELECT array_agg(id) INTO space_ids FROM parking_spaces;
     SELECT array_agg(id) INTO vehicle_ids FROM vehicles;
+    SELECT count(*) INTO curr_session_cnt FROM payments;
 
-    FOR i IN 1..500 LOOP
-        sess_id := gen_random_uuid();
-        e_time := CURRENT_TIMESTAMP - (INTERVAL '1 day' * (1 + (i % 28))) - (INTERVAL '1 minute' * ((i * 19) % 1440));
-        dur := 30 + ((i * 13) % 450);
-        x_time := e_time + (INTERVAL '1 minute' * dur);
-        calc_fee := round(((dur::numeric / 60.0) * (40 + (i % 60))), 2);
-
-        INSERT INTO parking_sessions (id, vehicle_id, space_id, entry_time, exit_time, duration_minutes, fee, created_at, updated_at)
-        VALUES (
-            sess_id,
-            vehicle_ids[1 + (i % array_length(vehicle_ids, 1))],
-            space_ids[1 + (i % array_length(space_ids, 1))],
-            e_time,
-            x_time,
-            dur,
-            calc_fee,
-            e_time,
-            x_time
-        );
-
-        p_method := methods[1 + (i % array_length(methods, 1))];
-        p_status := CASE WHEN i % 20 = 0 THEN 'FAILED' WHEN i % 25 = 0 THEN 'REFUNDED' WHEN i % 30 = 0 THEN 'PENDING' ELSE 'SUCCESS' END;
-
-        INSERT INTO payments (id, session_id, amount, method, status, created_at, updated_at)
-        VALUES (
-            gen_random_uuid(),
-            sess_id,
-            calc_fee,
-            p_method,
-            p_status,
-            x_time,
-            x_time
-        );
-    END LOOP;
-
-    FOR i IN 1..array_length(space_ids, 1) LOOP
-        IF i % 10 <= 4 THEN
+    IF curr_session_cnt < 10 AND array_length(space_ids, 1) > 0 AND array_length(vehicle_ids, 1) > 0 THEN
+        FOR i IN 1..500 LOOP
             sess_id := gen_random_uuid();
-            e_time := CURRENT_TIMESTAMP - (INTERVAL '1 minute' * (15 + (i * 7) % 300));
+            e_time := CURRENT_TIMESTAMP - (INTERVAL '1 day' * (1 + (i % 28))) - (INTERVAL '1 minute' * ((i * 19) % 1440));
+            dur := 30 + ((i * 13) % 450);
+            x_time := e_time + (INTERVAL '1 minute' * dur);
+            calc_fee := round(((dur::numeric / 60.0) * (40 + (i % 60))), 2);
 
             INSERT INTO parking_sessions (id, vehicle_id, space_id, entry_time, exit_time, duration_minutes, fee, created_at, updated_at)
             VALUES (
                 sess_id,
                 vehicle_ids[1 + (i % array_length(vehicle_ids, 1))],
-                space_ids[i],
+                space_ids[1 + (i % array_length(space_ids, 1))],
                 e_time,
-                NULL,
-                NULL,
-                NULL,
+                x_time,
+                dur,
+                calc_fee,
                 e_time,
+                x_time
+            )
+            ON CONFLICT (id) DO NOTHING;
+
+            p_method := methods[1 + (i % array_length(methods, 1))];
+            p_status := CASE WHEN i % 20 = 0 THEN 'FAILED' WHEN i % 25 = 0 THEN 'REFUNDED' WHEN i % 30 = 0 THEN 'PENDING' ELSE 'SUCCESS' END;
+
+            INSERT INTO payments (id, session_id, amount, method, status, created_at, updated_at)
+            VALUES (
+                gen_random_uuid(),
+                sess_id,
+                calc_fee,
+                p_method,
+                p_status,
+                x_time,
+                x_time
+            )
+            ON CONFLICT (id) DO NOTHING;
+        END LOOP;
+
+        UPDATE parking_spaces SET status = 'AVAILABLE', updated_at = CURRENT_TIMESTAMP;
+
+        FOR i IN 1..array_length(space_ids, 1) LOOP
+            IF i % 20 < 7 THEN
+                sess_id := gen_random_uuid();
+                e_time := CURRENT_TIMESTAMP - (INTERVAL '1 minute' * (15 + (i * 7) % 300));
+
+                INSERT INTO parking_sessions (id, vehicle_id, space_id, entry_time, exit_time, duration_minutes, fee, created_at, updated_at)
+                VALUES (
+                    sess_id,
+                    vehicle_ids[1 + (i % array_length(vehicle_ids, 1))],
+                    space_ids[i],
+                    e_time,
+                    NULL,
+                    NULL,
+                    NULL,
+                    e_time,
+                    e_time
+                )
+                ON CONFLICT (id) DO NOTHING;
+
+                UPDATE parking_spaces SET status = 'OCCUPIED', updated_at = CURRENT_TIMESTAMP WHERE id = space_ids[i];
+            ELSIF i % 20 IN (7, 8) THEN
+                UPDATE parking_spaces SET status = 'RESERVED', updated_at = CURRENT_TIMESTAMP WHERE id = space_ids[i];
+            ELSIF i % 20 = 9 THEN
+                UPDATE parking_spaces SET status = 'OUT_OF_SERVICE', updated_at = CURRENT_TIMESTAMP WHERE id = space_ids[i];
+            END IF;
+        END LOOP;
+    END IF;
+
+    SELECT array_agg(id) INTO space_ids FROM parking_spaces WHERE status != 'OUT_OF_SERVICE';
+
+    IF (SELECT count(*) FROM reservations) < 10 AND array_length(space_ids, 1) > 0 AND array_length(cust_ids, 1) > 0 THEN
+        FOR i IN 1..100 LOOP
+            e_time := CURRENT_TIMESTAMP + (INTERVAL '1 hour' * (i % 72)) - (INTERVAL '1 day' * (i % 5));
+            x_time := e_time + INTERVAL '2 hours';
+            calc_fee := 120.00 + (i % 50);
+
+            p_status := CASE WHEN i % 4 = 0 THEN 'COMPLETED' WHEN i % 7 = 0 THEN 'CANCELLED' WHEN i % 10 = 0 THEN 'PENDING' ELSE 'CONFIRMED' END;
+
+            INSERT INTO reservations (id, user_id, space_id, start_time, end_time, status, fee, created_at, updated_at)
+            VALUES (
+                gen_random_uuid(),
+                cust_ids[1 + (i % array_length(cust_ids, 1))],
+                space_ids[1 + ((i * 3) % array_length(space_ids, 1))],
+                e_time,
+                x_time,
+                p_status,
+                calc_fee,
+                CURRENT_TIMESTAMP - (INTERVAL '1 day' * (i % 10)),
+                CURRENT_TIMESTAMP
+            )
+            ON CONFLICT (id) DO NOTHING;
+        END LOOP;
+    END IF;
+
+    IF (SELECT count(*) FROM audit_logs) < 10 AND array_length(space_ids, 1) > 0 AND array_length(cust_ids, 1) > 0 THEN
+        FOR i IN 1..600 LOOP
+            e_time := CURRENT_TIMESTAMP - (INTERVAL '1 hour' * (i % 240));
+            act_name := CASE 
+                WHEN i % 7 = 0 THEN 'USER_LOGIN'
+                WHEN i % 7 = 1 THEN 'START_PARKING_SESSION'
+                WHEN i % 7 = 2 THEN 'END_PARKING_SESSION'
+                WHEN i % 7 = 3 THEN 'PROCESS_PAYMENT'
+                WHEN i % 7 = 4 THEN 'UPDATE_SPACE_STATUS'
+                WHEN i % 7 = 5 THEN 'CREATE_RESERVATION'
+                ELSE 'UPDATE_PRICING_RULE'
+            END;
+
+            ent_type := CASE 
+                WHEN i % 7 IN (0, 6) THEN 'USER'
+                WHEN i % 7 IN (1, 2) THEN 'PARKING_SESSION'
+                WHEN i % 7 = 3 THEN 'PAYMENT'
+                WHEN i % 7 = 4 THEN 'PARKING_SPACE'
+                ELSE 'RESERVATION'
+            END;
+
+            det_txt := '{"action": "' || act_name || '", "initiated_by": "system", "status": "SUCCESS", "event_id": "' || gen_random_uuid() || '"}';
+
+            INSERT INTO audit_logs (id, user_id, action, entity_type, entity_id, details, timestamp)
+            VALUES (
+                gen_random_uuid(),
+                cust_ids[1 + (i % array_length(cust_ids, 1))],
+                act_name,
+                ent_type,
+                space_ids[1 + (i % array_length(space_ids, 1))],
+                det_txt,
                 e_time
-            );
-
-            UPDATE parking_spaces SET status = 'OCCUPIED', updated_at = CURRENT_TIMESTAMP WHERE id = space_ids[i];
-        ELSIF i % 10 = 5 THEN
-            UPDATE parking_spaces SET status = 'RESERVED', updated_at = CURRENT_TIMESTAMP WHERE id = space_ids[i];
-        ELSIF i % 10 = 6 THEN
-            UPDATE parking_spaces SET status = 'MAINTENANCE', updated_at = CURRENT_TIMESTAMP WHERE id = space_ids[i];
-        ELSIF i % 10 = 7 THEN
-            UPDATE parking_spaces SET status = 'OUT_OF_SERVICE', updated_at = CURRENT_TIMESTAMP WHERE id = space_ids[i];
-        END IF;
-    END LOOP;
-
-    SELECT array_agg(id) INTO space_ids FROM parking_spaces WHERE status NOT IN ('OUT_OF_SERVICE', 'MAINTENANCE');
-
-    FOR i IN 1..100 LOOP
-        e_time := CURRENT_TIMESTAMP + (INTERVAL '1 hour' * (i % 72)) - (INTERVAL '1 day' * (i % 5));
-        x_time := e_time + INTERVAL '2 hours';
-        calc_fee := 120.00 + (i % 50);
-
-        p_status := CASE WHEN i % 4 = 0 THEN 'COMPLETED' WHEN i % 7 = 0 THEN 'CANCELLED' WHEN i % 10 = 0 THEN 'PENDING' ELSE 'CONFIRMED' END;
-
-        INSERT INTO reservations (id, user_id, space_id, start_time, end_time, status, fee, created_at, updated_at)
-        VALUES (
-            gen_random_uuid(),
-            cust_ids[1 + (i % array_length(cust_ids, 1))],
-            space_ids[1 + ((i * 3) % array_length(space_ids, 1))],
-            e_time,
-            x_time,
-            p_status,
-            calc_fee,
-            CURRENT_TIMESTAMP - (INTERVAL '1 day' * (i % 10)),
-            CURRENT_TIMESTAMP
-        );
-    END LOOP;
-
-    FOR i IN 1..600 LOOP
-        e_time := CURRENT_TIMESTAMP - (INTERVAL '1 hour' * (i % 240));
-        act_name := CASE 
-            WHEN i % 7 = 0 THEN 'USER_LOGIN'
-            WHEN i % 7 = 1 THEN 'START_PARKING_SESSION'
-            WHEN i % 7 = 2 THEN 'END_PARKING_SESSION'
-            WHEN i % 7 = 3 THEN 'PROCESS_PAYMENT'
-            WHEN i % 7 = 4 THEN 'UPDATE_SPACE_STATUS'
-            WHEN i % 7 = 5 THEN 'CREATE_RESERVATION'
-            ELSE 'UPDATE_PRICING_RULE'
-        END;
-
-        ent_type := CASE 
-            WHEN i % 7 IN (0, 6) THEN 'USER'
-            WHEN i % 7 IN (1, 2) THEN 'PARKING_SESSION'
-            WHEN i % 7 = 3 THEN 'PAYMENT'
-            WHEN i % 7 = 4 THEN 'PARKING_SPACE'
-            ELSE 'RESERVATION'
-        END;
-
-        det_txt := '{"action": "' || act_name || '", "initiated_by": "system", "status": "SUCCESS", "event_id": "' || gen_random_uuid() || '"}';
-
-        INSERT INTO audit_logs (id, user_id, action, entity_type, entity_id, details, timestamp)
-        VALUES (
-            gen_random_uuid(),
-            cust_ids[1 + (i % array_length(cust_ids, 1))],
-            act_name,
-            ent_type,
-            space_ids[1 + (i % array_length(space_ids, 1))],
-            det_txt,
-            e_time
-        );
-    END LOOP;
+            )
+            ON CONFLICT (id) DO NOTHING;
+        END LOOP;
+    END IF;
 END $$;

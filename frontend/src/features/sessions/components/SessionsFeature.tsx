@@ -21,17 +21,13 @@ import { Skeleton } from '../../../components/ui/Skeleton';
 import { useSessions, useStartSession, useEndSession } from '../hooks';
 import { useSpaces } from '../../spaces/hooks';
 import { useVehicles } from '../../vehicles/hooks';
-import { Clock, Plus, Square, Search, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Clock, Plus, Square, Search, AlertCircle } from 'lucide-react';
+import { useToast } from '../../../context/ToastContext';
+import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
+import { plateNumberSchema } from '../../../schemas/vehicle';
 
 const startSessionSchema = z.object({
-  plateNumber: z
-    .string()
-    .min(1, 'Plate number is required')
-    .transform(val => val.toUpperCase().replace(/\s/g, ''))
-    .refine(val => /^[A-Z0-9-]{4,15}$/.test(val), {
-      message:
-        'Plate number must be alphanumeric (optionally with hyphens) and 4 to 15 characters long.',
-    }),
+  plateNumber: plateNumberSchema,
   spaceId: z.string().min(1, 'Available space is required'),
 });
 
@@ -41,10 +37,8 @@ export const SessionsFeature: FC = () => {
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [isStartOpen, setIsStartOpen] = useState(false);
-  const [notification, setNotification] = useState<{
-    message: string;
-    type: 'success' | 'error';
-  } | null>(null);
+  const [endSessionTarget, setEndSessionTarget] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   const { data: sessions, isLoading, refetch } = useSessions();
   const { data: spaces } = useSpaces();
@@ -82,39 +76,29 @@ export const SessionsFeature: FC = () => {
         onSuccess: () => {
           setIsStartOpen(false);
           reset();
-          setNotification({ message: 'Parking session started successfully.', type: 'success' });
+          showToast('Parking session started successfully.', 'success');
           refetch();
         },
         onError: (err: any) => {
-          setNotification({
-            message: err.response?.data?.message || 'Failed to start parking session.',
-            type: 'error',
-          });
+          showToast(err.response?.data?.message || 'Failed to start parking session.', 'error');
         },
       }
     );
   };
 
   const handleEndSession = (plateNumber: string) => {
-    if (!window.confirm(`Are you sure you want to end the session for vehicle ${plateNumber}?`))
-      return;
-
     endSessionMutation.mutate(
       { plateNumber },
       {
         onSuccess: (res: any) => {
           const feeMsg = res.fee ? ` (Fee: $${res.fee})` : '';
-          setNotification({
-            message: `Parking session ended successfully${feeMsg}.`,
-            type: 'success',
-          });
+          showToast(`Parking session ended successfully${feeMsg}.`, 'success');
+          setEndSessionTarget(null);
           refetch();
         },
         onError: (err: any) => {
-          setNotification({
-            message: err.response?.data?.message || 'Failed to end parking session.',
-            type: 'error',
-          });
+          showToast(err.response?.data?.message || 'Failed to end parking session.', 'error');
+          setEndSessionTarget(null);
         },
       }
     );
@@ -174,29 +158,6 @@ export const SessionsFeature: FC = () => {
           Start Session
         </Button>
       </div>
-
-      {notification && (
-        <div
-          className={`p-4 rounded-xl border flex items-center gap-3 animate-fade-in ${
-            notification.type === 'success'
-              ? 'bg-green-50 border-green-100 text-green-800'
-              : 'bg-red-50 border-red-100 text-red-800'
-          }`}
-        >
-          {notification.type === 'success' ? (
-            <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
-          ) : (
-            <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
-          )}
-          <div className="text-sm font-semibold">{notification.message}</div>
-          <button
-            onClick={() => setNotification(null)}
-            className="ml-auto text-xs font-bold hover:underline cursor-pointer"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
 
       <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
         <div className="flex p-1 bg-brand-primary/5 rounded-xl self-start gap-1">
@@ -345,7 +306,7 @@ export const SessionsFeature: FC = () => {
                       {isActive && plate !== '—' ? (
                         <Button
                           variant="secondary"
-                          onClick={() => handleEndSession(plate)}
+                          onClick={() => setEndSessionTarget(plate)}
                           className="px-3 py-1.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-100 font-bold"
                         >
                           <Square className="w-3 h-3 mr-1 fill-red-600 text-red-600" />
@@ -418,6 +379,21 @@ export const SessionsFeature: FC = () => {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        isOpen={endSessionTarget !== null}
+        title="End Parking Session"
+        message={`Are you sure you want to end the session for vehicle ${endSessionTarget}?`}
+        variant="primary"
+        confirmLabel="End Session"
+        isLoading={endSessionMutation.status === 'pending'}
+        onConfirm={() => {
+          if (endSessionTarget) {
+            handleEndSession(endSessionTarget);
+          }
+        }}
+        onCancel={() => setEndSessionTarget(null)}
+      />
     </div>
   );
 };

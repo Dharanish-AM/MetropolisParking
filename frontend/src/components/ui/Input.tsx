@@ -15,7 +15,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const inputFont = mono ? 'font-mono' : 'font-sans';
     const borderClass = error
       ? 'border-status-occupied focus:ring-status-occupied/20 focus:border-status-occupied'
-      : 'border-neutral-border focus:ring-brand-primary/20 focus:border-brand-primary';
+      : 'border-input-border focus:ring-brand-primary/20 focus:border-brand-primary';
 
     return (
       <div className="w-full space-y-1.5">
@@ -33,7 +33,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             id={id}
             ref={ref}
-            className={`block w-full px-3 py-2.5 bg-white border rounded-xl text-neutral-primary text-sm focus:outline-none focus:ring-2 transition-all disabled:opacity-50 disabled:bg-neutral-border/10 ${leftIcon ? 'pl-10' : ''} ${rightIcon ? 'pr-10' : ''} ${inputFont} ${borderClass} ${className}`}
+            aria-label={!label && props.placeholder ? props.placeholder : props['aria-label']}
+            className={`block w-full px-3 py-2.5 bg-white border rounded-md text-neutral-primary text-sm focus:outline-none focus:ring-2 transition-all disabled:opacity-50 disabled:bg-neutral-subtle ${leftIcon ? 'pl-10' : ''} ${rightIcon ? 'pr-10' : ''} ${inputFont} ${borderClass} ${className}`}
             {...props}
           />
           {rightIcon && (

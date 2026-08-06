@@ -9,7 +9,8 @@ import java.util.UUID
 
 class PaymentService(
   repo: PaymentRepository,
-  auditLogService: AuditLogService
+  auditLogService: AuditLogService,
+  dashboardService: Option[DashboardService] = None
 ) {
   def processPayment(paymentId: UUID, req: PaymentProcessRequest, userId: Option[UUID]): Payment = {
     val payment = repo.findById(paymentId).getOrElse {
@@ -27,6 +28,7 @@ class PaymentService(
       status = "SUCCESS"
     )
     repo.update(updated)
+    dashboardService.foreach(_.invalidateCache())
 
     auditLogService.logAction(
       userId,

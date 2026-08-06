@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import type { FC } from 'react';
+import { type FC, useMemo } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,17 +25,10 @@ import { Skeleton } from '../../../components/ui/Skeleton';
 import { useDashboardStats } from '../hooks';
 import { useLots } from '../../lots/hooks';
 import { useSpaces } from '../../spaces/hooks';
-import { useStartSession, useEndSession } from '../../sessions/hooks';
-import {
-  Activity,
-  DollarSign,
-  Plus,
-  Key,
-  CheckCircle2,
-  AlertCircle,
-  TrendingUp,
-  MapPin,
-} from 'lucide-react';
+import { useStartSession, useEndSession, useSessions } from '../../sessions/hooks';
+import { useToast } from '../../../context/ToastContext';
+import { plateNumberSchema } from '../../../schemas/vehicle';
+import { Activity, DollarSign, Plus, Key, TrendingUp, MapPin } from 'lucide-react';
 
 interface RecentSession {
   id: string;
@@ -64,14 +56,7 @@ interface ParkingLot {
 }
 
 const checkInSchema = z.object({
-  plateNumber: z
-    .string()
-    .min(1, 'Plate number is required')
-    .transform(val => val.toUpperCase().replace(/\s/g, ''))
-    .refine(val => /^[A-Z0-9-]{4,15}$/.test(val), {
-      message:
-        'Plate number must be alphanumeric (optionally with hyphens) and 4 to 15 characters long.',
-    }),
+  plateNumber: plateNumberSchema,
   spaceId: z.string().min(1, 'Please select a space'),
 });
 
@@ -84,10 +69,7 @@ const checkOutSchema = z.object({
 type CheckOutFormValues = z.infer<typeof checkOutSchema>;
 
 export const AdminDashboard: FC = () => {
-  const [notification, setNotification] = useState<{
-    message: string;
-    type: 'success' | 'error';
-  } | null>(null);
+  const { showToast } = useToast();
 
   const {
     register: registerCheckIn,
@@ -117,6 +99,7 @@ export const AdminDashboard: FC = () => {
   const { data: stats, isLoading } = useDashboardStats();
   const { data: lots } = useLots();
   const { data: spaces } = useSpaces();
+  const { data: activeSessions } = useSessions(true);
 
   const checkInMutation = useStartSession();
   const checkOutMutation = useEndSession();
@@ -129,14 +112,11 @@ export const AdminDashboard: FC = () => {
       },
       {
         onSuccess: () => {
-          setNotification({ message: 'Vehicle checked in successfully', type: 'success' });
+          showToast('Vehicle checked in successfully', 'success');
           resetCheckIn();
         },
         onError: (err: any) => {
-          setNotification({
-            message: err.response?.data?.message || 'Failed to check in',
-            type: 'error',
-          });
+          showToast(err.response?.data?.message || 'Failed to check in', 'error');
         },
       }
     );
@@ -150,48 +130,45 @@ export const AdminDashboard: FC = () => {
       {
         onSuccess: (res: any) => {
           const feeMsg = res.fee ? ` (Fee: $${res.fee})` : '';
-          setNotification({
-            message: `Vehicle checked out successfully${feeMsg}`,
-            type: 'success',
-          });
+          showToast(`Vehicle checked out successfully${feeMsg}`, 'success');
           resetCheckOut();
         },
         onError: (err: any) => {
-          setNotification({
-            message: err.response?.data?.message || 'Failed to check out',
-            type: 'error',
-          });
+          showToast(err.response?.data?.message || 'Failed to check out', 'error');
         },
       }
     );
   };
 
-  const activeSpaces = (spaces as ParkingSpace[])?.filter(s => s.status === 'OCCUPIED') || [];
+  const activePlateOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    (stats?.recentSessions as RecentSession[])?.forEach(s => {
+      if (s.status === 'ACTIVE' && s.plateNumber && s.plateNumber !== 'UNKNOWN') {
+        map.set(s.plateNumber, `${s.plateNumber} (Space: ${s.spaceNumber})`);
+      }
+    });
+    (activeSessions as any[])?.forEach(s => {
+      const plate = s.plateNumber || s.vehicle?.plateNumber;
+      if (plate && plate !== 'UNKNOWN') {
+        const spaceStr = s.spaceNumber ? ` (Space: ${s.spaceNumber})` : '';
+        map.set(plate, `${plate}${spaceStr}`);
+      }
+    });
+    return Array.from(map.entries()).map(([plate, label]) => ({ plate, label }));
+  }, [stats?.recentSessions, activeSessions]);
 
   return (
     <div className="space-y-8">
-      {notification && (
-        <div
-          className={`p-4 rounded-xl border flex items-center gap-3 animate-fade-in ${
-            notification.type === 'success'
-              ? 'bg-green-50 border-green-100 text-green-800'
-              : 'bg-red-50 border-red-100 text-red-800'
-          }`}
-        >
-          {notification.type === 'success' ? (
-            <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
-          ) : (
-            <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
-          )}
-          <div className="text-sm font-semibold">{notification.message}</div>
-          <button
-            onClick={() => setNotification(null)}
-            className="ml-auto text-xs font-bold hover:underline cursor-pointer"
-          >
-            Dismiss
-          </button>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-neutral-primary">
+            Admin Dashboard
+          </h1>
+          <p className="text-sm text-neutral-secondary">
+            Real-time occupancy rates, revenues, and quick vehicle check-in/out workflows.
+          </p>
         </div>
-      )}
+      </div>
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="space-y-4">
@@ -388,16 +365,11 @@ export const AdminDashboard: FC = () => {
                   {...registerCheckOut('plateNumber')}
                 >
                   <option value="">Select parked vehicle</option>
-                  {activeSpaces.map(space => {
-                    const session = (stats?.recentSessions as RecentSession[])?.find(
-                      s => s.spaceNumber === space.spaceNumber && s.status === 'ACTIVE'
-                    );
-                    return session ? (
-                      <option key={session.id} value={session.plateNumber}>
-                        {session.plateNumber} (Space: {space.spaceNumber})
-                      </option>
-                    ) : null;
-                  })}
+                  {activePlateOptions.map(opt => (
+                    <option key={opt.plate} value={opt.plate}>
+                      {opt.label}
+                    </option>
+                  ))}
                 </Select>
                 <Button
                   type="submit"
