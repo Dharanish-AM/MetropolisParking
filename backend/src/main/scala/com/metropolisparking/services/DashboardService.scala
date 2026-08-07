@@ -37,7 +37,7 @@ class DashboardService(dsl: DSLContext, redisService: Option[RedisService] = Non
 
     val payments = dsl.select(PAYMENTS.AMOUNT, PAYMENTS.METHOD)
       .from(PAYMENTS)
-      .where(PAYMENTS.STATUS.eq("SUCCESS"))
+      .where(PAYMENTS.STATUS.in("SETTLED", "SUCCESS"))
       .fetch().asScala
 
     val totalRev = payments.map(r => BigDecimal(r.get(PAYMENTS.AMOUNT))).sum
