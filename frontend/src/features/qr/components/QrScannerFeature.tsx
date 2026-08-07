@@ -549,10 +549,10 @@ export const QrScannerFeature: FC = () => {
                       <img
                         src={qrCodeUrl}
                         alt="QR Code"
-                        className="mx-auto rounded-xl w-[220px] h-[220px]"
+                        className="mx-auto rounded-xl w-[min(220px,60vw)] h-[min(220px,60vw)]"
                       />
                     ) : (
-                      <div className="w-[220px] h-[220px] flex items-center justify-center text-neutral-secondary font-semibold text-xs">
+                      <div className="w-[min(220px,60vw)] h-[min(220px,60vw)] flex items-center justify-center text-neutral-secondary font-semibold text-xs">
                         Generating QR Code...
                       </div>
                     )}

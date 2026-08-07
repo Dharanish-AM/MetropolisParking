@@ -185,7 +185,7 @@ export const ParkingLotsFeature: FC = () => {
             Real-time slot occupancy visualization, level indices, and space management.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Button variant="outline" size="sm" onClick={() => setIsAddLotOpen(true)}>
             <Plus className="w-4 h-4" /> Add Lot
           </Button>
