@@ -147,7 +147,7 @@ export const Navbar: FC = () => {
           ) : (
             <Link
               to="/login"
-              className="px-4 py-2 bg-brand-black hover:bg-neutral-800 text-white rounded-md text-sm font-bold transition-all duration-150 shadow-xs"
+              className="px-4 py-2 bg-brand-primary hover:bg-brand-primary/95 text-white rounded-md text-sm font-bold transition-all duration-150 shadow-xs"
             >
               Log in / Sign up
             </Link>

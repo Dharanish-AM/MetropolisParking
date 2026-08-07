@@ -83,7 +83,7 @@ export const Login: FC = () => {
               required
             />
 
-            <Button type="submit" variant="black" isLoading={loading} className="w-full">
+            <Button type="submit" variant="primary" isLoading={loading} className="w-full">
               {loading ? 'Signing in...' : 'Continue'}
               {!loading && <ArrowRight className="w-4 h-4 stroke-[2]" aria-hidden="true" />}
             </Button>
