@@ -172,7 +172,7 @@ export const CustomerDashboard: FC = () => {
       { plateNumber },
       {
         onSuccess: (res: any) => {
-          const feeMsg = res.fee ? ` (Fee: $${res.fee})` : '';
+          const feeMsg = res.fee ? ` (Fee: ₹${res.fee})` : '';
           showToast(
             `Checked out successfully${feeMsg}. Please settle payments at the booth if required.`,
             'success'
@@ -343,7 +343,7 @@ export const CustomerDashboard: FC = () => {
                       </TableCell>
                       <TableCell className="font-bold text-neutral-primary">
                         {session.fee !== null && session.fee !== undefined
-                          ? `$${session.fee.toFixed(2)}`
+                          ? `₹${session.fee.toFixed(2)}`
                           : '—'}
                       </TableCell>
                       <TableCell>

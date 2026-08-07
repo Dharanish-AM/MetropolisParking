@@ -162,7 +162,7 @@ export const QrScannerFeature: FC = () => {
               spaceNumber: r.spaceNumber,
               startTime: r.startTime ? new Date(r.startTime).toLocaleString() : undefined,
               status: r.status,
-              fee: r.fee !== undefined ? `$${r.fee.toFixed(2)}` : undefined,
+              fee: r.fee !== undefined ? `₹${r.fee.toFixed(2)}` : undefined,
             },
           });
         }

@@ -303,7 +303,7 @@ export const ReservationsFeature: FC = () => {
                   <TableCell className="text-sm">{formatDate(res.startTime)}</TableCell>
                   <TableCell className="text-sm">{formatDate(res.endTime)}</TableCell>
                   <TableCell className="font-bold text-brand-primary">
-                    ${res.fee.toFixed(2)}
+                    ₹{res.fee.toFixed(2)}
                   </TableCell>
                   <TableCell>
                     <Badge variant={getStatusVariant(res.status)}>{res.status}</Badge>
@@ -499,7 +499,7 @@ export const ReservationsFeature: FC = () => {
               <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-border">
                 <span className="text-neutral-secondary block font-semibold mb-0.5">Total Fee</span>
                 <span className="font-bold text-brand-primary text-sm">
-                  ${selectedReservation.fee.toFixed(2)}
+                  ₹{selectedReservation.fee.toFixed(2)}
                 </span>
               </div>
               <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-border">

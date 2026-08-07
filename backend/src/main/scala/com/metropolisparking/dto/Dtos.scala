@@ -83,6 +83,67 @@ case class SpaceDetailsResponse(
   activeReservation: Option[ActiveReservationDetails]
 )
 
+case class PricingRuleCreateRequest(
+  ruleType: String,
+  rate: BigDecimal,
+  vehicleType: Option[String],
+  lotId: Option[UUID],
+  startHour: Option[Int],
+  endHour: Option[Int],
+  occupancyThreshold: Option[Int],
+  surgeMultiplier: Option[BigDecimal],
+  minFee: Option[BigDecimal],
+  maxDailyCap: Option[BigDecimal]
+)
+
+case class PricingCalculateRequest(
+  lotId: UUID,
+  vehicleType: String,
+  entryTime: String,
+  exitTime: String
+)
+
+case class PricingCalculateResponse(
+  durationMinutes: Long,
+  baseFee: BigDecimal,
+  surgeMultiplier: BigDecimal,
+  finalFee: BigDecimal,
+  appliedRuleType: String
+)
+
+case class RevenueSummary(
+  totalRevenue: BigDecimal,
+  todayRevenue: BigDecimal,
+  totalSessions: Long,
+  avgSessionFee: BigDecimal
+)
+
+case class LotRevenueItem(
+  lotId: UUID,
+  lotName: String,
+  totalRevenue: BigDecimal,
+  sessionCount: Long
+)
+
+case class VehicleTypeRevenueItem(
+  vehicleType: String,
+  totalRevenue: BigDecimal,
+  percentage: Double
+)
+
+case class RevenueTrendPoint(
+  date: String,
+  revenue: BigDecimal,
+  sessionCount: Long
+)
+
+case class AnalyticsResponse(
+  summary: RevenueSummary,
+  lotBreakdown: List[LotRevenueItem],
+  vehicleBreakdown: List[VehicleTypeRevenueItem],
+  trendPoints: List[RevenueTrendPoint]
+)
+
 object DtoFormats {
   implicit val loginRequestFormat: RootJsonFormat[LoginRequest] = jsonFormat2(LoginRequest)
   implicit val userResponseFormat: RootJsonFormat[UserResponse] = jsonFormat4(UserResponse)
@@ -118,5 +179,15 @@ object DtoFormats {
   implicit val activeSessionDetailsFormat: RootJsonFormat[ActiveSessionDetails] = jsonFormat7(ActiveSessionDetails)
   implicit val activeReservationDetailsFormat: RootJsonFormat[ActiveReservationDetails] = jsonFormat8(ActiveReservationDetails)
   implicit val spaceDetailsResponseFormat: RootJsonFormat[SpaceDetailsResponse] = jsonFormat6(SpaceDetailsResponse)
+
+  implicit val pricingRuleCreateRequestFormat: RootJsonFormat[PricingRuleCreateRequest] = jsonFormat10(PricingRuleCreateRequest)
+  implicit val pricingCalculateRequestFormat: RootJsonFormat[PricingCalculateRequest] = jsonFormat4(PricingCalculateRequest)
+  implicit val pricingCalculateResponseFormat: RootJsonFormat[PricingCalculateResponse] = jsonFormat5(PricingCalculateResponse)
+
+  implicit val revenueSummaryFormat: RootJsonFormat[RevenueSummary] = jsonFormat4(RevenueSummary)
+  implicit val lotRevenueItemFormat: RootJsonFormat[LotRevenueItem] = jsonFormat4(LotRevenueItem)
+  implicit val vehicleTypeRevenueItemFormat: RootJsonFormat[VehicleTypeRevenueItem] = jsonFormat3(VehicleTypeRevenueItem)
+  implicit val revenueTrendPointFormat: RootJsonFormat[RevenueTrendPoint] = jsonFormat3(RevenueTrendPoint)
+  implicit val analyticsResponseFormat: RootJsonFormat[AnalyticsResponse] = jsonFormat4(AnalyticsResponse)
 }
 

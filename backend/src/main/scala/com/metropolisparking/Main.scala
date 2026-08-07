@@ -101,6 +101,12 @@ object Main {
         }
       }
 
+    val pricingRuleService = new PricingRuleService(pricingRuleRepo, auditLogService)
+    val revenueAnalyticsService = new RevenueAnalyticsService(dslContext)
+
+    val pricingRuleRoutes = new PricingRuleRoutes(pricingRuleService, rbacMiddleware)
+    val analyticsRoutes = new AnalyticsRoutes(revenueAnalyticsService, rbacMiddleware)
+
     val combinedRoutes =
       healthRoute ~
       authRoutes.routes ~
@@ -114,7 +120,9 @@ object Main {
       docRoutes.routes ~
       reservationRoutes.routes ~
       anprRoutes.routes ~
-      qrRoutes.routes
+      qrRoutes.routes ~
+      pricingRuleRoutes.routes ~
+      analyticsRoutes.routes
 
     val finalRoute = handleExceptions(GlobalErrorHandler.exceptionHandler) {
       handleRejections(GlobalErrorHandler.rejectionHandler) {

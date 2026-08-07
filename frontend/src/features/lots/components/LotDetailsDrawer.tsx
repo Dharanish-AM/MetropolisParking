@@ -17,13 +17,13 @@ interface LotDetailsDrawerProps {
 
 export const LotDetailsDrawer: FC<LotDetailsDrawerProps> = ({ lot, onBack }) => {
   const rates = [
-    { duration: 'Up to 1 hour', rate: '$5.99' },
-    { duration: 'Up to 2 hours', rate: '$10.00' },
-    { duration: 'Up to 3 hours', rate: '$15.00' },
-    { duration: 'Up to 4 hours', rate: '$18.00' },
-    { duration: 'Up to 5 hours', rate: '$22.00' },
-    { duration: 'Up to 6 hours', rate: '$40.00' },
-    { duration: 'Up to 12 hours', rate: '$50.00' },
+    { duration: 'Up to 1 hour', rate: '₹50.00' },
+    { duration: 'Up to 2 hours', rate: '₹100.00' },
+    { duration: 'Up to 3 hours', rate: '₹150.00' },
+    { duration: 'Up to 4 hours', rate: '₹180.00' },
+    { duration: 'Up to 5 hours', rate: '₹220.00' },
+    { duration: 'Up to 6 hours', rate: '₹400.00' },
+    { duration: 'Up to 12 hours', rate: '₹500.00' },
   ];
 
   return (

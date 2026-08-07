@@ -129,7 +129,7 @@ export const AdminDashboard: FC = () => {
       },
       {
         onSuccess: (res: any) => {
-          const feeMsg = res.fee ? ` (Fee: $${res.fee})` : '';
+          const feeMsg = res.fee ? ` (Fee: ₹${res.fee})` : '';
           showToast(`Vehicle checked out successfully${feeMsg}`, 'success');
           resetCheckOut();
         },
@@ -207,14 +207,14 @@ export const AdminDashboard: FC = () => {
           ) : (
             <div className="space-y-1">
               <div className="text-4xl font-extrabold tracking-tight">
-                ${(stats?.financial?.totalRevenue ?? 0).toFixed(2)}
+                ₹{(stats?.financial?.totalRevenue ?? 0).toFixed(2)}
               </div>
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {Object.entries(stats?.financial?.revenueByMethod || {}).map(([method, amt]) => {
                   const parsedAmt = typeof amt === 'number' ? amt : parseFloat(amt as string);
                   return (
                     <Badge key={method} variant="neutral">
-                      {method}: ${isNaN(parsedAmt) ? 0 : parsedAmt.toFixed(0)}
+                      {method}: ₹{isNaN(parsedAmt) ? 0 : parsedAmt.toFixed(0)}
                     </Badge>
                   );
                 })}
@@ -300,7 +300,7 @@ export const AdminDashboard: FC = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right font-bold text-neutral-primary">
-                        {session.fee ? `$${session.fee.toFixed(2)}` : '—'}
+                        {session.fee ? `₹${session.fee.toFixed(2)}` : '—'}
                       </TableCell>
                     </TableRow>
                   ))

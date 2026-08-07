@@ -91,7 +91,7 @@ export const SessionsFeature: FC = () => {
       { plateNumber },
       {
         onSuccess: (res: any) => {
-          const feeMsg = res.fee ? ` (Fee: $${res.fee})` : '';
+          const feeMsg = res.fee ? ` (Fee: ₹${res.fee})` : '';
           showToast(`Parking session ended successfully${feeMsg}.`, 'success');
           setEndSessionTarget(null);
           refetch();
@@ -294,7 +294,7 @@ export const SessionsFeature: FC = () => {
                     </TableCell>
                     <TableCell className="font-bold text-neutral-primary">
                       {session.fee !== null && session.fee !== undefined
-                        ? `$${session.fee.toFixed(2)}`
+                        ? `₹${session.fee.toFixed(2)}`
                         : '—'}
                     </TableCell>
                     <TableCell>

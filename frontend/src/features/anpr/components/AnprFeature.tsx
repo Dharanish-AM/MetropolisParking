@@ -354,7 +354,7 @@ export const AnprFeature: FC = () => {
         onSuccess: (data: AnprExitResponse) => {
           setExitResult(data);
           showToast(
-            `Vehicle ${data.plateNumber} checked out. Fee: $${data.fee.toFixed(2)}`,
+            `Vehicle ${data.plateNumber} checked out. Fee: ₹${data.fee.toFixed(2)}`,
             'success'
           );
         },
@@ -630,7 +630,7 @@ export const AnprFeature: FC = () => {
               <div className="flex justify-between items-center text-sm border-b border-neutral-border pb-3">
                 <span className="text-neutral-secondary font-medium">Calculated Fee</span>
                 <span className="text-xl font-extrabold text-brand-primary">
-                  ${exitResult.fee.toFixed(2)}
+                  ₹{exitResult.fee.toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between items-center text-sm">

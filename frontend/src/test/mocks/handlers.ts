@@ -285,6 +285,65 @@ export const handlers = [
       { status: 400 }
     );
   }),
+
+  http.get(`${BASE}/api/pricing-rules`, () => {
+    return HttpResponse.json([
+      {
+        id: 'rule-1',
+        ruleType: 'PEAK_SURGE',
+        rate: 50.0,
+        vehicleType: 'CAR',
+        lotId: 'lot-1',
+        startHour: 8,
+        endHour: 18,
+        occupancyThreshold: 75,
+        surgeMultiplier: 1.25,
+        minFee: 10.0,
+        maxDailyCap: 250.0,
+      },
+    ]);
+  }),
+
+  http.post(`${BASE}/api/pricing-rules`, async ({ request }) => {
+    const body = (await request.json()) as any;
+    return HttpResponse.json({
+      id: 'rule-new',
+      ...body,
+    });
+  }),
+
+  http.post(`${BASE}/api/pricing-rules/calculate-preview`, () => {
+    return HttpResponse.json({
+      durationMinutes: 120,
+      baseFee: 100.0,
+      surgeMultiplier: 1.25,
+      finalFee: 125.0,
+      appliedRuleType: 'PEAK_SURGE',
+    });
+  }),
+
+  http.get(`${BASE}/api/analytics/revenue`, () => {
+    return HttpResponse.json({
+      summary: {
+        totalRevenue: 12500.5,
+        todayRevenue: 2450.0,
+        totalSessions: 142,
+        avgSessionFee: 88.03,
+      },
+      lotBreakdown: [
+        { lotId: 'lot-1', lotName: 'Downtown Central', totalRevenue: 8500.0, sessionCount: 95 },
+        { lotId: 'lot-2', lotName: 'North Suburb', totalRevenue: 4000.5, sessionCount: 47 },
+      ],
+      vehicleBreakdown: [
+        { vehicleType: 'CAR', totalRevenue: 9000.0, percentage: 72.0 },
+        { vehicleType: 'BIKE', totalRevenue: 3500.5, percentage: 28.0 },
+      ],
+      trendPoints: [
+        { date: '2026-08-01', revenue: 1800.0, sessionCount: 20 },
+        { date: '2026-08-02', revenue: 2450.0, sessionCount: 28 },
+      ],
+    });
+  }),
 ];
 
 export const errorHandlers = [

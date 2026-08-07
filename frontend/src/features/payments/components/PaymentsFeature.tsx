@@ -149,7 +149,7 @@ export const PaymentsFeature: FC = () => {
                     #{payment.sessionId.slice(0, 8)}
                   </TableCell>
                   <TableCell className="font-bold text-neutral-primary">
-                    ${payment.amount.toFixed(2)}
+                    ₹{payment.amount.toFixed(2)}
                   </TableCell>
                   <TableCell className="text-sm font-semibold">
                     {payment.method && payment.method.toUpperCase() !== 'PENDING' ? (

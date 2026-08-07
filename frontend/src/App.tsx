@@ -25,6 +25,12 @@ const AnprSimulator = lazy(() =>
 const QrScannerPage = lazy(() =>
   import('./pages/QrScannerPage').then(m => ({ default: m.QrScannerPage }))
 );
+const PricingPage = lazy(() =>
+  import('./pages/PricingPage').then(m => ({ default: m.PricingPage }))
+);
+const AnalyticsPage = lazy(() =>
+  import('./pages/AnalyticsPage').then(m => ({ default: m.AnalyticsPage }))
+);
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-neutral-bg">
@@ -103,6 +109,22 @@ function App() {
                   element={
                     <ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
                       <Reservations />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/pricing"
+                  element={
+                    <ProtectedRoute allowedRoles={['ADMIN']}>
+                      <PricingPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/analytics"
+                  element={
+                    <ProtectedRoute allowedRoles={['ADMIN']}>
+                      <AnalyticsPage />
                     </ProtectedRoute>
                   }
                 />
