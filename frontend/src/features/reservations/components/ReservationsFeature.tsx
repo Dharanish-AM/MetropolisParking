@@ -265,34 +265,58 @@ export const ReservationsFeature: FC = () => {
           </div>
         </CardHeader>
 
-        {isLoading ? (
-          <div className="p-6 space-y-4">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-          </div>
-        ) : !reservations || reservations.length === 0 ? (
-          <div className="p-12 text-center flex flex-col items-center justify-center space-y-3">
-            <Info className="w-12 h-12 text-neutral-border" />
-            <span className="text-neutral-secondary font-medium">
-              No reservations found. Click 'Book Space' to get started.
-            </span>
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Lot Name</TableHead>
+              <TableHead>Space Number</TableHead>
+              <TableHead>Start Time</TableHead>
+              <TableHead>End Time</TableHead>
+              <TableHead>Fee</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              Array.from({ length: 3 }).map((_, idx) => (
+                <TableRow key={idx}>
+                  <TableCell>
+                    <Skeleton className="h-5 w-32" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-20" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-24" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-24" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-16" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-16" />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Skeleton className="h-8 w-20 ml-auto" />
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : !reservations || reservations.length === 0 ? (
               <TableRow>
-                <TableHead>Lot Name</TableHead>
-                <TableHead>Space Number</TableHead>
-                <TableHead>Start Time</TableHead>
-                <TableHead>End Time</TableHead>
-                <TableHead>Fee</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableCell colSpan={7} className="text-center py-12">
+                  <div className="flex flex-col items-center justify-center gap-3">
+                    <Info className="w-12 h-12 text-neutral-border" />
+                    <span className="text-neutral-secondary font-medium">
+                      No reservations found. Click 'Book Space' to get started.
+                    </span>
+                  </div>
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {reservations.map(res => (
+            ) : (
+              reservations.map(res => (
                 <TableRow key={res.id}>
                   <TableCell className="font-bold">{res.lotName}</TableCell>
                   <TableCell>
@@ -336,7 +360,7 @@ export const ReservationsFeature: FC = () => {
                             variant="secondary"
                             size="sm"
                             onClick={() => setCancelTargetId(res.id)}
-                            className="px-2.5 py-1 text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+                            className="px-2.5 py-1 text-xs font-semibold text-status-occupied hover:bg-status-occupied/10 cursor-pointer"
                           >
                             <XCircle className="w-3.5 h-3.5 mr-1" />
                             Cancel
@@ -346,10 +370,10 @@ export const ReservationsFeature: FC = () => {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+              ))
+            )}
+          </TableBody>
+        </Table>
       </Card>
 
       <Modal
@@ -363,7 +387,7 @@ export const ReservationsFeature: FC = () => {
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {error && (
-            <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-red-700 text-sm flex gap-2 items-start">
+            <div className="p-4 bg-status-occupied/10 border border-status-occupied/20 rounded-xl text-status-occupied text-sm flex gap-2 items-start">
               <AlertTriangle className="w-5 h-5 shrink-0" />
               <span>{error}</span>
             </div>
@@ -461,7 +485,7 @@ export const ReservationsFeature: FC = () => {
       >
         {selectedReservation && (
           <div className="space-y-4">
-            <div className="p-4 bg-neutral-50 rounded-xl border border-neutral-border space-y-2">
+            <div className="p-4 bg-neutral-secondary-bg rounded-xl border border-neutral-border space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase text-neutral-secondary">
                   {selectedReservation.lotName}
@@ -479,7 +503,7 @@ export const ReservationsFeature: FC = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-border">
+              <div className="p-3 bg-neutral-secondary-bg rounded-xl border border-neutral-border">
                 <span className="text-neutral-secondary block font-semibold mb-0.5">
                   Start Time
                 </span>
@@ -487,7 +511,7 @@ export const ReservationsFeature: FC = () => {
                   {formatDate(selectedReservation.startTime)}
                 </span>
               </div>
-              <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-border">
+              <div className="p-3 bg-neutral-secondary-bg rounded-xl border border-neutral-border">
                 <span className="text-neutral-secondary block font-semibold mb-0.5">End Time</span>
                 <span className="font-medium text-neutral-primary">
                   {formatDate(selectedReservation.endTime)}
@@ -496,13 +520,13 @@ export const ReservationsFeature: FC = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-border">
+              <div className="p-3 bg-neutral-secondary-bg rounded-xl border border-neutral-border">
                 <span className="text-neutral-secondary block font-semibold mb-0.5">Total Fee</span>
                 <span className="font-bold text-brand-primary text-sm">
                   ₹{selectedReservation.fee.toFixed(2)}
                 </span>
               </div>
-              <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-border">
+              <div className="p-3 bg-neutral-secondary-bg rounded-xl border border-neutral-border">
                 <span className="text-neutral-secondary block font-semibold mb-0.5">
                   Reservation ID
                 </span>
@@ -512,7 +536,7 @@ export const ReservationsFeature: FC = () => {
               </div>
             </div>
 
-            <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-border space-y-1.5 text-xs">
+            <div className="p-3 bg-neutral-secondary-bg rounded-xl border border-neutral-border space-y-1.5 text-xs">
               <div className="flex justify-between items-center">
                 <span className="text-neutral-secondary font-semibold">JWT Gate Pass Token</span>
                 {detailsJwtToken && (
@@ -521,7 +545,7 @@ export const ReservationsFeature: FC = () => {
                       navigator.clipboard.writeText(detailsJwtToken);
                       showToast('JWT Token copied to clipboard', 'info');
                     }}
-                    className="text-[11px] text-brand-primary hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                    className="text-[11px] text-brand-primary hover:underline font-bold flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary rounded"
                   >
                     <Copy className="w-3 h-3" />
                     <span>Copy Token</span>
@@ -576,14 +600,14 @@ export const ReservationsFeature: FC = () => {
                         navigator.clipboard.writeText(passJwtToken);
                         showToast('JWT Token copied to clipboard', 'info');
                       }}
-                      className="text-[11px] text-brand-primary hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                      className="text-[11px] text-brand-primary hover:underline font-bold flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary rounded"
                     >
                       <Copy className="w-3 h-3" />
                       <span>Copy Token</span>
                     </button>
                   )}
                 </div>
-                <div className="font-mono text-[11px] text-neutral-primary select-all break-all bg-neutral-50 px-3 py-2 rounded-xl border border-neutral-border max-h-20 overflow-y-auto leading-relaxed">
+                <div className="font-mono text-[11px] text-neutral-primary select-all break-all bg-neutral-secondary-bg px-3 py-2 rounded-xl border border-neutral-border max-h-20 overflow-y-auto leading-relaxed">
                   {passJwtToken}
                 </div>
               </div>
@@ -592,7 +616,7 @@ export const ReservationsFeature: FC = () => {
               </div>
             </div>
           ) : (
-            <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-red-700 text-sm flex gap-2 items-start justify-center">
+            <div className="p-4 bg-status-occupied/10 border border-status-occupied/20 rounded-xl text-status-occupied text-sm flex gap-2 items-start justify-center">
               <AlertTriangle className="w-5 h-5 shrink-0" />
               <span>Failed to load QR code. Please try again.</span>
             </div>

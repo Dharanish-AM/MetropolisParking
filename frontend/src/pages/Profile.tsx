@@ -2,13 +2,14 @@ import type { FC } from 'react';
 import { Navbar } from '../components/Navbar';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
+import { Skeleton } from '../components/ui/Skeleton';
 import { useAuth } from '../features/auth/hooks/useAuth';
 import { useVehicles } from '../features/vehicles/hooks';
 import { Mail, ShieldAlert, Car, Building } from 'lucide-react';
 
 export const Profile: FC = () => {
   const { user } = useAuth();
-  const { data: vehicles } = useVehicles();
+  const { data: vehicles, isLoading: isVehiclesLoading } = useVehicles();
 
   const myVehicles = (vehicles || []).filter(v => v.ownerId === user?.id);
 
@@ -79,14 +80,21 @@ export const Profile: FC = () => {
               </CardHeader>
               <CardContent className="p-0 space-y-4">
                 {user?.role === 'CUSTOMER' ? (
-                  <div className="space-y-2">
-                    <div className="text-4xl font-extrabold text-brand-primary">
-                      {myVehicles.length}
+                  isVehiclesLoading ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-10 w-16" />
+                      <Skeleton className="h-4 w-40" />
                     </div>
-                    <p className="text-xs text-neutral-secondary font-semibold">
-                      Registered vehicle{myVehicles.length === 1 ? '' : 's'} under your account.
-                    </p>
-                  </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="text-4xl font-extrabold text-brand-primary">
+                        {myVehicles.length}
+                      </div>
+                      <p className="text-xs text-neutral-secondary font-semibold">
+                        Registered vehicle{myVehicles.length === 1 ? '' : 's'} under your account.
+                      </p>
+                    </div>
+                  )
                 ) : (
                   <div className="space-y-2">
                     <div className="text-sm font-semibold text-neutral-secondary flex items-center gap-2">

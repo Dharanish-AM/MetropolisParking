@@ -264,7 +264,7 @@ export const CustomerDashboard: FC = () => {
                       <TableCell className="font-mono font-bold tracking-tight text-neutral-primary">
                         <div className="flex items-center gap-2">
                           <span>{session.plateNumber}</span>
-                          <span className="text-[10px] px-2 py-0.5 rounded-full font-sans font-bold bg-neutral-100 text-neutral-600 border border-neutral-border">
+                          <span className="text-[10px] px-2 py-0.5 rounded-full font-sans font-bold bg-neutral-subtle text-neutral-secondary border border-neutral-border">
                             {session.vehicleType}
                           </span>
                         </div>
@@ -284,9 +284,9 @@ export const CustomerDashboard: FC = () => {
                         <Button
                           variant="secondary"
                           onClick={() => setCheckoutTarget(session.plateNumber!)}
-                          className="px-2.5 py-1.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-100 font-bold inline-flex items-center gap-1 cursor-pointer"
+                          className="px-2.5 py-1.5 text-xs text-status-occupied hover:bg-status-occupied/10 border-status-occupied/20 font-bold inline-flex items-center gap-1 cursor-pointer"
                         >
-                          <Square className="w-3 h-3 fill-red-600 text-red-600" />
+                          <Square className="w-3 h-3 fill-status-occupied text-status-occupied" />
                           Exit Parking
                         </Button>
                       </TableCell>
@@ -368,8 +368,9 @@ export const CustomerDashboard: FC = () => {
             {isVehiclesLoading ? (
               <Skeleton className="h-20 w-full" />
             ) : myVehicles.length === 0 ? (
-              <div className="text-center py-6 text-neutral-secondary text-sm">
-                No vehicles registered yet. Add one to start parking!
+              <div className="flex flex-col items-center gap-2 text-center py-6 text-neutral-secondary text-sm">
+                <Car className="w-8 h-8 text-neutral-secondary" />
+                <span>No vehicles registered yet. Add one to start parking!</span>
               </div>
             ) : (
               <div className="divide-y divide-neutral-border">
@@ -399,7 +400,7 @@ export const CustomerDashboard: FC = () => {
         title="Register New Vehicle"
       >
         {error && (
-          <div className="mb-4 p-3.5 bg-red-50 border border-red-100 text-red-800 text-sm font-semibold rounded-xl">
+          <div className="mb-4 p-3.5 bg-status-occupied/10 border border-status-occupied/20 text-status-occupied text-sm font-semibold rounded-xl">
             {error}
           </div>
         )}
@@ -482,7 +483,8 @@ export const CustomerDashboard: FC = () => {
 
           {availableSpaces.length === 0 && (
             <p className="text-xs text-status-occupied font-semibold flex items-center gap-1">
-              <AlertCircle className="w-4 h-4 text-red-500" /> No available parking spots left.
+              <AlertCircle className="w-4 h-4 text-status-occupied" /> No available parking spots
+              left.
             </p>
           )}
 
