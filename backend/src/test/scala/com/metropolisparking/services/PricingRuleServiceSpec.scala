@@ -50,6 +50,7 @@ class PricingRuleServiceSpec extends AnyFunSpec with Matchers with TestDbSpec {
 
     it("should correctly calculate dynamic surge fees and respect max daily caps") {
       val lotId = UUID.randomUUID()
+      dslContext.execute("INSERT INTO parking_lots (id, name, location) VALUES (?::uuid, 'Test Dynamic Lot', 'Test Location') ON CONFLICT DO NOTHING", lotId)
       val createReq = PricingRuleCreateRequest(
         ruleType = "PEAK_SURGE",
         rate = BigDecimal("40.00"),
