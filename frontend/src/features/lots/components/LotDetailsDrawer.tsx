@@ -31,12 +31,12 @@ export const LotDetailsDrawer: FC<LotDetailsDrawerProps> = ({ lot, onBack }) => 
       <div className="flex justify-between items-center px-4 py-4 border-b border-neutral-border">
         <button
           onClick={onBack}
-          className="p-1.5 rounded-lg text-neutral-primary hover:bg-neutral-border/50 transition-all cursor-pointer"
+          className="p-1.5 rounded-lg text-neutral-primary hover:bg-neutral-border/50 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <span className="font-bold text-sm text-neutral-primary">Location details</span>
-        <button className="p-1.5 rounded-lg text-neutral-secondary hover:bg-neutral-border/50 transition-all cursor-pointer">
+        <button className="p-1.5 rounded-lg text-neutral-secondary hover:bg-neutral-border/50 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary">
           <MoreVertical className="w-5 h-5" />
         </button>
       </div>

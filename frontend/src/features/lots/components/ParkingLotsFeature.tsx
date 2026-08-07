@@ -212,7 +212,7 @@ export const ParkingLotsFeature: FC = () => {
             </>
           )}
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-border text-xs font-semibold bg-white text-neutral-secondary">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-status-available animate-pulse" />
             Live Updates
           </span>
         </div>
@@ -240,7 +240,7 @@ export const ParkingLotsFeature: FC = () => {
                     setSelectedLotId(lot.id);
                     setSelectedLevelId('ALL');
                   }}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 cursor-pointer ${
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary ${
                     activeLotId === lot.id
                       ? 'bg-brand-primary text-white shadow-xs'
                       : 'bg-white border border-neutral-border text-neutral-secondary hover:text-neutral-primary hover:bg-neutral-border/20'
@@ -271,7 +271,7 @@ export const ParkingLotsFeature: FC = () => {
             </div>
             <button
               onClick={() => setSelectedLevelId('ALL')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary ${
                 selectedLevelId === 'ALL'
                   ? 'bg-neutral-primary text-white'
                   : 'bg-neutral-border/40 text-neutral-secondary hover:text-neutral-primary'
@@ -283,7 +283,7 @@ export const ParkingLotsFeature: FC = () => {
               <button
                 key={level.id}
                 onClick={() => setSelectedLevelId(level.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary ${
                   selectedLevelId === level.id
                     ? 'bg-neutral-primary text-white'
                     : 'bg-neutral-border/40 text-neutral-secondary hover:text-neutral-primary'
@@ -337,8 +337,10 @@ export const ParkingLotsFeature: FC = () => {
               ))}
             </div>
           ) : filteredSpaces.length === 0 ? (
-            <div className="text-center py-12 text-neutral-secondary font-medium border border-dashed border-neutral-border rounded-xl">
-              No slots found for this selection. Select a floor and add space slots to start.
+            <div className="text-center py-12 text-neutral-secondary border border-dashed border-neutral-border rounded-xl">
+              <Car className="w-10 h-10 mx-auto mb-3 text-brand-primary/40" />
+              <h4 className="text-sm font-bold text-neutral-primary">No slots found</h4>
+              <p className="text-xs mt-1">Select a floor and add space slots to start.</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
@@ -351,7 +353,7 @@ export const ParkingLotsFeature: FC = () => {
                   <button
                     key={space.id}
                     onClick={() => setSelectedSpace(space)}
-                    className={`p-4 border rounded-2xl flex flex-col items-center justify-between gap-3 transition-all duration-150 hover:scale-[1.02] cursor-pointer text-center relative overflow-hidden bg-white border-neutral-border hover:border-brand-primary`}
+                    className={`p-4 border rounded-2xl flex flex-col items-center justify-between gap-3 transition-all duration-150 hover:scale-[1.02] cursor-pointer text-center relative overflow-hidden bg-white border-neutral-border hover:border-brand-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary`}
                   >
                     <div className="flex items-center justify-between w-full text-xs font-semibold text-neutral-secondary">
                       <span className="font-mono font-bold text-neutral-primary">{spaceLabel}</span>
@@ -445,7 +447,7 @@ export const ParkingLotsFeature: FC = () => {
                       )
                     }
                     disabled={updateSpaceStatusMutation.status === 'pending'}
-                    className={`py-2.5 px-3 border rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer ${
+                    className={`py-2.5 px-3 border rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary ${
                       selectedSpace.status === statusOption
                         ? 'border-brand-primary bg-brand-primary/10 text-brand-primary'
                         : 'border-neutral-border bg-white text-neutral-secondary hover:text-neutral-primary hover:bg-neutral-border/20'

@@ -272,13 +272,22 @@ export const AdminDashboard: FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {!stats?.recentSessions || stats.recentSessions.length === 0 ? (
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-10">
+                      <Skeleton className="h-5 w-40 mx-auto" />
+                    </TableCell>
+                  </TableRow>
+                ) : !stats?.recentSessions || stats.recentSessions.length === 0 ? (
                   <TableRow>
                     <TableCell
                       colSpan={5}
                       className="text-center text-neutral-secondary font-medium py-10"
                     >
-                      {isLoading ? 'Loading activity...' : 'No recent parking sessions recorded'}
+                      <div className="flex flex-col items-center gap-2">
+                        <Activity className="w-8 h-8 text-neutral-secondary" />
+                        <span>No recent parking sessions recorded</span>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (

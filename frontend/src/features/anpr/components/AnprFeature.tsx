@@ -410,7 +410,7 @@ export const AnprFeature: FC = () => {
               </div>
             )}
 
-            <div className="relative aspect-video rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-border flex items-center justify-center">
+            <div className="relative aspect-video rounded-2xl overflow-hidden bg-brand-nav-dark border border-neutral-border flex items-center justify-center">
               {isCameraActive ? (
                 <>
                   <video
@@ -500,7 +500,7 @@ export const AnprFeature: FC = () => {
                 </label>
                 <button
                   onClick={generateMockPlate}
-                  className="text-xs font-bold text-brand-primary hover:underline flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-bold text-brand-primary hover:underline flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary rounded"
                 >
                   <RefreshCw className="w-3 h-3" />
                   <span>Generate Random</span>
@@ -544,7 +544,7 @@ export const AnprFeature: FC = () => {
         )}
 
         {error && (
-          <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-700 text-sm flex gap-3 items-start animate-shake">
+          <div className="p-4 bg-status-occupied/10 border border-status-occupied/20 rounded-2xl text-status-occupied text-sm flex gap-3 items-start animate-shake">
             <AlertTriangle className="w-5 h-5 shrink-0" />
             <div>
               <span className="font-bold">Error: </span>

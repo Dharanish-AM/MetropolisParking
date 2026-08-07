@@ -118,7 +118,7 @@ export const PricingRulesFeature: FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-primary flex items-center gap-2">
+          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-primary flex items-center gap-2">
             <Tag className="w-6 h-6 text-brand-primary stroke-[2.25]" />
             Dynamic Pricing & Rate Rules
           </h1>
@@ -187,7 +187,7 @@ export const PricingRulesFeature: FC = () => {
                     <TableCell className="text-xs font-mono text-neutral-secondary">
                       {rule.startHour}:00 - {rule.endHour}:00
                     </TableCell>
-                    <TableCell className="font-bold text-amber-600">
+                    <TableCell className="font-bold text-status-reserved">
                       {rule.surgeMultiplier > 1.0 ? `${rule.surgeMultiplier}x` : '1.0x (Standard)'}
                     </TableCell>
                     <TableCell className="text-xs font-semibold text-neutral-secondary">

@@ -28,7 +28,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
       RESERVED: 'bg-status-reserved/10 text-status-reserved border-status-reserved/20',
       danger: 'bg-status-occupied/10 text-status-occupied border-status-occupied/20',
       OCCUPIED: 'bg-status-occupied/10 text-status-occupied border-status-occupied/20',
-      info: 'bg-blue-50 text-blue-700 border-blue-200',
+      info: 'bg-brand-accent/10 text-brand-accent border-brand-accent/20',
       neutral: 'bg-neutral-border/20 text-neutral-secondary border-neutral-border',
       OUT_OF_SERVICE:
         'bg-status-out-of-service/10 text-status-out-of-service border-status-out-of-service/20',
