@@ -124,7 +124,7 @@ export const Navbar: FC = () => {
 
               <button
                 onClick={logout}
-                className="p-1.5 lg:p-2 border border-neutral-border rounded-md text-neutral-secondary hover:text-status-occupied hover:border-status-occupied/30 hover:bg-status-occupied/10 transition-all duration-150 cursor-pointer"
+                className="p-2.5 lg:p-2 border border-neutral-border rounded-md text-neutral-secondary hover:text-status-occupied hover:border-status-occupied/30 hover:bg-status-occupied/10 transition-all duration-150 cursor-pointer"
                 title="Log Out"
               >
                 <LogOut className="w-4 h-4 lg:w-4.5 lg:h-4.5 stroke-[1.75]" aria-hidden="true" />
@@ -135,7 +135,7 @@ export const Navbar: FC = () => {
                 aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
                 aria-expanded={mobileMenuOpen}
                 aria-controls="mobile-nav-menu"
-                className="md:hidden p-1.5 border border-neutral-border rounded-md text-neutral-primary"
+                className="md:hidden p-2.5 border border-neutral-border rounded-md text-neutral-primary"
               >
                 {mobileMenuOpen ? (
                   <X className="w-5 h-5" aria-hidden="true" />
