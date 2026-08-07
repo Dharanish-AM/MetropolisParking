@@ -19,8 +19,12 @@ class DatabaseSeederService(dslContext: DSLContext) {
         "SELECT COUNT(*) FROM parking_sessions WHERE DATE(entry_time) = CURRENT_DATE"
       ).fetchOne(0, classOf[java.lang.Integer])
 
-      if (todayCount == null || todayCount == 0) {
-        logger.info("No parking sessions found for today ({}) - executing dynamic current-time auto-seed...", today)
+      val reservationCount = dslContext.resultQuery(
+        "SELECT COUNT(*) FROM reservations"
+      ).fetchOne(0, classOf[java.lang.Integer])
+
+      if (todayCount == null || todayCount == 0 || reservationCount == null || reservationCount == 0) {
+        logger.info("Database seed check triggered - executing dynamic current-time auto-seed...", today)
         seedDynamicData()
       } else {
         logger.info("Database already seeded with {} sessions for today ({})", todayCount, today)
@@ -37,6 +41,7 @@ class DatabaseSeederService(dslContext: DSLContext) {
 
     val spaces = dslContext.resultQuery("SELECT id, space_number, lot_id FROM parking_spaces").fetch()
     val vehicles = dslContext.resultQuery("SELECT id, plate_number, type FROM vehicles").fetch()
+    val usersList = dslContext.resultQuery("SELECT id FROM users").fetch()
 
     if (spaces.isEmpty || vehicles.isEmpty) {
       logger.warn("Missing core master data (spaces/vehicles). Skipping dynamic session seeding.")
@@ -110,6 +115,39 @@ class DatabaseSeederService(dslContext: DSLContext) {
       )
     }
 
-    logger.info("Dynamic current-time seeding completed for today ({}) and past 30 days!", now.toLocalDate)
+    if (!usersList.isEmpty) {
+      val statuses = Array("CONFIRMED", "COMPLETED", "PENDING", "CANCELLED")
+      for (dayOffset <- (0 to 14).reverse) {
+        val dayDate = now.minusDays(dayOffset)
+        val countForDay = 2 + rand.nextInt(3)
+
+        for (_ <- 1 to countForDay) {
+          val startHour = 8 + rand.nextInt(10)
+          val durationHours = 1 + rand.nextInt(4)
+          val startTime = dayDate.withHour(startHour).withMinute(0).withSecond(0).toInstant
+          val endTime = startTime.plusSeconds(durationHours * 3600)
+          val userRec = usersList.get(rand.nextInt(usersList.size()))
+          val spaceRec = spaces.get(rand.nextInt(spaces.size()))
+          val userId = UUID.fromString(userRec.get("id").toString)
+          val spaceId = UUID.fromString(spaceRec.get("id").toString)
+          val resId = UUID.randomUUID()
+          val hourlyRate = 40.0 + (rand.nextInt(5) * 10.0)
+          val fee = BigDecimal.valueOf(durationHours * hourlyRate)
+
+          val status = if (endTime.isBefore(now.toInstant)) "COMPLETED"
+                       else if (startTime.isBefore(now.toInstant) && endTime.isAfter(now.toInstant)) "CONFIRMED"
+                       else statuses(rand.nextInt(statuses.length))
+
+          dslContext.execute(
+            """INSERT INTO reservations (id, user_id, space_id, start_time, end_time, status, fee)
+              |VALUES (?::uuid, ?::uuid, ?::uuid, ?::timestamptz, ?::timestamptz, ?, ?)
+              |ON CONFLICT (id) DO NOTHING""".stripMargin,
+            resId, userId, spaceId, startTime.toString, endTime.toString, status, fee
+          )
+        }
+      }
+    }
+
+    logger.info("Dynamic current-time seeding (sessions & reservations) completed for today ({})!", now.toLocalDate)
   }
 }
