@@ -196,7 +196,7 @@ export const VehiclesFeature: FC = () => {
         title="Register New Vehicle"
       >
         {error && (
-          <div className="mb-4 p-3.5 bg-red-50 border border-red-100 text-red-800 text-sm font-semibold rounded-xl">
+          <div className="mb-4 p-3.5 bg-status-occupied/10 border border-status-occupied/20 text-status-occupied text-sm font-semibold rounded-xl">
             {error}
           </div>
         )}
@@ -245,7 +245,7 @@ export const VehiclesFeature: FC = () => {
       >
         {selectedVehicle && (
           <div className="space-y-4">
-            <div className="p-4 bg-neutral-50 rounded-xl border border-neutral-border space-y-2">
+            <div className="p-4 bg-neutral-secondary-bg rounded-xl border border-neutral-border space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase text-neutral-secondary">
                   Plate Number
@@ -258,13 +258,13 @@ export const VehiclesFeature: FC = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-border">
+              <div className="p-3 bg-neutral-secondary-bg rounded-xl border border-neutral-border">
                 <span className="text-neutral-secondary block font-semibold mb-0.5">
                   Vehicle Type
                 </span>
                 <span className="font-bold text-neutral-primary">{selectedVehicle.type}</span>
               </div>
-              <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-border">
+              <div className="p-3 bg-neutral-secondary-bg rounded-xl border border-neutral-border">
                 <span className="text-neutral-secondary block font-semibold mb-0.5">
                   Registration ID
                 </span>
@@ -274,7 +274,7 @@ export const VehiclesFeature: FC = () => {
               </div>
             </div>
 
-            <div className="p-3 bg-neutral-50 rounded-xl border border-neutral-border text-xs">
+            <div className="p-3 bg-neutral-secondary-bg rounded-xl border border-neutral-border text-xs">
               <span className="text-neutral-secondary block font-semibold mb-0.5">Owner ID</span>
               <span className="font-mono text-neutral-primary font-bold">
                 {selectedVehicle.ownerId || 'Guest / Unassigned'}

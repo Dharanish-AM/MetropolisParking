@@ -20,7 +20,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       primary:
         'bg-brand-primary text-white hover:bg-brand-primary/95 shadow-xs border border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary disabled:bg-brand-disabled',
       black:
-        'bg-brand-black text-white hover:bg-neutral-800 shadow-xs border border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary disabled:bg-neutral-400',
+        'bg-brand-black text-white hover:bg-brand-black/90 shadow-xs border border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary disabled:bg-neutral-stroke',
       secondary:
         'bg-brand-lavender text-brand-primary border border-transparent hover:bg-brand-primary/10 shadow-xs focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary',
       outline:

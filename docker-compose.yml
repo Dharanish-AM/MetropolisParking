@@ -72,6 +72,7 @@ services:
       - ./grafana/dashboards:/var/lib/grafana/dashboards
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SMTP_ENABLED=false
     depends_on:
       - prometheus
       - jaeger

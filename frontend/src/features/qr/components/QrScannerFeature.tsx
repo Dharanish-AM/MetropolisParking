@@ -162,7 +162,7 @@ export const QrScannerFeature: FC = () => {
               spaceNumber: r.spaceNumber,
               startTime: r.startTime ? new Date(r.startTime).toLocaleString() : undefined,
               status: r.status,
-              fee: r.fee !== undefined ? `$${r.fee.toFixed(2)}` : undefined,
+              fee: r.fee !== undefined ? `₹${r.fee.toFixed(2)}` : undefined,
             },
           });
         }
@@ -309,9 +309,9 @@ export const QrScannerFeature: FC = () => {
               <button
                 type="button"
                 onClick={toggleCamera}
-                className={`flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer border ${
+                className={`flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary ${
                   isCameraActive
-                    ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'
+                    ? 'bg-status-occupied/10 text-status-occupied border-status-occupied/20 hover:bg-status-occupied/20'
                     : 'bg-brand-primary/10 text-brand-primary border-brand-primary/20 hover:bg-brand-primary/20'
                 }`}
               >
@@ -328,12 +328,12 @@ export const QrScannerFeature: FC = () => {
             </div>
 
             {isCameraActive && (
-              <div className="mb-6 p-3 bg-neutral-900 rounded-2xl overflow-hidden shadow-inner flex flex-col items-center">
+              <div className="mb-6 p-3 bg-brand-nav-dark rounded-2xl overflow-hidden shadow-inner flex flex-col items-center">
                 <div
                   id="qr-reader-container"
                   className="w-full max-w-sm rounded-xl overflow-hidden"
                 />
-                <p className="text-[11px] text-neutral-400 mt-2 font-medium">
+                <p className="text-[11px] text-neutral-secondary mt-2 font-medium">
                   Point webcam or phone camera at QR Code
                 </p>
               </div>
@@ -364,7 +364,7 @@ export const QrScannerFeature: FC = () => {
                 <button
                   type="submit"
                   disabled={loading || !qrInput.trim()}
-                  className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-brand-primary text-white rounded-xl font-bold hover:bg-brand-primary/90 transition-all disabled:opacity-50 cursor-pointer shadow-xs"
+                  className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-brand-primary text-white rounded-xl font-bold hover:bg-brand-primary/90 transition-all disabled:opacity-50 cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2"
                 >
                   {loading ? (
                     <RefreshCw className="w-5 h-5 animate-spin" />
@@ -380,7 +380,7 @@ export const QrScannerFeature: FC = () => {
                     setScanResult(null);
                     setErrorMessage(null);
                   }}
-                  className="px-4 py-3 border border-neutral-border text-neutral-secondary hover:bg-neutral-50 rounded-xl font-semibold text-sm transition-all cursor-pointer"
+                  className="px-4 py-3 border border-neutral-border text-neutral-secondary hover:bg-neutral-subtle rounded-xl font-semibold text-sm transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
                 >
                   Clear
                 </button>
@@ -388,7 +388,7 @@ export const QrScannerFeature: FC = () => {
             </form>
 
             {errorMessage && (
-              <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 text-red-700 animate-shake">
+              <div className="mt-6 p-4 bg-status-occupied/10 border border-status-occupied/20 rounded-xl flex items-start gap-3 text-status-occupied animate-shake">
                 <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                 <div>
                   <h4 className="font-bold text-sm">Validation Error</h4>
@@ -474,7 +474,7 @@ export const QrScannerFeature: FC = () => {
               </div>
             ) : (
               <div className="text-center py-12 text-neutral-secondary space-y-3">
-                <Upload className="w-12 h-12 mx-auto stroke-1 text-neutral-400" />
+                <Upload className="w-12 h-12 mx-auto stroke-1 text-neutral-secondary" />
                 <h3 className="font-bold text-neutral-primary text-base">Awaiting Gate Scan</h3>
                 <p className="text-xs max-w-xs mx-auto">
                   Scan a driver's QR code pass to trigger automated check-in or checkout.
@@ -488,8 +488,9 @@ export const QrScannerFeature: FC = () => {
           <div className="bg-white rounded-2xl p-6 border border-neutral-border shadow-xs lg:col-span-1 h-[680px] flex flex-col">
             <h2 className="text-lg font-bold mb-4 text-neutral-primary shrink-0">Active Passes</h2>
             {activePasses.length === 0 ? (
-              <div className="text-center py-8 text-neutral-secondary text-xs flex-1 flex items-center justify-center">
-                No active session or reservation passes found.
+              <div className="text-center py-8 text-neutral-secondary text-xs flex-1 flex flex-col items-center justify-center gap-2">
+                <QrCode className="w-8 h-8" />
+                <span>No active session or reservation passes found.</span>
               </div>
             ) : (
               <div className="space-y-3 flex-1 overflow-y-auto pr-2 scrollbar-thin">
@@ -499,7 +500,7 @@ export const QrScannerFeature: FC = () => {
                     <button
                       key={pass.id}
                       onClick={() => setSelectedPass({ id: pass.id, type: pass.type })}
-                      className={`w-full text-left p-4 rounded-xl border transition-all cursor-pointer ${
+                      className={`w-full text-left p-4 rounded-xl border transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary ${
                         isSelected
                           ? 'border-brand-primary bg-brand-primary/5 shadow-xs'
                           : 'border-neutral-border hover:border-neutral-300 bg-white'
@@ -548,17 +549,17 @@ export const QrScannerFeature: FC = () => {
                       <img
                         src={qrCodeUrl}
                         alt="QR Code"
-                        className="mx-auto rounded-xl w-[220px] h-[220px]"
+                        className="mx-auto rounded-xl w-[min(220px,60vw)] h-[min(220px,60vw)]"
                       />
                     ) : (
-                      <div className="w-[220px] h-[220px] flex items-center justify-center text-neutral-secondary font-semibold text-xs">
+                      <div className="w-[min(220px,60vw)] h-[min(220px,60vw)] flex items-center justify-center text-neutral-secondary font-semibold text-xs">
                         Generating QR Code...
                       </div>
                     )}
                   </div>
 
                   {currentPass?.details && (
-                    <div className="w-full bg-neutral-50 rounded-2xl p-4 border border-neutral-border text-left grid grid-cols-2 gap-3 text-xs">
+                    <div className="w-full bg-neutral-secondary-bg rounded-2xl p-4 border border-neutral-border text-left grid grid-cols-2 gap-3 text-xs">
                       <div>
                         <span className="text-neutral-secondary block font-semibold">
                           Pass Type
@@ -626,7 +627,7 @@ export const QrScannerFeature: FC = () => {
                     </div>
                   )}
 
-                  <div className="w-full bg-neutral-50 p-4 rounded-xl border border-neutral-border text-left">
+                  <div className="w-full bg-neutral-secondary-bg p-4 rounded-xl border border-neutral-border text-left">
                     <span className="text-[10px] font-bold text-neutral-secondary uppercase block mb-1">
                       Signed Pass Token
                     </span>
@@ -637,7 +638,7 @@ export const QrScannerFeature: FC = () => {
                 </div>
               ) : (
                 <div className="text-center py-16 text-neutral-secondary space-y-4">
-                  <AlertCircle className="w-12 h-12 mx-auto text-red-500" />
+                  <AlertCircle className="w-12 h-12 mx-auto text-status-occupied" />
                   <div>
                     <p className="text-sm font-bold text-neutral-primary">
                       Failed to load gate pass
@@ -646,7 +647,7 @@ export const QrScannerFeature: FC = () => {
                   </div>
                   <button
                     onClick={() => loadQrPass(selectedPass.type, selectedPass.id)}
-                    className="px-4 py-2 bg-brand-primary/10 text-brand-primary border border-brand-primary/20 rounded-xl text-xs font-bold hover:bg-brand-primary/20 cursor-pointer"
+                    className="px-4 py-2 bg-brand-primary/10 text-brand-primary border border-brand-primary/20 rounded-xl text-xs font-bold hover:bg-brand-primary/20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
                   >
                     Retry
                   </button>

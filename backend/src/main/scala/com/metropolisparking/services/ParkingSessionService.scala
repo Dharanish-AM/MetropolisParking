@@ -136,25 +136,35 @@ class ParkingSessionService(
     val durationMinutes = java.time.Duration.between(entryTime, exitTime).toMinutes.max(1L)
     val ruleOpt = pricingRuleRepo.findRule(lotId, vehicleType)
 
-    if (ruleOpt.isEmpty) {
+    val rule = ruleOpt.getOrElse {
       logger.warn(s"Pricing rule missing for lotId '$lotId' and vehicleType '$vehicleType'. Falling back to default rate 5.00")
+      com.metropolisparking.models.PricingRule(
+        id = UUID.randomUUID(),
+        ruleType = "HOURLY",
+        rate = BigDecimal("5.00"),
+        vehicleType = Some(vehicleType),
+        lotId = Some(lotId)
+      )
     }
 
-    val rate = ruleOpt.map(_.rate).getOrElse(BigDecimal("5.00"))
-    val ruleType = ruleOpt.map(_.ruleType.toUpperCase).getOrElse("HOURLY")
-
-    ruleType match {
-      case "HOURLY" =>
-        val hours = Math.ceil(durationMinutes.toDouble / 60.0).toLong
-        rate * hours
+    val hours = Math.ceil(durationMinutes.toDouble / 60.0).toLong
+    val baseFee: BigDecimal = rule.ruleType.toUpperCase match {
       case "DAILY" =>
-        val days = Math.ceil(durationMinutes.toDouble / 1440.0).toLong
-        rate * days
-      case "FLAT" =>
-        rate
+        val days = Math.ceil(hours.toDouble / 24.0).toLong.max(1L)
+        rule.rate * days
+      case "FLAT" | "OVERNIGHT" =>
+        rule.rate
       case _ =>
-        val hours = Math.ceil(durationMinutes.toDouble / 60.0).toLong
-        rate * hours
+        rule.rate * hours
     }
+
+    val entryZdt = java.time.ZonedDateTime.ofInstant(entryTime, java.time.ZoneId.systemDefault())
+    val entryHour = entryZdt.getHour
+    val isPeakHour = entryHour >= rule.startHour && entryHour < rule.endHour
+
+    val multiplier = if (isPeakHour) rule.surgeMultiplier.max(BigDecimal("1.00")) else BigDecimal("1.00")
+    val totalFee = (baseFee * multiplier).setScale(2, scala.math.BigDecimal.RoundingMode.HALF_UP)
+
+    totalFee.min(rule.maxDailyCap).max(rule.minFee)
   }
 }

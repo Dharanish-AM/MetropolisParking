@@ -4,6 +4,7 @@ import { AuthProvider } from './features/auth/context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { Layout } from './components/Layout';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Unauthorized } from './pages/Unauthorized';
@@ -24,6 +25,12 @@ const AnprSimulator = lazy(() =>
 );
 const QrScannerPage = lazy(() =>
   import('./pages/QrScannerPage').then(m => ({ default: m.QrScannerPage }))
+);
+const PricingPage = lazy(() =>
+  import('./pages/PricingPage').then(m => ({ default: m.PricingPage }))
+);
+const AnalyticsPage = lazy(() =>
+  import('./pages/AnalyticsPage').then(m => ({ default: m.AnalyticsPage }))
 );
 
 const PageLoader = () => (
@@ -50,78 +57,96 @@ function App() {
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/unauthorized" element={<Unauthorized />} />
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/parking-lots"
-                  element={
-                    <ProtectedRoute allowedRoles={['ADMIN']}>
-                      <ParkingLots />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/vehicles"
-                  element={
-                    <ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
-                      <Vehicles />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/sessions"
-                  element={
-                    <ProtectedRoute allowedRoles={['ADMIN']}>
-                      <Sessions />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/anpr-simulator"
-                  element={
-                    <ProtectedRoute allowedRoles={['ADMIN']}>
-                      <AnprSimulator />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/qr-scanner"
-                  element={
-                    <ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
-                      <QrScannerPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/reservations"
-                  element={
-                    <ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
-                      <Reservations />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/payments"
-                  element={
-                    <ProtectedRoute allowedRoles={['ADMIN']}>
-                      <Payments />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedRoute>
-                      <Profile />
-                    </ProtectedRoute>
-                  }
-                />
+                <Route element={<Layout />}>
+                  <Route
+                    path="/"
+                    element={
+                      <ProtectedRoute>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/parking-lots"
+                    element={
+                      <ProtectedRoute allowedRoles={['ADMIN']}>
+                        <ParkingLots />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/vehicles"
+                    element={
+                      <ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
+                        <Vehicles />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/sessions"
+                    element={
+                      <ProtectedRoute allowedRoles={['ADMIN']}>
+                        <Sessions />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/anpr-simulator"
+                    element={
+                      <ProtectedRoute allowedRoles={['ADMIN']}>
+                        <AnprSimulator />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/qr-scanner"
+                    element={
+                      <ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
+                        <QrScannerPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/reservations"
+                    element={
+                      <ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}>
+                        <Reservations />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/pricing"
+                    element={
+                      <ProtectedRoute allowedRoles={['ADMIN']}>
+                        <PricingPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/analytics"
+                    element={
+                      <ProtectedRoute allowedRoles={['ADMIN']}>
+                        <AnalyticsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/payments"
+                    element={
+                      <ProtectedRoute allowedRoles={['ADMIN']}>
+                        <Payments />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute>
+                        <Profile />
+                      </ProtectedRoute>
+                    }
+                  />
+                </Route>
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>

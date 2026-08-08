@@ -91,7 +91,7 @@ export const SessionsFeature: FC = () => {
       { plateNumber },
       {
         onSuccess: (res: any) => {
-          const feeMsg = res.fee ? ` (Fee: $${res.fee})` : '';
+          const feeMsg = res.fee ? ` (Fee: ₹${res.fee})` : '';
           showToast(`Parking session ended successfully${feeMsg}.`, 'success');
           setEndSessionTarget(null);
           refetch();
@@ -294,7 +294,7 @@ export const SessionsFeature: FC = () => {
                     </TableCell>
                     <TableCell className="font-bold text-neutral-primary">
                       {session.fee !== null && session.fee !== undefined
-                        ? `$${session.fee.toFixed(2)}`
+                        ? `₹${session.fee.toFixed(2)}`
                         : '—'}
                     </TableCell>
                     <TableCell>
@@ -307,9 +307,9 @@ export const SessionsFeature: FC = () => {
                         <Button
                           variant="secondary"
                           onClick={() => setEndSessionTarget(plate)}
-                          className="px-3 py-1.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-100 font-bold"
+                          className="px-3 py-1.5 text-xs text-status-occupied hover:bg-status-occupied/10 border-status-occupied/20 font-bold"
                         >
-                          <Square className="w-3 h-3 mr-1 fill-red-600 text-red-600" />
+                          <Square className="w-3 h-3 mr-1 fill-status-occupied text-status-occupied" />
                           Check Out
                         </Button>
                       ) : (
@@ -354,8 +354,8 @@ export const SessionsFeature: FC = () => {
 
           {availableSpaces.length === 0 && (
             <p className="text-xs text-status-occupied font-semibold flex items-center gap-1">
-              <AlertCircle className="w-4 h-4 text-red-500" /> No available parking spots left. Make
-              a space available first.
+              <AlertCircle className="w-4 h-4 text-status-occupied" /> No available parking spots
+              left. Make a space available first.
             </p>
           )}
 

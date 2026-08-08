@@ -65,7 +65,13 @@ case class PricingRule(
   ruleType: String,
   rate: BigDecimal,
   vehicleType: Option[String] = None,
-  lotId: Option[UUID] = None
+  lotId: Option[UUID] = None,
+  startHour: Int = 0,
+  endHour: Int = 24,
+  occupancyThreshold: Int = 0,
+  surgeMultiplier: BigDecimal = BigDecimal("1.00"),
+  minFee: BigDecimal = BigDecimal("0.00"),
+  maxDailyCap: BigDecimal = BigDecimal("100.00")
 )
 
 case class AuditLog(

@@ -14,6 +14,8 @@ import {
   Calendar,
   Camera,
   QrCode,
+  Tag,
+  TrendingUp,
   X,
 } from 'lucide-react';
 import { MetropolisLogo } from './MetropolisLogo';
@@ -55,6 +57,8 @@ export const Navbar: FC = () => {
       icon: Calendar,
       roles: ['ADMIN', 'CUSTOMER'],
     },
+    { label: 'Pricing Rules', path: '/pricing', icon: Tag, roles: ['ADMIN'] },
+    { label: 'Analytics', path: '/analytics', icon: TrendingUp, roles: ['ADMIN'] },
     { label: 'Payments', path: '/payments', icon: CreditCard, roles: ['ADMIN'] },
     { label: 'Vehicles', path: '/vehicles', icon: Car, roles: ['ADMIN', 'CUSTOMER'] },
   ];
@@ -70,7 +74,7 @@ export const Navbar: FC = () => {
           </Link>
 
           {user && (
-            <nav className="hidden md:flex items-center gap-1 min-w-0 overflow-x-auto scrollbar-none">
+            <nav className="hidden md:flex items-center gap-0.5 lg:gap-1 min-w-0 overflow-x-auto scrollbar-none py-1">
               {filteredNavItems.map(item => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
@@ -78,13 +82,13 @@ export const Navbar: FC = () => {
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs lg:text-sm font-semibold transition-all duration-150 flex-shrink-0 ${
+                    className={`whitespace-nowrap flex items-center gap-1.5 px-2 py-1.5 lg:px-2.5 rounded-lg text-xs font-semibold xl:text-sm transition-all duration-150 flex-shrink-0 ${
                       isActive
-                        ? 'bg-brand-primary/10 text-brand-primary font-bold'
+                        ? 'bg-brand-primary/10 text-brand-primary font-bold shadow-xs'
                         : 'text-neutral-secondary hover:text-brand-primary hover:bg-brand-primary/5'
                     }`}
                   >
-                    <Icon className="w-3.5 h-3.5 lg:w-4 lg:h-4 stroke-[1.75]" aria-hidden="true" />
+                    <Icon className="w-3.5 h-3.5 xl:w-4 xl:h-4 stroke-[1.75]" aria-hidden="true" />
                     <span>{item.label}</span>
                   </Link>
                 );
@@ -120,7 +124,7 @@ export const Navbar: FC = () => {
 
               <button
                 onClick={logout}
-                className="p-1.5 lg:p-2 border border-neutral-border rounded-md text-neutral-secondary hover:text-status-occupied hover:border-status-occupied/30 hover:bg-status-occupied/10 transition-all duration-150 cursor-pointer"
+                className="p-2.5 lg:p-2 border border-neutral-border rounded-md text-neutral-secondary hover:text-status-occupied hover:border-status-occupied/30 hover:bg-status-occupied/10 transition-all duration-150 cursor-pointer"
                 title="Log Out"
               >
                 <LogOut className="w-4 h-4 lg:w-4.5 lg:h-4.5 stroke-[1.75]" aria-hidden="true" />
@@ -131,7 +135,7 @@ export const Navbar: FC = () => {
                 aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
                 aria-expanded={mobileMenuOpen}
                 aria-controls="mobile-nav-menu"
-                className="md:hidden p-1.5 border border-neutral-border rounded-md text-neutral-primary"
+                className="md:hidden p-2.5 border border-neutral-border rounded-md text-neutral-primary"
               >
                 {mobileMenuOpen ? (
                   <X className="w-5 h-5" aria-hidden="true" />
@@ -143,7 +147,7 @@ export const Navbar: FC = () => {
           ) : (
             <Link
               to="/login"
-              className="px-4 py-2 bg-brand-black hover:bg-neutral-800 text-white rounded-md text-sm font-bold transition-all duration-150 shadow-xs"
+              className="px-4 py-2 bg-brand-primary hover:bg-brand-primary/95 text-white rounded-md text-sm font-bold transition-all duration-150 shadow-xs"
             >
               Log in / Sign up
             </Link>

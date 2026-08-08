@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, vi } from 'vitest';
-import { PaymentsFeature } from '../features/payments/components/PaymentsFeature';
+import { PricingRulesFeature } from '../features/pricing/PricingRulesFeature';
 import { AuthContext } from '../features/auth/context/AuthContext';
 import { ToastProvider } from '../context/ToastContext';
 
@@ -28,13 +28,16 @@ const renderWithProviders = (component: React.ReactNode) => {
   );
 };
 
-describe('PaymentsFeature Component', () => {
-  it('renders payment ledger table and rows from MSW', async () => {
-    renderWithProviders(<PaymentsFeature />);
+describe('PricingRulesFeature Component', () => {
+  it('renders dynamic pricing header, calculator, and rule table from MSW', async () => {
+    renderWithProviders(<PricingRulesFeature />);
 
-    expect(screen.getByText(/Payments/i)).toBeInTheDocument();
+    expect(screen.getByText(/Dynamic Pricing & Rate Rules/i)).toBeInTheDocument();
+    expect(screen.getByText(/Dynamic Fee Simulator/i)).toBeInTheDocument();
+
     await waitFor(() => {
-      expect(screen.getByText('₹15.00')).toBeInTheDocument();
+      expect(screen.getByText(/Peak Surge/i)).toBeInTheDocument();
+      expect(screen.getByText('₹50.00')).toBeInTheDocument();
     });
   });
 });

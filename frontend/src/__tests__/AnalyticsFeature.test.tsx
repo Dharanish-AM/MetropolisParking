@@ -1,7 +1,7 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, vi } from 'vitest';
-import { PaymentsFeature } from '../features/payments/components/PaymentsFeature';
+import { AnalyticsFeature } from '../features/analytics/AnalyticsFeature';
 import { AuthContext } from '../features/auth/context/AuthContext';
 import { ToastProvider } from '../context/ToastContext';
 
@@ -28,13 +28,12 @@ const renderWithProviders = (component: React.ReactNode) => {
   );
 };
 
-describe('PaymentsFeature Component', () => {
-  it('renders payment ledger table and rows from MSW', async () => {
-    renderWithProviders(<PaymentsFeature />);
+describe('AnalyticsFeature Component', () => {
+  it('renders revenue analytics summary, trend chart, and lot breakdown from MSW', async () => {
+    renderWithProviders(<AnalyticsFeature />);
 
-    expect(screen.getByText(/Payments/i)).toBeInTheDocument();
-    await waitFor(() => {
-      expect(screen.getByText('₹15.00')).toBeInTheDocument();
-    });
+    expect(screen.getByText(/Revenue & Occupancy Analytics/i)).toBeInTheDocument();
+    const lots = await screen.findAllByText('Downtown Central');
+    expect(lots.length).toBeGreaterThan(0);
   });
 });
