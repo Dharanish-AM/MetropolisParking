@@ -219,9 +219,9 @@ export const ParkingLotsFeature: FC = () => {
       </div>
 
       <section className="space-y-4">
-        <div className="flex items-center gap-2 overflow-x-auto pb-2">
+        <div className="flex items-center gap-2.5 overflow-x-auto pb-3 scrollbar-none">
           {loadingLots ? (
-            <Skeleton className="h-10 w-48" />
+            <Skeleton className="h-10 w-48 shrink-0" />
           ) : (
             (lots as ParkingLot[])?.map((lot, idx) => {
               const lotSpaces = (spaces as ParkingSpace[])?.filter(s => s.lotId === lot.id) || [];
@@ -233,6 +233,7 @@ export const ParkingLotsFeature: FC = () => {
                 sameNameCount > 1
                   ? `${lot.name} (${lot.location || `Building ${idx + 1}`})`
                   : lot.name;
+              const isActive = activeLotId === lot.id;
               return (
                 <button
                   key={lot.id}
@@ -240,19 +241,19 @@ export const ParkingLotsFeature: FC = () => {
                     setSelectedLotId(lot.id);
                     setSelectedLevelId('ALL');
                   }}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary ${
-                    activeLotId === lot.id
+                  className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shrink-0 whitespace-nowrap transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary ${
+                    isActive
                       ? 'bg-brand-primary text-white shadow-xs'
-                      : 'bg-white border border-neutral-border text-neutral-secondary hover:text-neutral-primary hover:bg-neutral-border/20'
+                      : 'bg-white border border-neutral-border text-neutral-secondary hover:text-neutral-primary hover:bg-neutral-subtle/80'
                   }`}
                 >
-                  <Building2 className="w-4 h-4 stroke-[1.75]" />
+                  <Building2 className="w-4 h-4 shrink-0 stroke-[1.75]" />
                   <span>{lotLabel}</span>
                   <span
-                    className={`text-xs px-2 py-0.5 rounded-md ${
-                      activeLotId === lot.id
+                    className={`text-[11px] font-semibold px-2 py-0.5 rounded-md shrink-0 ${
+                      isActive
                         ? 'bg-white/20 text-white'
-                        : 'bg-neutral-border/60 text-neutral-secondary'
+                        : 'bg-neutral-subtle text-neutral-secondary border border-neutral-border/60'
                     }`}
                   >
                     {occupiedCount}/{capacity} filled

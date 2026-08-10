@@ -79,7 +79,7 @@ BEGIN
         ON CONFLICT (email) DO NOTHING;
     END LOOP;
 
-    SELECT array_agg(id) INTO cust_ids FROM users WHERE role_id = customer_role_id;
+    SELECT array_agg(id) INTO cust_ids FROM users;
 
     INSERT INTO parking_lots (id, name, location) VALUES
     (lot_bkc_id, 'BKC Cyber City Plaza', 'Bandra Kurla Complex, G Block, Mumbai, Maharashtra'),
@@ -236,7 +236,7 @@ BEGIN
 
     SELECT array_agg(id) INTO space_ids FROM parking_spaces WHERE status != 'OUT_OF_SERVICE';
 
-    IF (SELECT count(*) FROM reservations) < 10 AND array_length(space_ids, 1) > 0 AND array_length(cust_ids, 1) > 0 THEN
+    IF (SELECT count(*) FROM reservations) < 10 AND coalesce(array_length(space_ids, 1), 0) > 0 AND coalesce(array_length(cust_ids, 1), 0) > 0 THEN
         FOR i IN 1..100 LOOP
             e_time := CURRENT_TIMESTAMP + (INTERVAL '1 hour' * (i % 72)) - (INTERVAL '1 day' * (i % 5));
             x_time := e_time + INTERVAL '2 hours';
