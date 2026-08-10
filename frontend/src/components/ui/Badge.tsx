@@ -12,7 +12,15 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
     | 'AVAILABLE'
     | 'OCCUPIED'
     | 'RESERVED'
-    | 'OUT_OF_SERVICE';
+    | 'OUT_OF_SERVICE'
+    | 'ACTIVE'
+    | 'CONFIRMED'
+    | 'COMPLETED'
+    | 'PENDING'
+    | 'CANCELLED'
+    | 'SUCCESS'
+    | 'FAILED'
+    | 'SETTLED';
 }
 
 export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
@@ -20,16 +28,24 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
     const baseStyles =
       'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border';
 
-    const variants = {
+    const variants: Record<string, string> = {
       default: 'bg-brand-primary/10 text-brand-primary border-brand-primary/20',
       success: 'bg-status-available/10 text-status-available border-status-available/20',
       AVAILABLE: 'bg-status-available/10 text-status-available border-status-available/20',
+      ACTIVE: 'bg-status-available/10 text-status-available border-status-available/20',
+      CONFIRMED: 'bg-status-available/10 text-status-available border-status-available/20',
+      SUCCESS: 'bg-status-available/10 text-status-available border-status-available/20',
       warning: 'bg-status-reserved/10 text-status-reserved border-status-reserved/20',
       RESERVED: 'bg-status-reserved/10 text-status-reserved border-status-reserved/20',
+      PENDING: 'bg-status-reserved/10 text-status-reserved border-status-reserved/20',
       danger: 'bg-status-occupied/10 text-status-occupied border-status-occupied/20',
       OCCUPIED: 'bg-status-occupied/10 text-status-occupied border-status-occupied/20',
+      CANCELLED: 'bg-status-occupied/10 text-status-occupied border-status-occupied/20',
+      FAILED: 'bg-status-occupied/10 text-status-occupied border-status-occupied/20',
       info: 'bg-brand-accent/10 text-brand-accent border-brand-accent/20',
       neutral: 'bg-neutral-border/20 text-neutral-secondary border-neutral-border',
+      COMPLETED: 'bg-neutral-border/20 text-neutral-secondary border-neutral-border',
+      SETTLED: 'bg-neutral-border/20 text-neutral-secondary border-neutral-border',
       OUT_OF_SERVICE:
         'bg-status-out-of-service/10 text-status-out-of-service border-status-out-of-service/20',
     };

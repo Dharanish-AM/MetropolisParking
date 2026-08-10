@@ -27,6 +27,7 @@ object Main {
     try {
       val flyway = Flyway.configure()
         .dataSource(config.db.url, config.db.username, config.db.password)
+        .outOfOrder(true)
         .load()
       flyway.repair()
       flyway.migrate()

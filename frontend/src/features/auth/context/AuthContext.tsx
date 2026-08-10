@@ -40,7 +40,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     try {
       const response = await client.get<User>('/me');
       setUser(response.data);
-    } catch (err) {
+    } catch {
       logout();
     } finally {
       setLoading(false);
