@@ -227,17 +227,20 @@ export const ReservationsFeature: FC = () => {
   const getStatusVariant = (status: string) => {
     switch (status.toUpperCase()) {
       case 'CONFIRMED':
-        return 'warning';
+        return 'CONFIRMED';
       case 'COMPLETED':
-        return 'success';
+        return 'COMPLETED';
       case 'CANCELLED':
-        return 'neutral';
+        return 'CANCELLED';
+      case 'PENDING':
+        return 'PENDING';
       default:
-        return 'info';
+        return 'neutral';
     }
   };
 
   const formatDate = (isoStr: string) => {
+    if (!isoStr) return '—';
     return new Date(isoStr).toLocaleString();
   };
 
@@ -332,10 +335,10 @@ export const ReservationsFeature: FC = () => {
                   <TableCell className="text-sm">{formatDate(res.startTime)}</TableCell>
                   <TableCell className="text-sm">{formatDate(res.endTime)}</TableCell>
                   <TableCell className="font-bold text-brand-primary">
-                    ₹{res.fee.toFixed(2)}
+                    ₹{(res.fee ?? 0).toFixed(2)}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getStatusVariant(res.status)}>{res.status}</Badge>
+                    <Badge variant={getStatusVariant(res.status) as any}>{res.status}</Badge>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
@@ -521,7 +524,7 @@ export const ReservationsFeature: FC = () => {
               <div className="p-3 bg-neutral-secondary-bg rounded-xl border border-neutral-border">
                 <span className="text-neutral-secondary block font-semibold mb-0.5">Total Fee</span>
                 <span className="font-bold text-brand-primary text-sm">
-                  ₹{selectedReservation.fee.toFixed(2)}
+                  ₹{(selectedReservation.fee ?? 0).toFixed(2)}
                 </span>
               </div>
               <div className="p-3 bg-neutral-secondary-bg rounded-xl border border-neutral-border">

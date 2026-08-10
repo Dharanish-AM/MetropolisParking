@@ -229,7 +229,10 @@ jobs:
           done
 
       - name: Start Full Docker Compose Stack
-        run: docker compose up -d --build
+        run: |
+          for i in 1 2 3; do
+            docker compose up -d --build --pull missing && break || (echo "Compose up failed, retrying in 5s..." && sleep 5)
+          done
 
       - name: Wait for Web Stack Readiness
         run: |

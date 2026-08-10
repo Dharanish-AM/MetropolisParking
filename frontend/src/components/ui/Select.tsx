@@ -12,7 +12,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ className = '', label, error, helperText, options = [], children, id, ...props }, ref) => {
     const borderClass = error
       ? 'border-status-occupied focus:ring-status-occupied/20 focus:border-status-occupied'
-      : 'border-neutral-border focus:ring-brand-primary/20 focus:border-brand-primary';
+      : 'border-input-border focus:ring-brand-primary/20 focus:border-brand-primary';
 
     return (
       <div className="w-full space-y-1.5">
@@ -25,7 +25,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           <select
             id={id}
             ref={ref}
-            className={`block w-full px-3 py-2.5 bg-white border rounded-xl text-neutral-primary text-sm focus:outline-none focus:ring-2 transition-all disabled:opacity-50 disabled:bg-neutral-border/10 appearance-none cursor-pointer pr-10 ${borderClass} ${className}`}
+            className={`block w-full px-3 py-2.5 bg-white border rounded-md text-neutral-primary text-sm focus:outline-none focus:ring-2 transition-all disabled:opacity-50 disabled:bg-neutral-subtle appearance-none cursor-pointer pr-10 ${borderClass} ${className}`}
             {...props}
           >
             {children ||

@@ -1,9 +1,10 @@
 package com.metropolisparking.services
 
+import com.metropolisparking.jooq.Tables.{PARKING_SESSIONS, PAYMENTS, RESERVATIONS, VEHICLES, PARKING_SPACES, USERS}
 import org.jooq.DSLContext
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
-import java.time.{ZoneId, ZonedDateTime, LocalDate}
+import java.time.{OffsetDateTime, ZoneId, ZoneOffset, ZonedDateTime, LocalDate}
 import java.util.UUID
 import scala.util.Random
 import scala.jdk.CollectionConverters._
@@ -15,23 +16,125 @@ class DatabaseSeederService(dslContext: DSLContext) {
   def ensureSeeded(): Unit = {
     try {
       val today = LocalDate.now(ZoneId.of("Asia/Kolkata"))
-      val todayCount = dslContext.resultQuery(
-        "SELECT COUNT(*) FROM parking_sessions WHERE DATE(entry_time) = CURRENT_DATE"
-      ).fetchOne(0, classOf[java.lang.Integer])
+      val activeSessionCount = dslContext.selectCount()
+        .from(PARKING_SESSIONS)
+        .where(PARKING_SESSIONS.EXIT_TIME.isNull)
+        .fetchOne(0, classOf[java.lang.Integer])
 
-      val reservationCount = dslContext.resultQuery(
-        "SELECT COUNT(*) FROM reservations"
-      ).fetchOne(0, classOf[java.lang.Integer])
+      val activeResCount = dslContext.selectCount()
+        .from(RESERVATIONS)
+        .where(RESERVATIONS.STATUS.in("CONFIRMED", "PENDING"))
+        .fetchOne(0, classOf[java.lang.Integer])
 
-      if (todayCount == null || todayCount == 0 || reservationCount == null || reservationCount == 0) {
-        logger.info("Database seed check triggered - executing dynamic current-time auto-seed...", today)
+      if (activeSessionCount == null || activeSessionCount < 3 || activeResCount == null || activeResCount < 3) {
+        logger.info("Database seed check triggered - executing dynamic comprehensive auto-seed...", today)
         seedDynamicData()
       } else {
-        logger.info("Database already seeded with {} sessions for today ({})", todayCount, today)
+        logger.info("Database already fully seeded with {} active sessions and {} active reservations ({})", activeSessionCount, activeResCount, today)
       }
+
+      ensureActiveUserPasses()
     } catch {
       case ex: Throwable =>
         logger.error("Error during dynamic auto-seed check", ex)
+    }
+  }
+
+  def ensureActiveUserPasses(): Unit = {
+    val zone = ZoneId.of("Asia/Kolkata")
+    val now = ZonedDateTime.now(zone)
+
+    val usersList = dslContext.select(USERS.ID, USERS.EMAIL, USERS.ROLE_ID).from(USERS).fetch()
+    val spaces = dslContext.select(PARKING_SPACES.ID, PARKING_SPACES.SPACE_NUMBER, PARKING_SPACES.LOT_ID)
+      .from(PARKING_SPACES)
+      .where(PARKING_SPACES.STATUS.ne("OUT_OF_SERVICE"))
+      .fetch()
+
+    if (usersList.isEmpty || spaces.isEmpty) return
+
+    val adminUserRec = usersList.asScala.find(r => Option(r.get(USERS.EMAIL)).map(_.toLowerCase).contains("admin@metropolisparking.com"))
+    val customerUserRec = usersList.asScala.find(r => Option(r.get(USERS.EMAIL)).map(_.toLowerCase).contains("customer@metropolisparking.com"))
+
+    val targetUsers = List(adminUserRec, customerUserRec).flatten
+
+    targetUsers.foreach { userRec =>
+      val userId = userRec.get(USERS.ID)
+      val email = userRec.get(USERS.EMAIL)
+
+      val plate = if (email.contains("admin")) "MH01AD8888" else "KA01CS9999"
+      val vehType = if (email.contains("admin")) "CAR" else "SUV"
+
+      val existingVeh = dslContext.selectFrom(VEHICLES).where(VEHICLES.PLATE_NUMBER.eq(plate)).fetchOne()
+      val actualVehId = if (existingVeh != null) {
+        existingVeh.getId
+      } else {
+        val newVehId = UUID.randomUUID()
+        dslContext.insertInto(VEHICLES)
+          .set(VEHICLES.ID, newVehId)
+          .set(VEHICLES.PLATE_NUMBER, plate)
+          .set(VEHICLES.TYPE, vehType)
+          .set(VEHICLES.OWNER_ID, userId)
+          .execute()
+        newVehId
+      }
+
+      val hasActiveSession = dslContext.fetchExists(
+        dslContext.selectOne()
+          .from(PARKING_SESSIONS)
+          .join(VEHICLES).on(PARKING_SESSIONS.VEHICLE_ID.eq(VEHICLES.ID))
+          .where(VEHICLES.OWNER_ID.eq(userId).and(PARKING_SESSIONS.EXIT_TIME.isNull))
+      )
+
+      if (!hasActiveSession) {
+        val spaceRec = spaces.get(rand.nextInt(spaces.size()))
+        val spaceId = spaceRec.get(PARKING_SPACES.ID)
+        val sessionId = UUID.randomUUID()
+        val entryTime = now.minusMinutes(45).toInstant
+
+        dslContext.insertInto(PARKING_SESSIONS)
+          .set(PARKING_SESSIONS.ID, sessionId)
+          .set(PARKING_SESSIONS.VEHICLE_ID, actualVehId)
+          .set(PARKING_SESSIONS.SPACE_ID, spaceId)
+          .set(PARKING_SESSIONS.ENTRY_TIME, OffsetDateTime.ofInstant(entryTime, ZoneOffset.UTC))
+          .execute()
+
+        dslContext.update(PARKING_SPACES)
+          .set(PARKING_SPACES.STATUS, "OCCUPIED")
+          .where(PARKING_SPACES.ID.eq(spaceId))
+          .execute()
+      }
+
+      val hasActiveRes = dslContext.fetchExists(
+        dslContext.selectOne()
+          .from(RESERVATIONS)
+          .where(RESERVATIONS.USER_ID.eq(userId)
+            .and(RESERVATIONS.STATUS.in("CONFIRMED", "PENDING"))
+            .and(RESERVATIONS.END_TIME.gt(OffsetDateTime.ofInstant(now.toInstant, ZoneOffset.UTC))))
+      )
+
+      if (!hasActiveRes) {
+        val spaceRec = spaces.get(rand.nextInt(spaces.size()))
+        val spaceId = spaceRec.get(PARKING_SPACES.ID)
+        val resId = UUID.randomUUID()
+        val startTime = now.minusMinutes(10).toInstant
+        val endTime = now.plusHours(3).toInstant
+        val fee = BigDecimal.valueOf(180.00)
+
+        dslContext.insertInto(RESERVATIONS)
+          .set(RESERVATIONS.ID, resId)
+          .set(RESERVATIONS.USER_ID, userId)
+          .set(RESERVATIONS.SPACE_ID, spaceId)
+          .set(RESERVATIONS.START_TIME, OffsetDateTime.ofInstant(startTime, ZoneOffset.UTC))
+          .set(RESERVATIONS.END_TIME, OffsetDateTime.ofInstant(endTime, ZoneOffset.UTC))
+          .set(RESERVATIONS.STATUS, "CONFIRMED")
+          .set(RESERVATIONS.FEE, fee)
+          .execute()
+
+        dslContext.update(PARKING_SPACES)
+          .set(PARKING_SPACES.STATUS, "RESERVED")
+          .where(PARKING_SPACES.ID.eq(spaceId))
+          .execute()
+      }
     }
   }
 
@@ -39,16 +142,52 @@ class DatabaseSeederService(dslContext: DSLContext) {
     val zone = ZoneId.of("Asia/Kolkata")
     val now = ZonedDateTime.now(zone)
 
-    val spaces = dslContext.resultQuery("SELECT id, space_number, lot_id FROM parking_spaces").fetch()
-    val vehicles = dslContext.resultQuery("SELECT id, plate_number, type FROM vehicles").fetch()
-    val usersList = dslContext.resultQuery("SELECT id FROM users").fetch()
+    val spaces = dslContext.select(PARKING_SPACES.ID, PARKING_SPACES.SPACE_NUMBER, PARKING_SPACES.LOT_ID).from(PARKING_SPACES).fetch()
+    val usersList = dslContext.select(USERS.ID, USERS.EMAIL, USERS.ROLE_ID).from(USERS).fetch()
 
-    if (spaces.isEmpty || vehicles.isEmpty) {
-      logger.warn("Missing core master data (spaces/vehicles). Skipping dynamic session seeding.")
+    if (spaces.isEmpty) {
+      logger.warn("Missing core master data (parking spaces). Skipping dynamic seeding.")
       return
     }
 
-    val methods = Array("CARD", "CASH", "UPI")
+    val fallbackUserId = usersList.asScala.headOption.map(_.get(USERS.ID)).getOrElse(UUID.randomUUID())
+
+    val adminUserRec = usersList.asScala.find(r => Option(r.get(USERS.EMAIL)).map(_.toLowerCase).contains("admin@metropolisparking.com"))
+    val customerUserRec = usersList.asScala.find(r => Option(r.get(USERS.EMAIL)).map(_.toLowerCase).contains("customer@metropolisparking.com"))
+
+    val adminUserId = adminUserRec.map(_.get(USERS.ID)).getOrElse(fallbackUserId)
+    val customerUserId = customerUserRec.map(_.get(USERS.ID)).getOrElse(fallbackUserId)
+
+    val existingAdminVeh = dslContext.selectFrom(VEHICLES).where(VEHICLES.PLATE_NUMBER.eq("MH01AD8888")).fetchOne()
+    val adminVehicleId = if (existingAdminVeh != null) {
+      existingAdminVeh.getId
+    } else {
+      val vId = UUID.randomUUID()
+      dslContext.insertInto(VEHICLES)
+        .set(VEHICLES.ID, vId)
+        .set(VEHICLES.PLATE_NUMBER, "MH01AD8888")
+        .set(VEHICLES.TYPE, "CAR")
+        .set(VEHICLES.OWNER_ID, adminUserId)
+        .execute()
+      vId
+    }
+
+    val existingCustVeh = dslContext.selectFrom(VEHICLES).where(VEHICLES.PLATE_NUMBER.eq("KA01CS9999")).fetchOne()
+    val customerVehicleId = if (existingCustVeh != null) {
+      existingCustVeh.getId
+    } else {
+      val vId = UUID.randomUUID()
+      dslContext.insertInto(VEHICLES)
+        .set(VEHICLES.ID, vId)
+        .set(VEHICLES.PLATE_NUMBER, "KA01CS9999")
+        .set(VEHICLES.TYPE, "SUV")
+        .set(VEHICLES.OWNER_ID, customerUserId)
+        .execute()
+      vId
+    }
+
+    val updatedVehicles = dslContext.select(VEHICLES.ID, VEHICLES.PLATE_NUMBER, VEHICLES.TYPE, VEHICLES.OWNER_ID).from(VEHICLES).fetch()
+    val methods = Array("CARD", "CASH", "UPI", "CREDIT_CARD", "DEBIT_CARD")
 
     for (dayOffset <- (0 to 29).reverse) {
       val dayDate = now.minusDays(dayOffset)
@@ -63,9 +202,9 @@ class DatabaseSeederService(dslContext: DSLContext) {
 
         if (exitTime.isBefore(now.toInstant)) {
           val spaceRec = spaces.get(rand.nextInt(spaces.size()))
-          val vehicleRec = vehicles.get(rand.nextInt(vehicles.size()))
-          val spaceId = UUID.fromString(spaceRec.get("id").toString)
-          val vehicleId = UUID.fromString(vehicleRec.get("id").toString)
+          val vehicleRec = updatedVehicles.get(rand.nextInt(updatedVehicles.size()))
+          val spaceId = spaceRec.get(PARKING_SPACES.ID)
+          val vehicleId = vehicleRec.get(VEHICLES.ID)
           val sessionId = UUID.randomUUID()
           val paymentId = UUID.randomUUID()
 
@@ -74,45 +213,101 @@ class DatabaseSeederService(dslContext: DSLContext) {
           val fee = BigDecimal.valueOf(hours * hourlyRate)
           val method = methods(rand.nextInt(methods.length))
 
-          dslContext.execute(
-            """INSERT INTO parking_sessions (id, vehicle_id, space_id, entry_time, exit_time, duration_minutes, fee)
-              |VALUES (?::uuid, ?::uuid, ?::uuid, ?::timestamptz, ?::timestamptz, ?, ?)
-              |ON CONFLICT (id) DO NOTHING""".stripMargin,
-            sessionId, vehicleId, spaceId, entryTime.toString, exitTime.toString,
-            java.lang.Integer.valueOf(durationMins), fee
-          )
+          dslContext.insertInto(PARKING_SESSIONS)
+            .set(PARKING_SESSIONS.ID, sessionId)
+            .set(PARKING_SESSIONS.VEHICLE_ID, vehicleId)
+            .set(PARKING_SESSIONS.SPACE_ID, spaceId)
+            .set(PARKING_SESSIONS.ENTRY_TIME, OffsetDateTime.ofInstant(entryTime, ZoneOffset.UTC))
+            .set(PARKING_SESSIONS.EXIT_TIME, OffsetDateTime.ofInstant(exitTime, ZoneOffset.UTC))
+            .set(PARKING_SESSIONS.DURATION_MINUTES, java.lang.Integer.valueOf(durationMins))
+            .set(PARKING_SESSIONS.FEE, fee)
+            .execute()
 
-          dslContext.execute(
-            """INSERT INTO payments (id, session_id, amount, method, status, created_at)
-              |VALUES (?::uuid, ?::uuid, ?, ?, 'SETTLED', ?::timestamptz)
-              |ON CONFLICT (id) DO NOTHING""".stripMargin,
-            paymentId, sessionId, fee, method, exitTime.toString
-          )
+          dslContext.insertInto(PAYMENTS)
+            .set(PAYMENTS.ID, paymentId)
+            .set(PAYMENTS.SESSION_ID, sessionId)
+            .set(PAYMENTS.AMOUNT, fee)
+            .set(PAYMENTS.METHOD, method)
+            .set(PAYMENTS.STATUS, "SETTLED")
+            .set(PAYMENTS.CREATED_AT, OffsetDateTime.ofInstant(exitTime, ZoneOffset.UTC))
+            .execute()
         }
       }
     }
 
     val availableSpaceList = spaces.asScala.toList
-    val activeCount = Math.min(6, availableSpaceList.size)
-    for (i <- 0 until activeCount) {
+
+    val demoPairs = List(
+      (adminVehicleId, availableSpaceList(0)),
+      (customerVehicleId, availableSpaceList(1))
+    )
+
+    demoPairs.foreach { case (vehId, spaceRec) =>
+      val spaceId = spaceRec.get(PARKING_SPACES.ID)
+      val sessionId = UUID.randomUUID()
+      val entryTime = now.minusMinutes(30 + rand.nextInt(45)).toInstant
+
+      dslContext.insertInto(PARKING_SESSIONS)
+        .set(PARKING_SESSIONS.ID, sessionId)
+        .set(PARKING_SESSIONS.VEHICLE_ID, vehId)
+        .set(PARKING_SESSIONS.SPACE_ID, spaceId)
+        .set(PARKING_SESSIONS.ENTRY_TIME, OffsetDateTime.ofInstant(entryTime, ZoneOffset.UTC))
+        .execute()
+
+      dslContext.update(PARKING_SPACES)
+        .set(PARKING_SPACES.STATUS, "OCCUPIED")
+        .where(PARKING_SPACES.ID.eq(spaceId))
+        .execute()
+    }
+
+    val additionalActiveCount = Math.min(8, availableSpaceList.size - 2)
+    for (i <- 2 until (2 + additionalActiveCount)) {
       val spaceRec = availableSpaceList(i)
-      val vehicleRec = vehicles.get(i % vehicles.size())
-      val spaceId = UUID.fromString(spaceRec.get("id").toString)
-      val vehicleId = UUID.fromString(vehicleRec.get("id").toString)
+      val vehicleRec = updatedVehicles.get(i % updatedVehicles.size())
+      val spaceId = spaceRec.get(PARKING_SPACES.ID)
+      val vehicleId = vehicleRec.get(VEHICLES.ID)
       val sessionId = UUID.randomUUID()
       val entryTime = now.minusMinutes(15 + rand.nextInt(90)).toInstant
 
-      dslContext.execute(
-        """INSERT INTO parking_sessions (id, vehicle_id, space_id, entry_time, exit_time, duration_minutes, fee)
-          |VALUES (?::uuid, ?::uuid, ?::uuid, ?::timestamptz, NULL, NULL, NULL)
-          |ON CONFLICT (id) DO NOTHING""".stripMargin,
-        sessionId, vehicleId, spaceId, entryTime.toString
-      )
+      dslContext.insertInto(PARKING_SESSIONS)
+        .set(PARKING_SESSIONS.ID, sessionId)
+        .set(PARKING_SESSIONS.VEHICLE_ID, vehicleId)
+        .set(PARKING_SESSIONS.SPACE_ID, spaceId)
+        .set(PARKING_SESSIONS.ENTRY_TIME, OffsetDateTime.ofInstant(entryTime, ZoneOffset.UTC))
+        .execute()
 
-      dslContext.execute(
-        "UPDATE parking_spaces SET status = 'OCCUPIED' WHERE id = ?::uuid",
-        spaceId
-      )
+      dslContext.update(PARKING_SPACES)
+        .set(PARKING_SPACES.STATUS, "OCCUPIED")
+        .where(PARKING_SPACES.ID.eq(spaceId))
+        .execute()
+    }
+
+    val demoResTargets = List(
+      (adminUserId, availableSpaceList(availableSpaceList.size - 1)),
+      (customerUserId, availableSpaceList(availableSpaceList.size - 2))
+    )
+
+    demoResTargets.foreach { case (uId, spaceRec) =>
+      val spaceId = spaceRec.get(PARKING_SPACES.ID)
+      val resId = UUID.randomUUID()
+      val startTime = now.minusMinutes(10).toInstant
+      val endTime = now.plusHours(3).toInstant
+      val fee = BigDecimal.valueOf(180.00)
+
+      dslContext.insertInto(RESERVATIONS)
+        .set(RESERVATIONS.ID, resId)
+        .set(RESERVATIONS.USER_ID, uId)
+        .set(RESERVATIONS.SPACE_ID, spaceId)
+        .set(RESERVATIONS.START_TIME, OffsetDateTime.ofInstant(startTime, ZoneOffset.UTC))
+        .set(RESERVATIONS.END_TIME, OffsetDateTime.ofInstant(endTime, ZoneOffset.UTC))
+        .set(RESERVATIONS.STATUS, "CONFIRMED")
+        .set(RESERVATIONS.FEE, fee)
+        .execute()
+
+      dslContext.update(PARKING_SPACES)
+        .set(PARKING_SPACES.STATUS, "RESERVED")
+        .where(PARKING_SPACES.ID.eq(spaceId))
+        .execute()
     }
 
     if (!usersList.isEmpty) {
@@ -128,8 +323,8 @@ class DatabaseSeederService(dslContext: DSLContext) {
           val endTime = startTime.plusSeconds(durationHours * 3600)
           val userRec = usersList.get(rand.nextInt(usersList.size()))
           val spaceRec = spaces.get(rand.nextInt(spaces.size()))
-          val userId = UUID.fromString(userRec.get("id").toString)
-          val spaceId = UUID.fromString(spaceRec.get("id").toString)
+          val userId = userRec.get(USERS.ID)
+          val spaceId = spaceRec.get(PARKING_SPACES.ID)
           val resId = UUID.randomUUID()
           val hourlyRate = 40.0 + (rand.nextInt(5) * 10.0)
           val fee = BigDecimal.valueOf(durationHours * hourlyRate)
@@ -138,16 +333,19 @@ class DatabaseSeederService(dslContext: DSLContext) {
                        else if (startTime.isBefore(now.toInstant) && endTime.isAfter(now.toInstant)) "CONFIRMED"
                        else statuses(rand.nextInt(statuses.length))
 
-          dslContext.execute(
-            """INSERT INTO reservations (id, user_id, space_id, start_time, end_time, status, fee)
-              |VALUES (?::uuid, ?::uuid, ?::uuid, ?::timestamptz, ?::timestamptz, ?, ?)
-              |ON CONFLICT (id) DO NOTHING""".stripMargin,
-            resId, userId, spaceId, startTime.toString, endTime.toString, status, fee
-          )
+          dslContext.insertInto(RESERVATIONS)
+            .set(RESERVATIONS.ID, resId)
+            .set(RESERVATIONS.USER_ID, userId)
+            .set(RESERVATIONS.SPACE_ID, spaceId)
+            .set(RESERVATIONS.START_TIME, OffsetDateTime.ofInstant(startTime, ZoneOffset.UTC))
+            .set(RESERVATIONS.END_TIME, OffsetDateTime.ofInstant(endTime, ZoneOffset.UTC))
+            .set(RESERVATIONS.STATUS, status)
+            .set(RESERVATIONS.FEE, fee)
+            .execute()
         }
       }
     }
 
-    logger.info("Dynamic current-time seeding (sessions & reservations) completed for today ({})!", now.toLocalDate)
+    logger.info("Dynamic current-time comprehensive auto-seeder finished successfully for today ({})!", now.toLocalDate)
   }
 }

@@ -28,7 +28,7 @@ import { useSpaces } from '../../spaces/hooks';
 import { useStartSession, useEndSession, useSessions } from '../../sessions/hooks';
 import { useToast } from '../../../context/ToastContext';
 import { plateNumberSchema } from '../../../schemas/vehicle';
-import { Activity, DollarSign, Plus, Key, TrendingUp, MapPin } from 'lucide-react';
+import { Activity, DollarSign, Plus, Key, TrendingUp } from 'lucide-react';
 
 interface RecentSession {
   id: string;
@@ -171,23 +171,25 @@ export const AdminDashboard: FC = () => {
       </div>
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="space-y-4">
+        <Card className="p-5 flex flex-col justify-between space-y-3">
           <div className="flex justify-between items-center text-neutral-secondary">
-            <span className="text-sm font-bold uppercase tracking-wider">Occupancy Rate</span>
-            <Activity className="w-5 h-5 stroke-[1.5]" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-secondary">
+              Occupancy Rate
+            </span>
+            <Activity className="w-4 h-4 text-neutral-secondary stroke-[1.75]" />
           </div>
           {isLoading ? (
-            <Skeleton className="h-9 w-24" />
+            <Skeleton className="h-8 w-24" />
           ) : (
             <div className="space-y-2">
-              <div className="text-4xl font-extrabold tracking-tight">
+              <div className="text-3xl font-extrabold text-neutral-primary tracking-tight">
                 {(stats?.occupancy?.occupancyRate ?? 0).toFixed(1)}%
               </div>
-              <p className="text-xs text-neutral-secondary font-semibold">
+              <p className="text-xs text-neutral-secondary font-medium">
                 {stats?.occupancy?.occupiedSpaces ?? 0} of {stats?.occupancy?.totalSpaces ?? 0}{' '}
                 spaces filled
               </p>
-              <div className="w-full bg-brand-primary/10 h-2 rounded-full overflow-hidden">
+              <div className="w-full bg-neutral-subtle h-1.5 rounded-full overflow-hidden">
                 <div
                   className="bg-brand-primary h-full rounded-full transition-all duration-500"
                   style={{ width: `${stats?.occupancy?.occupancyRate ?? 0}%` }}
@@ -197,55 +199,50 @@ export const AdminDashboard: FC = () => {
           )}
         </Card>
 
-        <Card className="space-y-4">
+        <Card className="p-5 flex flex-col justify-between space-y-3">
           <div className="flex justify-between items-center text-neutral-secondary">
-            <span className="text-sm font-bold uppercase tracking-wider">Total Revenue</span>
-            <DollarSign className="w-5 h-5 stroke-[1.5]" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-secondary">
+              Total Revenue
+            </span>
+            <DollarSign className="w-4 h-4 text-neutral-secondary stroke-[1.75]" />
           </div>
           {isLoading ? (
-            <Skeleton className="h-9 w-24" />
+            <Skeleton className="h-8 w-24" />
           ) : (
-            <div className="space-y-1">
-              <div className="text-4xl font-extrabold tracking-tight">
-                ₹{(stats?.financial?.totalRevenue ?? 0).toFixed(2)}
-              </div>
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {Object.entries(stats?.financial?.revenueByMethod || {}).map(([method, amt]) => {
-                  const parsedAmt = typeof amt === 'number' ? amt : parseFloat(amt as string);
-                  return (
-                    <Badge key={method} variant="neutral">
-                      {method}: ₹{isNaN(parsedAmt) ? 0 : parsedAmt.toFixed(0)}
-                    </Badge>
-                  );
+            <div className="space-y-2">
+              <div className="text-3xl font-extrabold text-neutral-primary tracking-tight">
+                ₹
+                {(stats?.financial?.totalRevenue ?? 0).toLocaleString('en-IN', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
                 })}
               </div>
+              <p className="text-xs text-neutral-secondary font-medium">
+                Gross earnings across all settled sessions
+              </p>
             </div>
           )}
         </Card>
 
-        <Card className="space-y-4">
+        <Card className="p-5 flex flex-col justify-between space-y-3">
           <div className="flex justify-between items-center text-neutral-secondary">
-            <span className="text-sm font-bold uppercase tracking-wider">Active Lots</span>
-            <TrendingUp className="w-5 h-5 stroke-[1.5]" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-secondary">
+              Active Lots
+            </span>
+            <TrendingUp className="w-4 h-4 text-neutral-secondary stroke-[1.75]" />
           </div>
-          <div className="space-y-2">
-            <div className="text-4xl font-extrabold tracking-tight">
-              {(lots as ParkingLot[])?.length || 0}
+          {isLoading ? (
+            <Skeleton className="h-8 w-24" />
+          ) : (
+            <div className="space-y-2">
+              <div className="text-3xl font-extrabold text-neutral-primary tracking-tight">
+                {(lots as ParkingLot[])?.length || 0}
+              </div>
+              <p className="text-xs text-neutral-secondary font-medium">
+                Operational parking locations
+              </p>
             </div>
-            <div className="flex flex-col gap-1">
-              {(lots as ParkingLot[])?.slice(0, 3).map((lot, idx) => (
-                <div
-                  key={lot.id}
-                  className="flex items-center gap-1.5 text-xs text-neutral-secondary"
-                >
-                  <MapPin className="w-3.5 h-3.5 shrink-0 text-brand-primary/70" />
-                  <span className="font-semibold">
-                    {lot.name} {lot.location ? `(${lot.location})` : `#${idx + 1}`}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
         </Card>
       </section>
 

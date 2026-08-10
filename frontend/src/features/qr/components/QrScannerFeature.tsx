@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type { FC } from 'react';
 import { qrApi } from '../../../api/endpoints/qr';
 import type { QrScanResponse } from '../../../api/endpoints/qr';
@@ -60,48 +60,7 @@ export const QrScannerFeature: FC = () => {
   const [passLoading, setPassLoading] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
-  useEffect(() => {
-    fetchUserPasses();
-  }, [user]);
-
-  useEffect(() => {
-    let html5QrCode: Html5Qrcode | null = null;
-
-    if (isCameraActive) {
-      setCameraError(null);
-      html5QrCode = new Html5Qrcode('qr-reader-container');
-      scannerRef.current = html5QrCode;
-
-      html5QrCode
-        .start(
-          { facingMode: 'environment' },
-          { fps: 10, qrbox: { width: 250, height: 250 } },
-          decodedText => {
-            setQrInput(decodedText);
-            setIsCameraActive(false);
-            executeScan(decodedText);
-          },
-          () => {}
-        )
-        .catch(() => {
-          setCameraError('Unable to access webcam or camera. Please check camera permissions.');
-          setIsCameraActive(false);
-        });
-    }
-
-    return () => {
-      if (html5QrCode && html5QrCode.isScanning) {
-        html5QrCode
-          .stop()
-          .then(() => {
-            html5QrCode?.clear();
-          })
-          .catch(() => {});
-      }
-    };
-  }, [isCameraActive]);
-
-  const fetchUserPasses = async () => {
+  const fetchUserPasses = useCallback(async () => {
     try {
       const [vehiclesList, sessions, resList, spacesList] = await Promise.all([
         getVehicles().catch(() => []),
@@ -131,7 +90,7 @@ export const QrScannerFeature: FC = () => {
       }[] = [];
 
       sessions.forEach(s => {
-        if (!s.exitTime && myVehicleIds.includes(s.vehicleId)) {
+        if (!s.exitTime && (user?.role === 'ADMIN' || myVehicleIds.includes(s.vehicleId))) {
           const veh = vehiclesList.find((v: any) => v.id === s.vehicleId);
           const sp = spacesList.find((sp: any) => sp.id === s.spaceId);
           passes.push({
@@ -181,7 +140,11 @@ export const QrScannerFeature: FC = () => {
     } catch {
       setActivePasses([]);
     }
-  };
+  }, [user?.id, user?.role, selectedPass]);
+
+  useEffect(() => {
+    fetchUserPasses();
+  }, [fetchUserPasses]);
 
   useEffect(() => {
     if (selectedPass) {
@@ -212,7 +175,7 @@ export const QrScannerFeature: FC = () => {
     }
   };
 
-  const executeScan = async (token: string) => {
+  const executeScan = useCallback(async (token: string) => {
     if (!token.trim()) return;
 
     setLoading(true);
@@ -230,7 +193,44 @@ export const QrScannerFeature: FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    let html5QrCode: Html5Qrcode | null = null;
+
+    if (isCameraActive) {
+      setCameraError(null);
+      html5QrCode = new Html5Qrcode('qr-reader-container');
+      scannerRef.current = html5QrCode;
+
+      html5QrCode
+        .start(
+          { facingMode: 'environment' },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          decodedText => {
+            setQrInput(decodedText);
+            setIsCameraActive(false);
+            executeScan(decodedText);
+          },
+          () => {}
+        )
+        .catch(() => {
+          setCameraError('Unable to access webcam or camera. Please check camera permissions.');
+          setIsCameraActive(false);
+        });
+    }
+
+    return () => {
+      if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode
+          .stop()
+          .then(() => {
+            html5QrCode?.clear();
+          })
+          .catch(() => {});
+      }
+    };
+  }, [isCameraActive, executeScan]);
 
   const handleScanSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
