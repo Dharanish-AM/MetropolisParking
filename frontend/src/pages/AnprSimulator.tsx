@@ -5,10 +5,11 @@ export const AnprSimulator: FC = () => {
   return (
     <>
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">ANPR Camera Simulator</h1>
-        <p className="text-neutral-secondary text-sm mt-1">
-          Use any connected camera — including <strong>iVCam</strong> — to scan license plates in
-          real time
+        <h1 className="text-3xl font-extrabold tracking-tight text-neutral-primary">
+          ANPR Camera Simulator
+        </h1>
+        <p className="text-neutral-secondary text-sm font-medium mt-1">
+          Simulate automatic number plate recognition for entry and exit gates.
         </p>
       </div>
       <AnprFeature />

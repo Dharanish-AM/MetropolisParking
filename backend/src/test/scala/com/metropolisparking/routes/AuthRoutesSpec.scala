@@ -25,7 +25,6 @@ class AuthRoutesSpec extends AnyFunSpec with Matchers with ScalatestRouteTest wi
   val authService     = new AuthService(userRepo, security, auditLogService)
   val rbac            = new RbacMiddleware(security)
 
-  // Bring exception/rejection handlers into implicit scope so Route.seal picks them up
   implicit val exHandler: ExceptionHandler  = GlobalErrorHandler.exceptionHandler
   implicit val rejHandler: RejectionHandler = GlobalErrorHandler.rejectionHandler
 

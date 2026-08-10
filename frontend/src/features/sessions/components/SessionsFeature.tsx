@@ -18,6 +18,7 @@ import {
 import { Badge } from '../../../components/ui/Badge';
 import { Modal } from '../../../components/ui/Modal';
 import { Skeleton } from '../../../components/ui/Skeleton';
+import { EmptyState } from '../../../components/ui/EmptyState';
 import { useSessions, useStartSession, useEndSession } from '../hooks';
 import { useSpaces } from '../../spaces/hooks';
 import { useVehicles } from '../../vehicles/hooks';
@@ -145,10 +146,12 @@ export const SessionsFeature: FC = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="w-full space-y-8 animate-fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Parking Sessions</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-primary">
+            Parking Sessions
+          </h1>
           <p className="text-neutral-secondary text-sm font-medium mt-1">
             Monitor active stays, record vehicle entry and exit times, and calculate fees.
           </p>
@@ -251,14 +254,15 @@ export const SessionsFeature: FC = () => {
               ))
             ) : filteredSessions.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={8}
-                  className="text-center text-neutral-secondary font-medium py-12"
-                >
-                  <div className="flex flex-col items-center gap-2">
-                    <Clock className="w-8 h-8 text-neutral-secondary stroke-[1.5]" />
-                    <span>No parking sessions found.</span>
-                  </div>
+                <TableCell colSpan={8} className="p-4 border-0">
+                  <EmptyState
+                    icon={Clock}
+                    title="No parking sessions found"
+                    description="There are currently no active or historical parking sessions matching your search or filters."
+                    actionLabel="Start New Session"
+                    onAction={() => setIsStartOpen(true)}
+                    actionIcon={<Plus className="w-4 h-4" />}
+                  />
                 </TableCell>
               </TableRow>
             ) : (
@@ -305,11 +309,11 @@ export const SessionsFeature: FC = () => {
                     <TableCell className="text-right">
                       {isActive && plate !== '—' ? (
                         <Button
-                          variant="secondary"
+                          variant="danger-outline"
+                          size="sm"
                           onClick={() => setEndSessionTarget(plate)}
-                          className="px-3 py-1.5 text-xs text-status-occupied hover:bg-status-occupied/10 border-status-occupied/20 font-bold"
                         >
-                          <Square className="w-3 h-3 mr-1 fill-status-occupied text-status-occupied" />
+                          <Square className="w-3.5 h-3.5" />
                           Check Out
                         </Button>
                       ) : (

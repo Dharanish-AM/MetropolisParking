@@ -192,7 +192,7 @@ export const CustomerDashboard: FC = () => {
     <div className="space-y-8 animate-fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-primary">
+          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-primary">
             Welcome, {user?.name}
           </h1>
           <p className="text-neutral-secondary text-sm font-medium mt-1">
@@ -282,11 +282,11 @@ export const CustomerDashboard: FC = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <Button
-                          variant="secondary"
+                          variant="danger-outline"
+                          size="sm"
                           onClick={() => setCheckoutTarget(session.plateNumber!)}
-                          className="px-2.5 py-1.5 text-xs text-status-occupied hover:bg-status-occupied/10 border-status-occupied/20 font-bold inline-flex items-center gap-1 cursor-pointer"
                         >
-                          <Square className="w-3 h-3 fill-status-occupied text-status-occupied" />
+                          <Square className="w-3.5 h-3.5" />
                           Exit Parking
                         </Button>
                       </TableCell>

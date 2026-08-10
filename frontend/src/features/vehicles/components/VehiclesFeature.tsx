@@ -17,6 +17,7 @@ import {
 import { Badge } from '../../../components/ui/Badge';
 import { Modal } from '../../../components/ui/Modal';
 import { Skeleton } from '../../../components/ui/Skeleton';
+import { EmptyState } from '../../../components/ui/EmptyState';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { useVehicles, useCreateVehicle } from '../hooks';
 import type { Vehicle } from '../../../api/endpoints/vehicles';
@@ -79,10 +80,12 @@ export const VehiclesFeature: FC = () => {
   });
 
   return (
-    <div className="space-y-8">
+    <div className="w-full space-y-8 animate-fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Vehicle Registry</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-primary">
+            Vehicle Registry
+          </h1>
           <p className="text-neutral-secondary text-sm font-medium mt-1">
             {user?.role === 'CUSTOMER'
               ? 'Manage and register your personal vehicles.'
@@ -146,14 +149,15 @@ export const VehiclesFeature: FC = () => {
               ))
             ) : filteredVehicles.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={user?.role === 'CUSTOMER' ? 3 : 4}
-                  className="text-center text-neutral-secondary font-medium py-12"
-                >
-                  <div className="flex flex-col items-center gap-2">
-                    <Car className="w-8 h-8 text-neutral-secondary stroke-[1.5]" />
-                    <span>No vehicles found matching the search criteria.</span>
-                  </div>
+                <TableCell colSpan={user?.role === 'CUSTOMER' ? 3 : 4} className="p-4 border-0">
+                  <EmptyState
+                    icon={Car}
+                    title="No vehicles found"
+                    description="No vehicles match your search query or license plate lookup."
+                    actionLabel="Register Vehicle"
+                    onAction={() => setIsRegisterOpen(true)}
+                    actionIcon={<Plus className="w-4 h-4" />}
+                  />
                 </TableCell>
               </TableRow>
             ) : (
@@ -171,12 +175,8 @@ export const VehiclesFeature: FC = () => {
                     </TableCell>
                   )}
                   <TableCell className="text-right">
-                    <Button
-                      variant="secondary"
-                      className="px-3 py-1.5 text-xs font-semibold cursor-pointer"
-                      onClick={() => setSelectedVehicle(vehicle)}
-                    >
-                      <Info className="w-3.5 h-3.5 mr-1" />
+                    <Button variant="outline" size="sm" onClick={() => setSelectedVehicle(vehicle)}>
+                      <Info className="w-3.5 h-3.5" />
                       Details
                     </Button>
                   </TableCell>

@@ -67,7 +67,7 @@ export const Navbar: FC = () => {
 
   return (
     <header className="border-b border-neutral-border bg-white sticky top-0 z-30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 lg:gap-6 min-w-0 flex-1">
           <Link to="/" className="flex-shrink-0">
             <MetropolisLogo size="md" />
@@ -102,21 +102,21 @@ export const Navbar: FC = () => {
             <>
               <Link
                 to="/profile"
-                className={`flex items-center gap-2 px-2.5 py-1 rounded-md border transition-all duration-150 ${
+                className={`flex items-center gap-2.5 px-2 py-1 rounded-full border transition-all duration-150 ${
                   location.pathname === '/profile'
-                    ? 'border-brand-primary/40 bg-brand-primary/5'
-                    : 'border-neutral-border hover:border-brand-primary/30 hover:bg-neutral-subtle'
+                    ? 'border-brand-primary/40 bg-brand-primary/5 shadow-xs'
+                    : 'border-neutral-border hover:border-neutral-stroke hover:bg-neutral-subtle'
                 }`}
                 title="View Profile"
               >
-                <div className="w-7 h-7 rounded-md bg-brand-primary/10 text-brand-primary flex items-center justify-center font-bold text-xs">
+                <div className="w-7 h-7 rounded-full bg-brand-primary text-white flex items-center justify-center font-bold text-xs shadow-xs">
                   {user.name.charAt(0).toUpperCase()}
                 </div>
-                <div className="hidden sm:flex flex-col items-start leading-tight">
-                  <span className="text-xs font-bold text-neutral-primary max-w-[100px] truncate">
+                <div className="hidden sm:flex flex-col items-start leading-tight pr-1.5">
+                  <span className="text-xs font-bold text-neutral-primary max-w-[110px] truncate">
                     {user.name}
                   </span>
-                  <span className="text-[9px] text-neutral-secondary uppercase font-bold tracking-wider">
+                  <span className="text-[9px] text-neutral-secondary uppercase font-semibold tracking-wider">
                     {user.role}
                   </span>
                 </div>

@@ -1,4 +1,4 @@
-﻿---
+---
 name: metropolisparking-architecture
 description: Full system architecture, technology stack, container topology, and layer boundaries for the MetropolisParking platform.
 ---
@@ -15,10 +15,10 @@ description: Full system architecture, technology stack, container topology, and
 | Reactive Streams | Akka Streams | 2.6.x |
 | Database Access | jOOQ | 3.18.x |
 | Connection Pool | HikariCP | 5.x |
-| Schema Migrations | Flyway | 9.x |
+| Schema Migrations | Flyway | 10.x |
 | Authentication | java-jwt + jBCrypt | 4.x / 0.4 |
 | Cache | Jedis (Redis) | 5.x |
-| Frontend Framework | React | 18 |
+| Frontend Framework | React | 19 |
 | Build Tool | Vite | 5+ |
 | Language | TypeScript | 5.x (strict) |
 | Styling | Tailwind CSS | v4 |
@@ -67,13 +67,13 @@ Models       → clean domain case classes; no framework or jOOQ dependencies
 
 ```
 /backend    — Scala 2.13 + Akka HTTP server
-/frontend   — React 18 + Vite + TypeScript SPA
+/frontend   — React 19 + Vite + TypeScript SPA
 /           — docker-compose.yml, README.md, scripts/
 ```
 
 ## Flyway Migration Naming
 
-Sequential versioned filenames: `V1__create_users.sql`, `V2__create_roles.sql`, ..., `V13__...sql`
+Sequential versioned filenames: `V1__create_users.sql`, `V2__create_roles.sql`, ..., `V14__...sql`
 
 ## Default Credentials
 

@@ -23,6 +23,7 @@ import { Badge } from '../../../components/ui/Badge';
 import { Modal } from '../../../components/ui/Modal';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
+import { EmptyState } from '../../../components/ui/EmptyState';
 import { Calendar, Plus, XCircle, Info, AlertTriangle, QrCode, Copy } from 'lucide-react';
 import { useToast } from '../../../context/ToastContext';
 
@@ -241,12 +242,14 @@ export const ReservationsFeature: FC = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="w-full space-y-8 animate-fade-in">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Reservations</h1>
-          <p className="text-neutral-secondary text-sm mt-1">
-            Book and manage your parking spaces in advance
+          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-primary">
+            Reservations
+          </h1>
+          <p className="text-neutral-secondary text-sm font-medium mt-1">
+            Book and manage your parking spaces in advance.
           </p>
         </div>
         <Button onClick={openBookModal} className="flex items-center gap-2">
@@ -306,13 +309,15 @@ export const ReservationsFeature: FC = () => {
               ))
             ) : !reservations || reservations.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-12">
-                  <div className="flex flex-col items-center justify-center gap-3">
-                    <Info className="w-12 h-12 text-neutral-border" />
-                    <span className="text-neutral-secondary font-medium">
-                      No reservations found. Click 'Book Space' to get started.
-                    </span>
-                  </div>
+                <TableCell colSpan={7} className="p-4 border-0">
+                  <EmptyState
+                    icon={Calendar}
+                    title="No reservations found"
+                    description="You currently have no active or upcoming space reservations."
+                    actionLabel="Book Space"
+                    onAction={openBookModal}
+                    actionIcon={<Plus className="w-4 h-4" />}
+                  />
                 </TableCell>
               </TableRow>
             ) : (
@@ -334,13 +339,8 @@ export const ReservationsFeature: FC = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => handleOpenDetails(res)}
-                        className="px-2.5 py-1 text-xs font-semibold cursor-pointer"
-                      >
-                        <Info className="w-3.5 h-3.5 mr-1 text-neutral-secondary" />
+                      <Button variant="outline" size="sm" onClick={() => handleOpenDetails(res)}>
+                        <Info className="w-3.5 h-3.5" />
                         Details
                       </Button>
 
@@ -350,19 +350,17 @@ export const ReservationsFeature: FC = () => {
                             variant="secondary"
                             size="sm"
                             onClick={() => handleOpenPass(res.id)}
-                            className="px-2.5 py-1 text-xs font-semibold text-brand-primary cursor-pointer"
                           >
-                            <QrCode className="w-3.5 h-3.5 mr-1" />
+                            <QrCode className="w-3.5 h-3.5" />
                             Pass
                           </Button>
 
                           <Button
-                            variant="secondary"
+                            variant="danger-outline"
                             size="sm"
                             onClick={() => setCancelTargetId(res.id)}
-                            className="px-2.5 py-1 text-xs font-semibold text-status-occupied hover:bg-status-occupied/10 cursor-pointer"
                           >
-                            <XCircle className="w-3.5 h-3.5 mr-1" />
+                            <XCircle className="w-3.5 h-3.5" />
                             Cancel
                           </Button>
                         </>

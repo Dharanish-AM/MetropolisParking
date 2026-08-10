@@ -128,7 +128,7 @@ Traditional parking facilities suffer from:
 - **Full Observability Stack**: Prometheus metrics collection (`:9090`), Grafana dashboards (`:3000`), Loki log aggregation (`:3100`), and Jaeger distributed tracing (`:16686`).
 - **Flyway Database Migrations**: Automated version-controlled database schema migrations running on startup.
 - **CI/CD Pipeline**: Enterprise GitHub Actions workflow featuring automated code quality & security checks (`oxlint`, `prettier`, `npm audit`), backend compilation & fat JAR assembly, frontend TypeScript check & Vitest suite, container build verification, full Docker Compose stack E2E execution with telemetry health checks, and a status gatekeeper.
-- **~80% Test Coverage**: 19 ScalaTest backend specs (82 tests across services, routes, security & validation), 13 Vitest frontend specs (24 tests), 10 Playwright E2E specs (32+ scenarios), and k6 load benchmarking (50 VUs, 0% error rate).
+- **~80% Test Coverage**: 20 ScalaTest backend specs (82 tests across services, routes, security & validation), 15 Vitest frontend specs (24 tests), 12 Playwright E2E specs (32+ scenarios), and k6 load benchmarking (50 VUs, 0% error rate).
 
 ---
 
@@ -258,10 +258,10 @@ flowchart TD
 | | Reactive Streams | Akka Streams | 2.6.20 | WebSocket Stream Processing |
 | | Database Access | jOOQ | 3.18.7 | Type-Safe SQL Generation |
 | | Connection Pool | HikariCP | 5.1.0 | High-Performance JDBC Pooling |
-| | Migrations | Flyway | 9.22.3 | Versioned DB Schema Evolution |
+| | Migrations | Flyway | 10.10.0 | Versioned DB Schema Evolution |
 | | Authentication | java-jwt / jBCrypt | 4.4.0 / 0.4 | Stateless JWT & Password Hashing |
 | | Caching | Jedis (Redis) | 5.1.0 | Fast In-Memory Analytics Cache |
-| **Frontend** | Framework | React | 18 | User Interface Library |
+| **Frontend** | Framework | React | 19 | User Interface Library |
 | | Build Tool | Vite | 5+ | Module Bundling & Hot Reloading |
 | | Language | TypeScript | 5.0+ | Strict Static Type Safety |
 | | Styling | Tailwind CSS | v4 | Utility-First Styling System |
@@ -282,7 +282,7 @@ flowchart TD
 
 ### Database Schema (ERD Overview)
 
-The database schema is organized into 11 key tables managed sequentially by Flyway (V1 through V13):
+The database schema is organized into 11 key tables managed sequentially by Flyway (V1 through V14):
 
 - `users`: Account identities, email credentials, password hashes, and profiles.
 - `roles` & `user_roles`: RBAC permissions mapping users to `ADMIN` or `CUSTOMER`.
@@ -482,10 +482,10 @@ The repository maintains approximately **~80% combined test coverage** across ba
 
 | Suite | Runner | Tests | Status |
 |---|---|---|---|
-| Backend Services & Security (9 specs) | ScalaTest + Mockito | 45 unit tests | ✅ All passing |
+| Backend Services & Security (10 specs) | ScalaTest + Mockito | 45 unit tests | ✅ All passing |
 | Backend Routes & Middleware (10 specs) | ScalaTest + Akka HTTP TestKit | 37 integration tests | ✅ All passing |
-| Frontend Components (13 specs) | Vitest + RTL + MSW | 24 component tests | ✅ All passing |
-| Playwright E2E (10 specs) | Playwright (Chromium) | 32+ scenarios | ✅ All passing |
+| Frontend Components (15 specs) | Vitest + RTL + MSW | 24 component tests | ✅ All passing |
+| Playwright E2E (12 specs) | Playwright (Chromium) | 32+ scenarios | ✅ All passing |
 | k6 Load Benchmark | k6 (50 VUs, 60s) | 7,772 requests | ✅ 0% error rate |
 
 ### Backend Unit & Integration Tests
@@ -497,11 +497,11 @@ docker compose up -d db
 
 cd backend
 
-# Run full backend test suite (82 tests across 19 specs)
+# Run full backend test suite (82 tests across 20 specs)
 sbt test
 ```
 
-**Service & Core Specs**: `AnprServiceSpec`, `AuthServiceSpec`, `ParkingSessionServiceSpec`, `PaymentServiceSpec`, `QrServiceSpec`, `ReservationServiceSpec`, `VehicleServiceSpec`, `SecurityModuleSpec`, `ValidatorSpec`
+**Service & Core Specs**: `AnprServiceSpec`, `AuthServiceSpec`, `ParkingSessionServiceSpec`, `PaymentServiceSpec`, `PricingRuleServiceSpec`, `QrServiceSpec`, `ReservationServiceSpec`, `VehicleServiceSpec`, `SecurityModuleSpec`, `ValidatorSpec`
 
 **Route Specs**: `AnprRoutesSpec`, `AuthRoutesSpec`, `ParkingLotRoutesSpec`, `ParkingSessionRoutesSpec`, `ParkingSpaceRoutesSpec`, `PaymentRoutesSpec`, `QrRoutesSpec`, `RbacMiddlewareSpec`, `ReservationRoutesSpec`, `VehicleRoutesSpec`
 
@@ -512,11 +512,11 @@ Frontend component unit tests and API integration tests are powered by Vitest, R
 ```bash
 cd frontend
 
-# Execute frontend test suite (24 tests across 13 specs)
+# Execute frontend test suite (24 tests across 15 specs)
 npm run test
 ```
 
-**Test Specs**: `AdminDashboard`, `AnprSimulator`, `AuthContext`, `CustomerDashboard`, `Login`, `Navbar`, `ParkingLots`, `PaymentsFeature`, `ProtectedRoute`, `QrScannerPage`, `ReservationsFeature`, `SessionsFeature`, `VehiclesFeature`
+**Test Specs**: `AdminDashboard`, `AnalyticsFeature`, `AnprSimulator`, `AuthContext`, `CustomerDashboard`, `Login`, `Navbar`, `ParkingLots`, `PaymentsFeature`, `PricingRulesFeature`, `ProtectedRoute`, `QrScannerPage`, `ReservationsFeature`, `SessionsFeature`, `VehiclesFeature`
 
 ### Playwright E2E Suite
 
@@ -535,7 +535,7 @@ npm run test:e2e
 npm run test:e2e:ui
 ```
 
-**E2E Specs**: `auth`, `rbac_access`, `lots_and_spaces`, `session`, `payment`, `qr_gatepass`, `reservations`, `vehicles`, `anpr_simulator`, `error_states`
+**E2E Specs**: `analytics`, `anpr_simulator`, `auth`, `error_states`, `lots_and_spaces`, `payment`, `pricing_rules`, `qr_gatepass`, `rbac_access`, `reservations`, `session`, `vehicles`
 
 ### k6 Load Benchmark
 
@@ -630,7 +630,7 @@ MetropolisParking/
 │   ├── src/
 │   │   ├── main/
 │   │   │   ├── resources/
-│   │   │   │   ├── db/migration/  # Flyway SQL schema scripts (V1-V13)
+│   │   │   │   ├── db/migration/  # Flyway SQL schema scripts (V1-V14)
 │   │   │   │   └── application.conf # HOCON environment configuration
 │   │   │   └── scala/com/metropolisparking/
 │   │   │       ├── config/     # Configuration mapping helpers

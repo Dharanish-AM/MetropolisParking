@@ -124,11 +124,13 @@ object Main {
       pricingRuleRoutes.routes ~
       analyticsRoutes.routes
 
+    val apiRoutes = pathPrefix("api") { combinedRoutes } ~ combinedRoutes
+
     val finalRoute = handleExceptions(GlobalErrorHandler.exceptionHandler) {
       handleRejections(GlobalErrorHandler.rejectionHandler) {
         TelemetryMiddleware.traceRequests {
           LoggingMiddleware.correlationIdDirective {
-            CorsMiddleware.corsHandler(combinedRoutes)
+            CorsMiddleware.corsHandler(apiRoutes)
           }
         }
       }

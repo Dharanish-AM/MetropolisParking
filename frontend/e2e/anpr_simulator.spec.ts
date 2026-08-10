@@ -5,7 +5,7 @@ const ADMIN_EMAIL = 'admin@metropolisparking.com';
 const ADMIN_PASSWORD = 'admin123';
 
 let lotName: string;
-const EXIT_PLATE = 'MH12AB1234';
+const EXIT_PLATE = `ANPR${Date.now().toString().slice(-6)}`;
 
 async function loginAsAdmin(page: Page) {
   await page.goto('/login');

@@ -44,6 +44,7 @@ export const QrScannerFeature: FC = () => {
         spaceNumber?: string;
         vehiclePlate?: string;
         startTime?: string;
+        endTime?: string;
         status?: string;
         fee?: string;
       };
@@ -123,6 +124,7 @@ export const QrScannerFeature: FC = () => {
           spaceNumber?: string;
           vehiclePlate?: string;
           startTime?: string;
+          endTime?: string;
           status?: string;
           fee?: string;
         };
@@ -144,6 +146,9 @@ export const QrScannerFeature: FC = () => {
                 (s.spaceId ? `Space #${s.spaceId.slice(0, 6)}` : 'N/A'),
               vehiclePlate: s.plateNumber || veh?.plateNumber || 'Registered Vehicle',
               startTime: s.entryTime ? new Date(s.entryTime).toLocaleString() : undefined,
+              endTime: s.exitTime
+                ? new Date(s.exitTime).toLocaleString()
+                : 'Active Stay (In Progress)',
               status: s.status || 'ACTIVE',
             },
           });
@@ -161,6 +166,7 @@ export const QrScannerFeature: FC = () => {
               lotName: r.lotName,
               spaceNumber: r.spaceNumber,
               startTime: r.startTime ? new Date(r.startTime).toLocaleString() : undefined,
+              endTime: r.endTime ? new Date(r.endTime).toLocaleString() : undefined,
               status: r.status,
               fee: r.fee !== undefined ? `₹${r.fee.toFixed(2)}` : undefined,
             },
@@ -254,14 +260,13 @@ export const QrScannerFeature: FC = () => {
   const currentPass = activePasses.find(p => p.id === selectedPass?.id);
 
   return (
-    <div className="space-y-8">
+    <div className="w-full space-y-8 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-neutral-primary tracking-tight flex items-center gap-3">
-            <QrCode className="w-8 h-8 text-brand-primary" />
+          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-primary">
             QR Code Gate Entry & Passes
           </h1>
-          <p className="text-neutral-secondary text-sm mt-1">
+          <p className="text-neutral-secondary text-sm font-medium mt-1">
             Scan gate QR tokens to process entry/checkout or display your digital parking pass.
           </p>
         </div>
@@ -611,6 +616,16 @@ export const QrScannerFeature: FC = () => {
                           </span>
                           <span className="font-medium text-neutral-primary text-[11px]">
                             {currentPass.details.startTime}
+                          </span>
+                        </div>
+                      )}
+                      {currentPass.details.endTime && (
+                        <div>
+                          <span className="text-neutral-secondary block font-semibold">
+                            End / Exit Time
+                          </span>
+                          <span className="font-medium text-neutral-primary text-[11px]">
+                            {currentPass.details.endTime}
                           </span>
                         </div>
                       )}

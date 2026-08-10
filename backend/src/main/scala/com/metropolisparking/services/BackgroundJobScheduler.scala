@@ -26,9 +26,22 @@ class BackgroundJobScheduler(
     val now = OffsetDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
 
     dsl.update(PARKING_SPACES)
+      .set(PARKING_SPACES.STATUS, "RESERVED")
+      .set(PARKING_SPACES.UPDATED_AT, now)
+      .where(PARKING_SPACES.STATUS.eq("AVAILABLE"))
+      .and(PARKING_SPACES.ID.in(
+        dsl.select(RESERVATIONS.SPACE_ID).from(RESERVATIONS)
+          .where(RESERVATIONS.STATUS.in("PENDING", "CONFIRMED"))
+          .and(RESERVATIONS.START_TIME.le(now))
+          .and(RESERVATIONS.END_TIME.gt(now))
+      ))
+      .execute()
+
+    dsl.update(PARKING_SPACES)
       .set(PARKING_SPACES.STATUS, "AVAILABLE")
       .set(PARKING_SPACES.UPDATED_AT, now)
-      .where(PARKING_SPACES.ID.in(
+      .where(PARKING_SPACES.STATUS.eq("RESERVED"))
+      .and(PARKING_SPACES.ID.in(
         dsl.select(RESERVATIONS.SPACE_ID).from(RESERVATIONS)
           .where(RESERVATIONS.STATUS.in("PENDING", "CONFIRMED"))
           .and(RESERVATIONS.END_TIME.lt(now))

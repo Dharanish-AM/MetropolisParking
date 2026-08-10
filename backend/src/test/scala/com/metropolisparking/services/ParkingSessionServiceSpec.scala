@@ -108,7 +108,6 @@ class ParkingSessionServiceSpec extends AnyFunSpec with Matchers with TestDbSpec
       sessionService.startSession(SessionStartRequest(plate, spaceId), None)
       val ended = sessionService.endSession(SessionEndRequest(plate), None)
 
-      // Duration is sub-minute (max(1L) floor gives 1 minute → ceil(1/60) = 1 hour)
       ended.fee.get shouldBe BigDecimal("8.00")
       paymentRepo.findBySessionId(ended.id).get.amount shouldBe BigDecimal("8.00")
     }
@@ -116,9 +115,7 @@ class ParkingSessionServiceSpec extends AnyFunSpec with Matchers with TestDbSpec
     it("should prefer lot+vehicleType rule over lot-only and global rules") {
       val (lotId, spaceId) = newLotWithSpace()
 
-      // Lot-only rule ($20 FLAT) — less specific, should be overridden
       pricingRuleRepo.create(PricingRule(UUID.randomUUID(), "FLAT", BigDecimal("20.00"), None, Some(lotId)))
-      // Lot+vehicleType rule ($5 FLAT) — most specific, must win
       pricingRuleRepo.create(PricingRule(UUID.randomUUID(), "FLAT", BigDecimal("5.00"), Some("CAR"), Some(lotId)))
 
       val plate = s"TN09-${UUID.randomUUID().toString.take(4).toUpperCase}"

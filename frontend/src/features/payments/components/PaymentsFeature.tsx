@@ -14,6 +14,7 @@ import {
 import { Badge } from '../../../components/ui/Badge';
 import { Modal } from '../../../components/ui/Modal';
 import { Skeleton } from '../../../components/ui/Skeleton';
+import { EmptyState } from '../../../components/ui/EmptyState';
 import { usePayments, useProcessPayment } from '../hooks';
 import { useToast } from '../../../context/ToastContext';
 import { DollarSign, CreditCard, Landmark, Wallet, CircleDollarSign } from 'lucide-react';
@@ -77,9 +78,11 @@ export const PaymentsFeature: FC = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="w-full space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">Payments Ledger</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight text-neutral-primary">
+          Payments Ledger
+        </h1>
         <p className="text-neutral-secondary text-sm font-medium mt-1">
           Track transactions, monitor settlement states, and process active billing sessions.
         </p>
@@ -123,14 +126,12 @@ export const PaymentsFeature: FC = () => {
               ))
             ) : !payments || payments.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="text-center text-neutral-secondary font-medium py-12"
-                >
-                  <div className="flex flex-col items-center gap-2">
-                    <DollarSign className="w-8 h-8 text-neutral-secondary stroke-[1.5]" />
-                    <span>No payment transactions logged in the system.</span>
-                  </div>
+                <TableCell colSpan={6} className="p-4 border-0">
+                  <EmptyState
+                    icon={DollarSign}
+                    title="No payment transactions"
+                    description="No payment transactions or invoice settlements recorded in the ledger."
+                  />
                 </TableCell>
               </TableRow>
             ) : (
