@@ -13,15 +13,15 @@ export const Profile: FC = () => {
   const myVehicles = (vehicles || []).filter(v => v.ownerId === user?.id);
 
   return (
-    <div className="max-w-3xl w-full mx-auto space-y-6 animate-fade-in py-4">
+    <div className="w-full space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-extrabold tracking-tight text-neutral-primary">My Profile</h1>
-        <p className="text-neutral-secondary text-xs font-medium mt-1">
-          Account identity and credentials.
+        <h1 className="text-3xl font-extrabold tracking-tight text-neutral-primary">My Profile</h1>
+        <p className="text-neutral-secondary text-sm font-medium mt-1">
+          Account identity and system authorization credentials.
         </p>
       </div>
 
-      <Card className="p-6 md:p-8 space-y-6 border-neutral-border shadow-xs">
+      <Card className="p-6 md:p-8 space-y-6 border-neutral-border">
         <div className="flex items-center gap-4 pb-6 border-b border-neutral-border">
           <div className="w-16 h-16 rounded-full bg-brand-primary text-white flex items-center justify-center font-bold text-2xl shadow-xs shrink-0">
             {user?.name ? user.name.charAt(0).toUpperCase() : <UserIcon className="w-8 h-8" />}
@@ -37,7 +37,7 @@ export const Profile: FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
           <div className="space-y-1">
             <p className="text-xs font-semibold uppercase tracking-wider text-neutral-secondary">
               Full Name
@@ -59,7 +59,7 @@ export const Profile: FC = () => {
 
           <div className="space-y-1">
             <p className="text-xs font-semibold uppercase tracking-wider text-neutral-secondary">
-              Role Access Type
+              Role Privileges
             </p>
             <p className="font-bold text-neutral-primary flex items-center gap-1.5">
               <Shield className="w-4 h-4 text-neutral-secondary" />
