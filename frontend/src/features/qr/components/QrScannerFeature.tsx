@@ -254,7 +254,7 @@ export const QrScannerFeature: FC = () => {
   const currentPass = activePasses.find(p => p.id === selectedPass?.id);
 
   return (
-    <div className="space-y-8">
+    <div className="w-full space-y-8 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-neutral-primary">

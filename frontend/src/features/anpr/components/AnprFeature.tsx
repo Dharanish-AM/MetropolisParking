@@ -369,288 +369,290 @@ export const AnprFeature: FC = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      <div className="lg:col-span-5 space-y-6">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Video className="w-5 h-5 text-brand-primary" />
-              <span className="font-bold text-sm uppercase tracking-wider">Camera Source</span>
-            </div>
-          </CardHeader>
-          <div className="p-6 space-y-4">
-            {cameraDevices.length > 0 ? (
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-neutral-secondary uppercase tracking-wider">
-                  Select Camera / iVCam Device
-                </label>
-                <Select
-                  data-testid="camera-select"
-                  value={selectedDeviceId}
-                  onChange={e => switchCamera(e.target.value)}
-                >
-                  {cameraDevices.map(d => (
-                    <option key={d.deviceId} value={d.deviceId}>
-                      {d.label}
-                    </option>
-                  ))}
-                </Select>
-                <p className="text-[11px] text-neutral-secondary">
-                  iVCam, DroidCam or any virtual webcam will appear in this list once its app is
-                  running on your phone.
-                </p>
+    <div className="w-full space-y-8 animate-fade-in">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="lg:col-span-5 space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Video className="w-5 h-5 text-brand-primary" />
+                <span className="font-bold text-sm uppercase tracking-wider">Camera Source</span>
               </div>
-            ) : (
-              <div className="flex items-start gap-2 p-3 bg-status-reserved/10 border border-status-reserved/20 rounded-xl text-status-reserved text-xs">
-                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>
-                  No cameras detected. Start iVCam on your iPhone or grant browser permissions
-                  first.
-                </span>
-              </div>
-            )}
-
-            <div className="relative aspect-video rounded-2xl overflow-hidden bg-brand-nav-dark border border-neutral-border flex items-center justify-center">
-              {isCameraActive ? (
-                <>
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 border-[3px] border-dashed border-brand-primary/50 m-8 rounded-xl pointer-events-none flex items-center justify-center">
-                    <ScanLine className="w-8 h-8 text-brand-primary animate-pulse" />
-                  </div>
-                  {selectedDeviceId && cameraDevices.length > 0 && (
-                    <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] px-2 py-1 rounded-lg font-mono truncate max-w-[80%]">
-                      {cameraDevices.find(d => d.deviceId === selectedDeviceId)?.label}
-                    </div>
-                  )}
-                </>
+            </CardHeader>
+            <div className="p-6 space-y-4">
+              {cameraDevices.length > 0 ? (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-neutral-secondary uppercase tracking-wider">
+                    Select Camera / iVCam Device
+                  </label>
+                  <Select
+                    data-testid="camera-select"
+                    value={selectedDeviceId}
+                    onChange={e => switchCamera(e.target.value)}
+                  >
+                    {cameraDevices.map(d => (
+                      <option key={d.deviceId} value={d.deviceId}>
+                        {d.label}
+                      </option>
+                    ))}
+                  </Select>
+                  <p className="text-[11px] text-neutral-secondary">
+                    iVCam, DroidCam or any virtual webcam will appear in this list once its app is
+                    running on your phone.
+                  </p>
+                </div>
               ) : (
-                <div className="text-center space-y-2">
-                  <CameraOff className="w-12 h-12 text-neutral-secondary mx-auto" />
-                  <p className="text-sm text-neutral-secondary">Camera stream inactive</p>
+                <div className="flex items-start gap-2 p-3 bg-status-reserved/10 border border-status-reserved/20 rounded-xl text-status-reserved text-xs">
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>
+                    No cameras detected. Start iVCam on your iPhone or grant browser permissions
+                    first.
+                  </span>
+                </div>
+              )}
+
+              <div className="relative aspect-video rounded-2xl overflow-hidden bg-brand-nav-dark border border-neutral-border flex items-center justify-center">
+                {isCameraActive ? (
+                  <>
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 border-[3px] border-dashed border-brand-primary/50 m-8 rounded-xl pointer-events-none flex items-center justify-center">
+                      <ScanLine className="w-8 h-8 text-brand-primary animate-pulse" />
+                    </div>
+                    {selectedDeviceId && cameraDevices.length > 0 && (
+                      <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] px-2 py-1 rounded-lg font-mono truncate max-w-[80%]">
+                        {cameraDevices.find(d => d.deviceId === selectedDeviceId)?.label}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center space-y-2">
+                    <CameraOff className="w-12 h-12 text-neutral-secondary mx-auto" />
+                    <p className="text-sm text-neutral-secondary">Camera stream inactive</p>
+                  </div>
+                )}
+              </div>
+
+              <canvas ref={canvasRef} className="hidden" />
+
+              <div className="flex gap-2">
+                {isCameraActive ? (
+                  <Button variant="secondary" onClick={stopCamera} className="w-full">
+                    Turn Off Camera
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => startCamera(selectedDeviceId || undefined)}
+                    className="w-full flex items-center justify-center gap-2"
+                    disabled={cameraDevices.length === 0}
+                  >
+                    <Camera className="w-4 h-4" />
+                    <span>Start Camera Stream</span>
+                  </Button>
+                )}
+              </div>
+
+              {isCameraActive && (
+                <div className="flex items-center justify-center gap-2 text-xs font-bold text-brand-primary animate-pulse py-1">
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <span>Scanning for license plate continuously...</span>
                 </div>
               )}
             </div>
+          </Card>
+        </div>
 
-            <canvas ref={canvasRef} className="hidden" />
+        <div className="lg:col-span-7 space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <ArrowRightLeft className="w-5 h-5 text-brand-primary" />
+                <span className="font-bold text-sm uppercase tracking-wider">
+                  Gate Operation Console
+                </span>
+              </div>
+            </CardHeader>
+            <div className="p-6 space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-neutral-primary">Select Parking Lot</label>
+                <Select
+                  data-testid="lot-select"
+                  value={selectedLotId}
+                  onChange={e => setSelectedLotId(e.target.value)}
+                >
+                  <option value="">Select lot...</option>
+                  {lots?.map(lot => (
+                    <option key={lot.id} value={lot.id}>
+                      {lot.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
 
-            <div className="flex gap-2">
-              {isCameraActive ? (
-                <Button variant="secondary" onClick={stopCamera} className="w-full">
-                  Turn Off Camera
-                </Button>
-              ) : (
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-bold text-neutral-primary">
+                    License Plate Number
+                  </label>
+                  <button
+                    onClick={generateMockPlate}
+                    className="text-xs font-bold text-brand-primary hover:underline flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary rounded"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    <span>Generate Random</span>
+                  </button>
+                </div>
+                <Input
+                  placeholder="e.g. MH-12-AB-1234"
+                  value={plateNumber}
+                  onChange={e => setPlateNumber(e.target.value.toUpperCase())}
+                  className="font-mono text-center text-lg tracking-wider font-bold"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <Button
-                  onClick={() => startCamera(selectedDeviceId || undefined)}
-                  className="w-full flex items-center justify-center gap-2"
-                  disabled={cameraDevices.length === 0}
+                  onClick={handleEntry}
+                  isLoading={entryMutation.isPending}
+                  className="w-full bg-status-available hover:bg-status-available/90"
                 >
-                  <Camera className="w-4 h-4" />
-                  <span>Start Camera Stream</span>
+                  Simulate Entry
                 </Button>
-              )}
-            </div>
-
-            {isCameraActive && (
-              <div className="flex items-center justify-center gap-2 text-xs font-bold text-brand-primary animate-pulse py-1">
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                <span>Scanning for license plate continuously...</span>
-              </div>
-            )}
-          </div>
-        </Card>
-      </div>
-
-      <div className="lg:col-span-7 space-y-6">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <ArrowRightLeft className="w-5 h-5 text-brand-primary" />
-              <span className="font-bold text-sm uppercase tracking-wider">
-                Gate Operation Console
-              </span>
-            </div>
-          </CardHeader>
-          <div className="p-6 space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-neutral-primary">Select Parking Lot</label>
-              <Select
-                data-testid="lot-select"
-                value={selectedLotId}
-                onChange={e => setSelectedLotId(e.target.value)}
-              >
-                <option value="">Select lot...</option>
-                {lots?.map(lot => (
-                  <option key={lot.id} value={lot.id}>
-                    {lot.name}
-                  </option>
-                ))}
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="text-sm font-bold text-neutral-primary">
-                  License Plate Number
-                </label>
-                <button
-                  onClick={generateMockPlate}
-                  className="text-xs font-bold text-brand-primary hover:underline flex items-center gap-1 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary rounded"
+                <Button
+                  onClick={handleExit}
+                  isLoading={exitMutation.isPending}
+                  className="w-full bg-status-occupied hover:bg-status-occupied/90"
                 >
-                  <RefreshCw className="w-3 h-3" />
-                  <span>Generate Random</span>
-                </button>
+                  Simulate Exit
+                </Button>
               </div>
-              <Input
-                placeholder="e.g. MH-12-AB-1234"
-                value={plateNumber}
-                onChange={e => setPlateNumber(e.target.value.toUpperCase())}
-                className="font-mono text-center text-lg tracking-wider font-bold"
-              />
             </div>
+          </Card>
 
-            <div className="grid grid-cols-2 gap-4">
-              <Button
-                onClick={handleEntry}
-                isLoading={entryMutation.isPending}
-                className="w-full bg-status-available hover:bg-status-available/90"
-              >
-                Simulate Entry
-              </Button>
-              <Button
-                onClick={handleExit}
-                isLoading={exitMutation.isPending}
-                className="w-full bg-status-occupied hover:bg-status-occupied/90"
-              >
-                Simulate Exit
-              </Button>
-            </div>
-          </div>
-        </Card>
-
-        {ocrError && (
-          <div className="p-4 bg-status-reserved/10 border border-status-reserved/20 rounded-2xl text-status-reserved text-sm flex gap-3 items-start animate-shake">
-            <AlertTriangle className="w-5 h-5 shrink-0" />
-            <div>
-              <span className="font-bold">OCR Warning: </span>
-              <span>{ocrError}</span>
-            </div>
-          </div>
-        )}
-
-        {error && (
-          <div className="p-4 bg-status-occupied/10 border border-status-occupied/20 rounded-2xl text-status-occupied text-sm flex gap-3 items-start animate-shake">
-            <AlertTriangle className="w-5 h-5 shrink-0" />
-            <div>
-              <span className="font-bold">Error: </span>
-              <span>{error}</span>
-            </div>
-          </div>
-        )}
-
-        {entryResult && (
-          <div className="bg-status-available/10 border border-status-available/20 rounded-3xl p-8 space-y-6 animate-scale-up">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-status-available/20 flex items-center justify-center text-status-available">
-                <CheckCircle2 className="w-6 h-6" />
-              </div>
+          {ocrError && (
+            <div className="p-4 bg-status-reserved/10 border border-status-reserved/20 rounded-2xl text-status-reserved text-sm flex gap-3 items-start animate-shake">
+              <AlertTriangle className="w-5 h-5 shrink-0" />
               <div>
-                <h3 className="text-xl font-bold text-status-available">Entry Gate Opened</h3>
-                <p className="text-status-available text-xs mt-0.5">
-                  Vehicle registered and space allocated
-                </p>
+                <span className="font-bold">OCR Warning: </span>
+                <span>{ocrError}</span>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white border border-status-available/10 rounded-2xl p-4">
-                <span className="text-[10px] text-status-available/60 uppercase font-bold tracking-wider">
-                  Assigned Level
-                </span>
-                <p className="text-2xl font-extrabold text-status-available mt-1">
-                  Level {entryResult.levelNumber}
-                </p>
-              </div>
-              <div className="bg-white border border-status-available/10 rounded-2xl p-4">
-                <span className="text-[10px] text-status-available/60 uppercase font-bold tracking-wider">
-                  Parking Space
-                </span>
-                <p className="text-2xl font-extrabold text-status-available mt-1">
-                  Space {entryResult.spaceNumber}
-                </p>
-              </div>
-            </div>
-            <div className="bg-white border border-status-available/10 rounded-2xl p-6 space-y-4">
-              <div className="flex justify-between items-center text-sm border-b border-status-available/10 pb-3">
-                <span className="text-status-available/60 font-medium">Scanned Plate</span>
-                <span className="font-mono font-extrabold text-status-available bg-status-available/10 px-2 py-0.5 rounded-lg">
-                  {entryResult.plateNumber}
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-status-available/60 font-medium">Check-In Time</span>
-                <span className="font-semibold text-status-available">
-                  {new Date(entryResult.entryTime).toLocaleString()}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
+          )}
 
-        {exitResult && (
-          <div className="bg-brand-primary/[0.03] border border-brand-primary/10 rounded-3xl p-8 space-y-6 animate-scale-up">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
-                <Receipt className="w-6 h-6" />
-              </div>
+          {error && (
+            <div className="p-4 bg-status-occupied/10 border border-status-occupied/20 rounded-2xl text-status-occupied text-sm flex gap-3 items-start animate-shake">
+              <AlertTriangle className="w-5 h-5 shrink-0" />
               <div>
-                <h3 className="text-xl font-bold text-neutral-primary">Exit Gate Bill Summary</h3>
-                <p className="text-neutral-secondary text-xs mt-0.5">
-                  Departure scanned &amp; payment auto-settled
-                </p>
+                <span className="font-bold">Error: </span>
+                <span>{error}</span>
               </div>
             </div>
-            <div className="bg-white border border-neutral-border rounded-2xl p-6 space-y-4">
-              <div className="flex justify-between items-center text-sm border-b border-neutral-border pb-3">
-                <span className="text-neutral-secondary font-medium">Scanned Plate</span>
-                <span className="font-mono font-extrabold text-neutral-primary bg-brand-primary/5 px-2.5 py-0.5 rounded-lg border border-brand-primary/10">
-                  {exitResult.plateNumber}
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-sm border-b border-neutral-border pb-3">
-                <span className="text-neutral-secondary font-medium">Total Duration</span>
-                <span className="font-bold text-neutral-primary">
-                  {exitResult.durationMinutes} minutes
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-sm border-b border-neutral-border pb-3">
-                <span className="text-neutral-secondary font-medium">Calculated Fee</span>
-                <span className="text-xl font-extrabold text-brand-primary">
-                  ₹{exitResult.fee.toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-neutral-secondary font-medium">Payment Settlement</span>
-                <Badge variant="success">AUTO_PAID (CARD)</Badge>
-              </div>
-            </div>
-          </div>
-        )}
+          )}
 
-        {!entryResult && !exitResult && !error && (
-          <div className="bg-neutral-card/50 border border-neutral-border rounded-3xl p-12 text-center flex flex-col items-center justify-center space-y-3 min-h-[300px]">
-            <HelpCircle className="w-12 h-12 text-neutral-border" />
-            <h4 className="font-bold text-neutral-primary">Awaiting Scan</h4>
-            <p className="text-neutral-secondary text-sm max-w-sm">
-              Select your <strong>iVCam</strong> or any connected camera, start the stream, point it
-              at a license plate, then hit <em>Scan Plate</em> to auto-fill the number.
-            </p>
-          </div>
-        )}
+          {entryResult && (
+            <div className="bg-status-available/10 border border-status-available/20 rounded-3xl p-8 space-y-6 animate-scale-up">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-status-available/20 flex items-center justify-center text-status-available">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-status-available">Entry Gate Opened</h3>
+                  <p className="text-status-available text-xs mt-0.5">
+                    Vehicle registered and space allocated
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white border border-status-available/10 rounded-2xl p-4">
+                  <span className="text-[10px] text-status-available/60 uppercase font-bold tracking-wider">
+                    Assigned Level
+                  </span>
+                  <p className="text-2xl font-extrabold text-status-available mt-1">
+                    Level {entryResult.levelNumber}
+                  </p>
+                </div>
+                <div className="bg-white border border-status-available/10 rounded-2xl p-4">
+                  <span className="text-[10px] text-status-available/60 uppercase font-bold tracking-wider">
+                    Parking Space
+                  </span>
+                  <p className="text-2xl font-extrabold text-status-available mt-1">
+                    Space {entryResult.spaceNumber}
+                  </p>
+                </div>
+              </div>
+              <div className="bg-white border border-status-available/10 rounded-2xl p-6 space-y-4">
+                <div className="flex justify-between items-center text-sm border-b border-status-available/10 pb-3">
+                  <span className="text-status-available/60 font-medium">Scanned Plate</span>
+                  <span className="font-mono font-extrabold text-status-available bg-status-available/10 px-2 py-0.5 rounded-lg">
+                    {entryResult.plateNumber}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-status-available/60 font-medium">Check-In Time</span>
+                  <span className="font-semibold text-status-available">
+                    {new Date(entryResult.entryTime).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {exitResult && (
+            <div className="bg-brand-primary/[0.03] border border-brand-primary/10 rounded-3xl p-8 space-y-6 animate-scale-up">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
+                  <Receipt className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-neutral-primary">Exit Gate Bill Summary</h3>
+                  <p className="text-neutral-secondary text-xs mt-0.5">
+                    Departure scanned &amp; payment auto-settled
+                  </p>
+                </div>
+              </div>
+              <div className="bg-white border border-neutral-border rounded-2xl p-6 space-y-4">
+                <div className="flex justify-between items-center text-sm border-b border-neutral-border pb-3">
+                  <span className="text-neutral-secondary font-medium">Scanned Plate</span>
+                  <span className="font-mono font-extrabold text-neutral-primary bg-brand-primary/5 px-2.5 py-0.5 rounded-lg border border-brand-primary/10">
+                    {exitResult.plateNumber}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-sm border-b border-neutral-border pb-3">
+                  <span className="text-neutral-secondary font-medium">Total Duration</span>
+                  <span className="font-bold text-neutral-primary">
+                    {exitResult.durationMinutes} minutes
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-sm border-b border-neutral-border pb-3">
+                  <span className="text-neutral-secondary font-medium">Calculated Fee</span>
+                  <span className="text-xl font-extrabold text-brand-primary">
+                    ₹{exitResult.fee.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-neutral-secondary font-medium">Payment Settlement</span>
+                  <Badge variant="success">AUTO_PAID (CARD)</Badge>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!entryResult && !exitResult && !error && (
+            <div className="bg-neutral-card/50 border border-neutral-border rounded-3xl p-12 text-center flex flex-col items-center justify-center space-y-3 min-h-[300px]">
+              <HelpCircle className="w-12 h-12 text-neutral-border" />
+              <h4 className="font-bold text-neutral-primary">Awaiting Scan</h4>
+              <p className="text-neutral-secondary text-sm max-w-sm">
+                Select your <strong>iVCam</strong> or any connected camera, start the stream, point
+                it at a license plate, then hit <em>Scan Plate</em> to auto-fill the number.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

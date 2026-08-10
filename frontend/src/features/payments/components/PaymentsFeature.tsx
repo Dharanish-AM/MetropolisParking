@@ -78,7 +78,7 @@ export const PaymentsFeature: FC = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="w-full space-y-8 animate-fade-in">
       <div>
         <h1 className="text-3xl font-extrabold tracking-tight text-neutral-primary">
           Payments Ledger
