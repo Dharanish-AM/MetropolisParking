@@ -307,11 +307,11 @@ export const SessionsFeature: FC = () => {
                     <TableCell className="text-right">
                       {isActive && plate !== '—' ? (
                         <Button
-                          variant="secondary"
+                          variant="danger-outline"
+                          size="sm"
                           onClick={() => setEndSessionTarget(plate)}
-                          className="px-3 py-1.5 text-xs text-status-occupied hover:bg-status-occupied/10 border-status-occupied/20 font-bold"
                         >
-                          <Square className="w-3 h-3 mr-1 fill-status-occupied text-status-occupied" />
+                          <Square className="w-3.5 h-3.5" />
                           Check Out
                         </Button>
                       ) : (

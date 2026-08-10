@@ -173,12 +173,8 @@ export const VehiclesFeature: FC = () => {
                     </TableCell>
                   )}
                   <TableCell className="text-right">
-                    <Button
-                      variant="secondary"
-                      className="px-3 py-1.5 text-xs font-semibold cursor-pointer"
-                      onClick={() => setSelectedVehicle(vehicle)}
-                    >
-                      <Info className="w-3.5 h-3.5 mr-1" />
+                    <Button variant="outline" size="sm" onClick={() => setSelectedVehicle(vehicle)}>
+                      <Info className="w-3.5 h-3.5" />
                       Details
                     </Button>
                   </TableCell>

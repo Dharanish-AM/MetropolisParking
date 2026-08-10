@@ -337,13 +337,8 @@ export const ReservationsFeature: FC = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => handleOpenDetails(res)}
-                        className="px-2.5 py-1 text-xs font-semibold cursor-pointer"
-                      >
-                        <Info className="w-3.5 h-3.5 mr-1 text-neutral-secondary" />
+                      <Button variant="outline" size="sm" onClick={() => handleOpenDetails(res)}>
+                        <Info className="w-3.5 h-3.5" />
                         Details
                       </Button>
 
@@ -353,19 +348,17 @@ export const ReservationsFeature: FC = () => {
                             variant="secondary"
                             size="sm"
                             onClick={() => handleOpenPass(res.id)}
-                            className="px-2.5 py-1 text-xs font-semibold text-brand-primary cursor-pointer"
                           >
-                            <QrCode className="w-3.5 h-3.5 mr-1" />
+                            <QrCode className="w-3.5 h-3.5" />
                             Pass
                           </Button>
 
                           <Button
-                            variant="secondary"
+                            variant="danger-outline"
                             size="sm"
                             onClick={() => setCancelTargetId(res.id)}
-                            className="px-2.5 py-1 text-xs font-semibold text-status-occupied hover:bg-status-occupied/10 cursor-pointer"
                           >
-                            <XCircle className="w-3.5 h-3.5 mr-1" />
+                            <XCircle className="w-3.5 h-3.5" />
                             Cancel
                           </Button>
                         </>

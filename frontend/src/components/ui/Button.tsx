@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes } from 'react';
 import { Loader2 } from 'lucide-react';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'black' | 'secondary' | 'outline' | 'ghost' | 'danger';
+  variant?: 'primary' | 'black' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'danger-outline';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
 }
@@ -14,7 +14,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      'inline-flex items-center justify-center font-semibold rounded-md transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer';
+      'inline-flex items-center justify-center font-semibold rounded-md transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer whitespace-nowrap';
 
     const variants = {
       primary:
@@ -22,13 +22,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       black:
         'bg-brand-black text-white hover:bg-brand-black/90 shadow-xs border border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary disabled:bg-neutral-stroke',
       secondary:
-        'bg-brand-lavender text-brand-primary border border-transparent hover:bg-brand-primary/10 shadow-xs focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary',
+        'bg-brand-primary/10 text-brand-primary border border-brand-primary/20 hover:bg-brand-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary',
       outline:
         'bg-transparent text-neutral-primary border border-neutral-border hover:bg-neutral-subtle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary',
       ghost:
         'bg-transparent text-neutral-secondary hover:text-neutral-primary hover:bg-neutral-subtle focus:outline-none focus:ring-2 focus:ring-brand-primary',
       danger:
-        'bg-status-occupied text-white hover:bg-status-occupied/95 shadow-xs border border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-status-occupied',
+        'bg-status-occupied text-white hover:bg-status-occupied/90 shadow-xs border border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-status-occupied',
+      'danger-outline':
+        'bg-status-occupied/10 text-status-occupied border border-status-occupied/20 hover:bg-status-occupied/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-status-occupied',
     };
 
     const sizes = {
