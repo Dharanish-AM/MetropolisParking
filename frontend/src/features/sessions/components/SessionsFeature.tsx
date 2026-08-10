@@ -18,6 +18,7 @@ import {
 import { Badge } from '../../../components/ui/Badge';
 import { Modal } from '../../../components/ui/Modal';
 import { Skeleton } from '../../../components/ui/Skeleton';
+import { EmptyState } from '../../../components/ui/EmptyState';
 import { useSessions, useStartSession, useEndSession } from '../hooks';
 import { useSpaces } from '../../spaces/hooks';
 import { useVehicles } from '../../vehicles/hooks';
@@ -251,14 +252,15 @@ export const SessionsFeature: FC = () => {
               ))
             ) : filteredSessions.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={8}
-                  className="text-center text-neutral-secondary font-medium py-12"
-                >
-                  <div className="flex flex-col items-center gap-2">
-                    <Clock className="w-8 h-8 text-neutral-secondary stroke-[1.5]" />
-                    <span>No parking sessions found.</span>
-                  </div>
+                <TableCell colSpan={8} className="p-4 border-0">
+                  <EmptyState
+                    icon={Clock}
+                    title="No parking sessions found"
+                    description="There are currently no active or historical parking sessions matching your search or filters."
+                    actionLabel="Start New Session"
+                    onAction={() => setIsStartOpen(true)}
+                    actionIcon={<Plus className="w-4 h-4" />}
+                  />
                 </TableCell>
               </TableRow>
             ) : (

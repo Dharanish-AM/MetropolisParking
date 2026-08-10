@@ -17,7 +17,9 @@ test.describe('Analytics & Revenue Reporting User Flow', () => {
   test('ADMIN can navigate to analytics dashboard and view metrics', async ({ page }) => {
     await login(page, ADMIN_EMAIL, ADMIN_PASSWORD);
     await page.goto('/analytics');
-    await expect(page.getByRole('heading', { name: /analytics|revenue|occupancy/i }).first()).toBeVisible({
+    await expect(
+      page.getByRole('heading', { name: /analytics|revenue|occupancy/i }).first()
+    ).toBeVisible({
       timeout: 8000,
     });
   });

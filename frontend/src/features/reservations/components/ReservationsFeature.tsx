@@ -23,6 +23,7 @@ import { Badge } from '../../../components/ui/Badge';
 import { Modal } from '../../../components/ui/Modal';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
+import { EmptyState } from '../../../components/ui/EmptyState';
 import { Calendar, Plus, XCircle, Info, AlertTriangle, QrCode, Copy } from 'lucide-react';
 import { useToast } from '../../../context/ToastContext';
 
@@ -306,13 +307,15 @@ export const ReservationsFeature: FC = () => {
               ))
             ) : !reservations || reservations.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-12">
-                  <div className="flex flex-col items-center justify-center gap-3">
-                    <Info className="w-12 h-12 text-neutral-border" />
-                    <span className="text-neutral-secondary font-medium">
-                      No reservations found. Click 'Book Space' to get started.
-                    </span>
-                  </div>
+                <TableCell colSpan={7} className="p-4 border-0">
+                  <EmptyState
+                    icon={Calendar}
+                    title="No reservations found"
+                    description="You currently have no active or upcoming space reservations."
+                    actionLabel="Book Space"
+                    onAction={openBookModal}
+                    actionIcon={<Plus className="w-4 h-4" />}
+                  />
                 </TableCell>
               </TableRow>
             ) : (

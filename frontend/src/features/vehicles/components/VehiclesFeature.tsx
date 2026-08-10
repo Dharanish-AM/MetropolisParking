@@ -17,6 +17,7 @@ import {
 import { Badge } from '../../../components/ui/Badge';
 import { Modal } from '../../../components/ui/Modal';
 import { Skeleton } from '../../../components/ui/Skeleton';
+import { EmptyState } from '../../../components/ui/EmptyState';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { useVehicles, useCreateVehicle } from '../hooks';
 import type { Vehicle } from '../../../api/endpoints/vehicles';
@@ -146,14 +147,15 @@ export const VehiclesFeature: FC = () => {
               ))
             ) : filteredVehicles.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={user?.role === 'CUSTOMER' ? 3 : 4}
-                  className="text-center text-neutral-secondary font-medium py-12"
-                >
-                  <div className="flex flex-col items-center gap-2">
-                    <Car className="w-8 h-8 text-neutral-secondary stroke-[1.5]" />
-                    <span>No vehicles found matching the search criteria.</span>
-                  </div>
+                <TableCell colSpan={user?.role === 'CUSTOMER' ? 3 : 4} className="p-4 border-0">
+                  <EmptyState
+                    icon={Car}
+                    title="No vehicles found"
+                    description="No vehicles match your search query or license plate lookup."
+                    actionLabel="Register Vehicle"
+                    onAction={() => setIsRegisterOpen(true)}
+                    actionIcon={<Plus className="w-4 h-4" />}
+                  />
                 </TableCell>
               </TableRow>
             ) : (
