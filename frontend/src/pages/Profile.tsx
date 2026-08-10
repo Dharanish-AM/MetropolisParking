@@ -24,7 +24,7 @@ export const Profile: FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="md:col-span-2 space-y-6">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-brand-primary/10 text-brand-primary flex items-center justify-center font-extrabold text-2xl">
+            <div className="w-16 h-16 rounded-full bg-brand-primary text-white flex items-center justify-center font-extrabold text-2xl shadow-xs">
               {user?.name.charAt(0).toUpperCase()}
             </div>
             <div>
