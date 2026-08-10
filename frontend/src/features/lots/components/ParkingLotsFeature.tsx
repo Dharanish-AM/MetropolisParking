@@ -178,10 +178,10 @@ export const ParkingLotsFeature: FC = () => {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-border pb-6">
         <div>
-          <h1 className="text-3xl font-extrabold text-neutral-primary tracking-tight">
+          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-primary">
             Parking Lots &amp; Floor Layouts
           </h1>
-          <p className="mt-1 text-sm text-neutral-secondary">
+          <p className="text-neutral-secondary text-sm font-medium mt-1">
             Real-time slot occupancy visualization, level indices, and space management.
           </p>
         </div>

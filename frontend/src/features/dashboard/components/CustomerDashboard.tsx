@@ -192,7 +192,7 @@ export const CustomerDashboard: FC = () => {
     <div className="space-y-8 animate-fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-primary">
+          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-primary">
             Welcome, {user?.name}
           </h1>
           <p className="text-neutral-secondary text-sm font-medium mt-1">

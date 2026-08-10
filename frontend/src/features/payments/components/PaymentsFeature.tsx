@@ -80,7 +80,9 @@ export const PaymentsFeature: FC = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">Payments Ledger</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight text-neutral-primary">
+          Payments Ledger
+        </h1>
         <p className="text-neutral-secondary text-sm font-medium mt-1">
           Track transactions, monitor settlement states, and process active billing sessions.
         </p>

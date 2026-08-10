@@ -257,11 +257,10 @@ export const QrScannerFeature: FC = () => {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-neutral-primary tracking-tight flex items-center gap-3">
-            <QrCode className="w-8 h-8 text-brand-primary" />
+          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-primary">
             QR Code Gate Entry & Passes
           </h1>
-          <p className="text-neutral-secondary text-sm mt-1">
+          <p className="text-neutral-secondary text-sm font-medium mt-1">
             Scan gate QR tokens to process entry/checkout or display your digital parking pass.
           </p>
         </div>

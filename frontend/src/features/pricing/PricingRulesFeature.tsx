@@ -118,11 +118,10 @@ export const PricingRulesFeature: FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-primary flex items-center gap-2">
-            <Tag className="w-6 h-6 text-brand-primary stroke-[2.25]" />
+          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-primary">
             Dynamic Pricing & Rate Rules
           </h1>
-          <p className="text-sm text-neutral-secondary">
+          <p className="text-neutral-secondary text-sm font-medium mt-1">
             Configure automated peak hour surge tariffs, vehicle rates, and occupancy thresholds.
           </p>
         </div>

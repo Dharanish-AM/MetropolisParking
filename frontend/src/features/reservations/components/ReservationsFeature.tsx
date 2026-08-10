@@ -245,9 +245,11 @@ export const ReservationsFeature: FC = () => {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Reservations</h1>
-          <p className="text-neutral-secondary text-sm mt-1">
-            Book and manage your parking spaces in advance
+          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-primary">
+            Reservations
+          </h1>
+          <p className="text-neutral-secondary text-sm font-medium mt-1">
+            Book and manage your parking spaces in advance.
           </p>
         </div>
         <Button onClick={openBookModal} className="flex items-center gap-2">

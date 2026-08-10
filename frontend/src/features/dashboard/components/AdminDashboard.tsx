@@ -161,10 +161,10 @@ export const AdminDashboard: FC = () => {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-primary">
+          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-primary">
             Admin Dashboard
           </h1>
-          <p className="text-sm text-neutral-secondary">
+          <p className="text-neutral-secondary text-sm font-medium mt-1">
             Real-time occupancy rates, revenues, and quick vehicle check-in/out workflows.
           </p>
         </div>
