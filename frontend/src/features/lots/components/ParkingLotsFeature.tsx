@@ -459,7 +459,7 @@ export const ParkingLotsFeature: FC = () => {
               </div>
             </div>
 
-            {(selectedSpace.status === 'OCCUPIED' || selectedSpace.status === 'RESERVED') && (
+            {(spaceDetails?.activeSession || spaceDetails?.activeReservation || loadingDetails) && (
               <div className="border-t border-neutral-border pt-4 space-y-4">
                 {loadingDetails ? (
                   <div className="space-y-2">
@@ -468,7 +468,7 @@ export const ParkingLotsFeature: FC = () => {
                   </div>
                 ) : spaceDetails ? (
                   <>
-                    {selectedSpace.status === 'OCCUPIED' && spaceDetails.activeSession && (
+                    {spaceDetails.activeSession && (
                       <div className="bg-neutral-border/10 p-4 rounded-2xl border border-neutral-border space-y-3 text-left">
                         <h3 className="text-sm font-bold text-neutral-primary flex items-center gap-1.5">
                           <Car className="w-4 h-4 text-brand-primary" /> Active Session Info
@@ -507,7 +507,7 @@ export const ParkingLotsFeature: FC = () => {
                       </div>
                     )}
 
-                    {selectedSpace.status === 'RESERVED' && spaceDetails.activeReservation && (
+                    {spaceDetails.activeReservation && (
                       <div className="bg-neutral-border/10 p-4 rounded-2xl border border-neutral-border space-y-3 text-left">
                         <h3 className="text-sm font-bold text-neutral-primary flex items-center gap-1.5">
                           <Layers className="w-4 h-4 text-brand-primary" /> Reservation Info
