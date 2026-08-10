@@ -3,7 +3,7 @@ package com.metropolisparking.services
 import com.metropolisparking.dto.{SessionStartRequest, SessionEndRequest, VehicleCreateRequest}
 import com.metropolisparking.exceptions.{ConflictException, NotFoundException}
 import com.metropolisparking.models.{ParkingSession, Payment}
-import com.metropolisparking.repositories.{ParkingLotRepository, ParkingSessionRepository, PaymentRepository, PricingRuleRepository}
+import com.metropolisparking.repositories.{ParkingLotRepository, ParkingSessionRepository, PaymentRepository, PricingRuleRepository, ReservationRepository}
 import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.UUID
@@ -16,7 +16,8 @@ class ParkingSessionService(
   paymentRepo: PaymentRepository,
   auditLogService: AuditLogService,
   wsService: WebSocketService = null,
-  dashboardService: Option[DashboardService] = None
+  dashboardService: Option[DashboardService] = None,
+  reservationRepo: Option[ReservationRepository] = None
 ) {
   private val logger = LoggerFactory.getLogger(classOf[ParkingSessionService])
   private def broadcast(eventJson: String): Unit = {
@@ -35,6 +36,18 @@ class ParkingSessionService(
 
       if (!space.status.equalsIgnoreCase("AVAILABLE") && !space.status.equalsIgnoreCase("RESERVED")) {
         throw ConflictException(s"Parking space '${space.spaceNumber}' is currently ${space.status}")
+      }
+
+      reservationRepo.foreach { rRepo =>
+        val now = Instant.now()
+        rRepo.findActiveBySpaceId(space.id).foreach { res =>
+          if (res.startTime.isBefore(now.plusSeconds(300)) && res.endTime.isAfter(now)) {
+            val isReservationOwner = userId.contains(res.userId) || vehicle.ownerId.contains(res.userId)
+            if (!isReservationOwner && space.status.equalsIgnoreCase("RESERVED")) {
+              throw ConflictException(s"Parking space '${space.spaceNumber}' is currently reserved for another customer")
+            }
+          }
+        }
       }
 
       sessionRepo.findActiveByVehicleId(vehicle.id).foreach { _ =>
@@ -75,15 +88,16 @@ class ParkingSessionService(
       throw NotFoundException(s"No active parking session found for vehicle '${vehicle.plateNumber}'")
     }
 
-    val space = lotRepo.findSpaceById(session.spaceId).getOrElse {
-      throw NotFoundException(s"Parking space '${session.spaceId}' not found for active session")
-    }
-
     val exitTime = Instant.now()
-    val durationMinutes = java.time.Duration.between(session.entryTime, exitTime).toMinutes.max(1L).toInt
-    val fee = calculateFee(session.entryTime, exitTime, space.lotId, vehicle.`type`)
 
     sessionRepo.transaction { txDsl =>
+      val space = lotRepo.findSpaceByIdForUpdate(session.spaceId, txDsl).getOrElse {
+        throw NotFoundException(s"Parking space '${session.spaceId}' not found for active session")
+      }
+
+      val durationMinutes = java.time.Duration.between(session.entryTime, exitTime).toMinutes.max(1L).toInt
+      val fee = calculateFee(session.entryTime, exitTime, space.lotId, vehicle.`type`)
+
       val updatedSpace = space.copy(status = "AVAILABLE")
       lotRepo.updateSpace(updatedSpace, Some(txDsl))
 

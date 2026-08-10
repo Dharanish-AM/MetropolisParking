@@ -95,7 +95,6 @@ class ReservationServiceSpec extends AnyFunSpec with Matchers with TestDbSpec {
         reservationService.cancelReservation(reservation.id, otherUser.id, "CUSTOMER")
       }
 
-      // ADMIN can cancel any user's reservation
       reservationService.cancelReservation(reservation.id, otherUser.id, "ADMIN")
       val updated = reservationRepo.findById(reservation.id).get
       updated.status shouldBe "CANCELLED"

@@ -1,0 +1,11 @@
+CREATE INDEX IF NOT EXISTS idx_parking_sessions_vehicle_exit ON parking_sessions (vehicle_id, exit_time);
+CREATE INDEX IF NOT EXISTS idx_parking_sessions_space_id ON parking_sessions (space_id);
+CREATE INDEX IF NOT EXISTS idx_parking_spaces_lot_status ON parking_spaces (lot_id, status, deleted_at);
+CREATE INDEX IF NOT EXISTS idx_parking_spaces_level_id ON parking_spaces (level_id);
+CREATE INDEX IF NOT EXISTS idx_vehicles_plate_deleted ON vehicles (plate_number, deleted_at);
+CREATE INDEX IF NOT EXISTS idx_vehicles_owner_id ON vehicles (owner_id);
+CREATE INDEX IF NOT EXISTS idx_reservations_space_status ON reservations (space_id, status);
+CREATE INDEX IF NOT EXISTS idx_reservations_user_id ON reservations (user_id);
+CREATE INDEX IF NOT EXISTS idx_payments_session_status ON payments (session_id, status);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs (user_id, timestamp);
+CREATE INDEX IF NOT EXISTS idx_parking_lots_deleted ON parking_lots (deleted_at);
