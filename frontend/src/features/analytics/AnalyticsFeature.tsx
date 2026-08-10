@@ -174,10 +174,7 @@ export const AnalyticsFeature: FC = () => {
         </div>
 
         <div className="w-full sm:w-56">
-          <Select
-            value={selectedLotId}
-            onChange={e => setSelectedLotId(e.target.value)}
-          >
+          <Select value={selectedLotId} onChange={e => setSelectedLotId(e.target.value)}>
             <option value="">All Parking Lots</option>
             {lots?.map((l: any) => (
               <option key={l.id} value={l.id}>
@@ -346,9 +343,7 @@ export const AnalyticsFeature: FC = () => {
                 key={lot.lotId}
                 className="p-3.5 rounded-xl border border-neutral-border bg-neutral-subtle/50"
               >
-                <p className="text-xs font-medium text-neutral-secondary truncate">
-                  {lot.lotName}
-                </p>
+                <p className="text-xs font-medium text-neutral-secondary truncate">{lot.lotName}</p>
                 <p className="text-lg font-bold text-neutral-primary mt-1">
                   ₹{lot.totalRevenue.toFixed(2)}
                 </p>
