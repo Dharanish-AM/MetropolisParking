@@ -44,6 +44,7 @@ export const QrScannerFeature: FC = () => {
         spaceNumber?: string;
         vehiclePlate?: string;
         startTime?: string;
+        endTime?: string;
         status?: string;
         fee?: string;
       };
@@ -123,6 +124,7 @@ export const QrScannerFeature: FC = () => {
           spaceNumber?: string;
           vehiclePlate?: string;
           startTime?: string;
+          endTime?: string;
           status?: string;
           fee?: string;
         };
@@ -144,6 +146,9 @@ export const QrScannerFeature: FC = () => {
                 (s.spaceId ? `Space #${s.spaceId.slice(0, 6)}` : 'N/A'),
               vehiclePlate: s.plateNumber || veh?.plateNumber || 'Registered Vehicle',
               startTime: s.entryTime ? new Date(s.entryTime).toLocaleString() : undefined,
+              endTime: s.exitTime
+                ? new Date(s.exitTime).toLocaleString()
+                : 'Active Stay (In Progress)',
               status: s.status || 'ACTIVE',
             },
           });
@@ -161,6 +166,7 @@ export const QrScannerFeature: FC = () => {
               lotName: r.lotName,
               spaceNumber: r.spaceNumber,
               startTime: r.startTime ? new Date(r.startTime).toLocaleString() : undefined,
+              endTime: r.endTime ? new Date(r.endTime).toLocaleString() : undefined,
               status: r.status,
               fee: r.fee !== undefined ? `₹${r.fee.toFixed(2)}` : undefined,
             },
@@ -610,6 +616,16 @@ export const QrScannerFeature: FC = () => {
                           </span>
                           <span className="font-medium text-neutral-primary text-[11px]">
                             {currentPass.details.startTime}
+                          </span>
+                        </div>
+                      )}
+                      {currentPass.details.endTime && (
+                        <div>
+                          <span className="text-neutral-secondary block font-semibold">
+                            End / Exit Time
+                          </span>
+                          <span className="font-medium text-neutral-primary text-[11px]">
+                            {currentPass.details.endTime}
                           </span>
                         </div>
                       )}
