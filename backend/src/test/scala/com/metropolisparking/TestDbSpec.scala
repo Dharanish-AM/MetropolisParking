@@ -16,6 +16,7 @@ trait TestDbSpec extends BeforeAndAfterAll with BeforeAndAfterEach { this: AnyFu
   override def beforeAll(): Unit = {
     val flyway = Flyway.configure()
       .dataSource(config.db.url, config.db.username, config.db.password)
+      .outOfOrder(true)
       .load()
     flyway.repair()
     flyway.migrate()
